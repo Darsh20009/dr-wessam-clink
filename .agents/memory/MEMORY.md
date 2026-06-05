@@ -1,0 +1,1 @@
+- [Dr Wessam Clinic Stack](dr-wessam-stack.md) — Full-stack: Vite+React client (port 5000), Express server (port 3001), MongoDB Atlas. Doctor login: 01000000000 / doctor123.
