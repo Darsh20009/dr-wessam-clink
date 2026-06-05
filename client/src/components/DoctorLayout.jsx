@@ -1,24 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
+import axios from 'axios';
+import {
   FiHome, FiUsers, FiCalendar, FiDollarSign, FiBarChart2,
-  FiMenu, FiX, FiLogOut, FiChevronRight
+  FiMenu, FiLogOut, FiChevronRight, FiBell, FiCreditCard, FiGlobe
 } from 'react-icons/fi';
-import { FaTooth } from 'react-icons/fa';
 
 const navItems = [
   { to: '/doctor', icon: <FiHome />, label: 'لوحة التحكم', end: true },
   { to: '/doctor/patients', icon: <FiUsers />, label: 'المرضى' },
   { to: '/doctor/appointments', icon: <FiCalendar />, label: 'المواعيد' },
   { to: '/doctor/payments', icon: <FiDollarSign />, label: 'المدفوعات' },
+  { to: '/doctor/wallet', icon: <FiCreditCard />, label: 'المحفظة' },
   { to: '/doctor/reports', icon: <FiBarChart2 />, label: 'التقارير' },
+  { to: '/doctor/notifications', icon: <FiBell />, label: 'الإشعارات' },
+  { to: '/doctor/site', icon: <FiGlobe />, label: 'إدارة الموقع' },
 ];
 
 export default function DoctorLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchNotifCount = () => {
+      axios.get('/notifications').then(r => setUnreadCount(r.data.unreadCount)).catch(() => {});
+    };
+    fetchNotifCount();
+    const interval = setInterval(fetchNotifCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => { logout(); navigate('/'); };
 
@@ -28,14 +41,9 @@ export default function DoctorLayout() {
       <aside style={{
         width: sidebarOpen ? '260px' : '72px',
         background: 'linear-gradient(180deg, #1a3a6b 0%, #1e3a8a 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'width 0.3s ease',
-        flexShrink: 0,
-        position: 'sticky',
-        top: 0,
-        height: '100vh',
-        overflowX: 'hidden',
+        display: 'flex', flexDirection: 'column',
+        transition: 'width 0.3s ease', flexShrink: 0,
+        position: 'sticky', top: 0, height: '100vh', overflowX: 'hidden',
       }}>
         {/* Logo */}
         <div style={{ padding: '20px 16px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -48,7 +56,7 @@ export default function DoctorLayout() {
           )}
           <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{
             marginRight: 'auto', background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)',
-            fontSize: '18px', cursor: 'pointer', flexShrink: 0
+            fontSize: '18px', cursor: 'pointer', flexShrink: 0,
           }}>
             {sidebarOpen ? <FiChevronRight /> : <FiMenu />}
           </button>
@@ -65,10 +73,27 @@ export default function DoctorLayout() {
                 background: isActive ? 'rgba(255,255,255,0.15)' : 'transparent',
                 fontSize: '14px', fontWeight: isActive ? 600 : 400,
                 transition: 'all 0.2s', whiteSpace: 'nowrap',
-                textDecoration: 'none',
+                textDecoration: 'none', position: 'relative',
               })}>
-              <span style={{ fontSize: '18px', flexShrink: 0 }}>{item.icon}</span>
-              {sidebarOpen && item.label}
+              <span style={{ fontSize: '18px', flexShrink: 0, position: 'relative' }}>
+                {item.icon}
+                {item.to === '/doctor/notifications' && unreadCount > 0 && (
+                  <span style={{
+                    position: 'absolute', top: '-6px', left: '-6px',
+                    background: '#ef4444', color: 'white',
+                    borderRadius: '50%', width: '16px', height: '16px',
+                    fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 800, lineHeight: 1,
+                  }}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+                )}
+              </span>
+              {sidebarOpen && <span style={{ flex: 1 }}>{item.label}</span>}
+              {sidebarOpen && item.to === '/doctor/notifications' && unreadCount > 0 && (
+                <span style={{
+                  background: '#ef4444', color: 'white', borderRadius: '20px',
+                  padding: '1px 7px', fontSize: '11px', fontWeight: 700,
+                }}>{unreadCount}</span>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -86,6 +111,7 @@ export default function DoctorLayout() {
             width: '100%', padding: '10px 12px', borderRadius: '8px',
             background: 'rgba(239,68,68,0.2)', border: 'none',
             color: '#fca5a5', fontSize: '14px', cursor: 'pointer',
+            fontFamily: 'Cairo, sans-serif',
             transition: 'background 0.2s',
           }}>
             <FiLogOut style={{ flexShrink: 0 }} />

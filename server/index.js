@@ -11,6 +11,9 @@ const paymentRoutes = require('./routes/payments');
 const dashboardRoutes = require('./routes/dashboard');
 const sessionRoutes = require('./routes/sessions');
 const uploadRoutes = require('./routes/uploads');
+const notificationRoutes = require('./routes/notifications');
+const walletRoutes = require('./routes/wallet');
+const siteRoutes = require('./routes/site');
 
 const app = express();
 
@@ -33,8 +36,11 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/uploads', uploadRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/wallet', walletRoutes);
+app.use('/api/site', siteRoutes);
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Dr. Wessam Clinic API' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Dr. Wessam Clinic API v2' }));
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

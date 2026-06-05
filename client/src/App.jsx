@@ -13,6 +13,9 @@ import Appointments from './pages/Appointments';
 import Payments from './pages/Payments';
 import Reports from './pages/Reports';
 import PatientPortal from './pages/PatientPortal';
+import Notifications from './pages/Notifications';
+import Wallet from './pages/Wallet';
+import SiteManager from './pages/SiteManager';
 
 const ProtectedRoute = ({ children, role }) => {
   const { user, loading } = useAuth();
@@ -28,7 +31,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={user ? <Navigate to={user.role === 'doctor' ? '/doctor' : '/portal'} /> : <Login />} />
-      
+
       <Route path="/doctor" element={
         <ProtectedRoute role="doctor"><DoctorLayout /></ProtectedRoute>
       }>
@@ -39,6 +42,9 @@ const AppRoutes = () => {
         <Route path="appointments" element={<Appointments />} />
         <Route path="payments" element={<Payments />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="wallet" element={<Wallet />} />
+        <Route path="site" element={<SiteManager />} />
       </Route>
 
       <Route path="/portal" element={

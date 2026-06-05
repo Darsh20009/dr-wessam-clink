@@ -1,1 +1,2 @@
 - [Dr Wessam Clinic Stack](dr-wessam-stack.md) — Full-stack: Vite+React client (port 5000), Express server (port 3001), MongoDB Atlas. Doctor login: 01000000000 / doctor123.
+- [Dr Wessam Features v2](dr-wessam-features-v2.md) — Models/routes added: Notification, Wallet, SiteSettings. Pages added: Notifications, Wallet, SiteManager. Landing loads dynamic content from /api/site.
