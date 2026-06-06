@@ -134,12 +134,16 @@ export default function DoctorLayout() {
             minHeight: '68px',
           }}>
             <div style={{
-              width: '40px', height: '40px', borderRadius: '11px',
-              background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+              width: '42px', height: '42px', borderRadius: '11px',
+              background: 'white',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '20px', flexShrink: 0,
-              boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
-            }}>🦷</div>
+              flexShrink: 0,
+              boxShadow: '0 4px 12px rgba(37,99,235,0.2)',
+              border: '1px solid #e2e8f0',
+              overflow: 'hidden',
+            }}>
+              <img src="/logo.png" alt="شعار العيادة" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
+            </div>
 
             {sidebarOpen && (
               <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>

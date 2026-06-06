@@ -383,11 +383,14 @@ export default function Landing() {
         <nav className={`l-nav${scrolled ? ' scrolled' : ''}`}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
-              width: '42px', height: '42px', borderRadius: '11px',
-              background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+              width: '44px', height: '44px', borderRadius: '11px',
+              background: 'white', flexShrink: 0,
+              boxShadow: '0 4px 12px rgba(37,99,235,0.18)',
+              border: '1.5px solid #e2e8f0', overflow: 'hidden',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '20px', flexShrink: 0, boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
-            }}>🦷</div>
+            }}>
+              <img src="/logo.png" alt="شعار العيادة" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+            </div>
             <div>
               <div style={{ fontWeight: 900, fontSize: '16px', color: '#0f172a' }}>{settings.doctorName}</div>
               <div style={{ fontSize: '11px', color: '#64748b', marginTop: '1px' }}>{settings.doctorTitle}</div>
@@ -448,11 +451,14 @@ export default function Landing() {
               <div className="l-hero-card">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid #f1f5f9' }}>
                   <div style={{
-                    width: '60px', height: '60px', borderRadius: '16px',
-                    background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+                    width: '64px', height: '64px', borderRadius: '16px',
+                    background: 'white', flexShrink: 0,
+                    boxShadow: '0 8px 24px rgba(37,99,235,0.15)',
+                    border: '2px solid #e2e8f0', overflow: 'hidden',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '28px', flexShrink: 0, boxShadow: '0 8px 20px rgba(37,99,235,0.3)',
-                  }}>🦷</div>
+                  }}>
+                    <img src="/logo.png" alt="شعار العيادة" style={{ width: '58px', height: '58px', objectFit: 'contain' }} />
+                  </div>
                   <div>
                     <div style={{ fontWeight: 900, fontSize: '18px', color: '#0f172a' }}>{settings.doctorName}</div>
                     <div style={{ fontSize: '13px', color: '#2563eb', fontWeight: 600, marginTop: '2px' }}>{settings.doctorTitle}</div>
@@ -752,7 +758,9 @@ export default function Landing() {
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexWrap: 'wrap', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #2563eb, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🦷</div>
+                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+                  <img src="/logo.png" alt="شعار العيادة" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
+                </div>
                 <div>
                   <div style={{ color: 'white', fontWeight: 800 }}>{settings.doctorName}</div>
                   <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '1px' }}>{settings.doctorTitle}</div>

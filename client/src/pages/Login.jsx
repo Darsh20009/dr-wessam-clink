@@ -173,12 +173,15 @@ export default function Login() {
 
           {/* Logo */}
           <div style={{
-            width: '88px', height: '88px', borderRadius: '24px',
-            background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+            width: '100px', height: '100px', borderRadius: '24px',
+            background: 'white', marginBottom: '24px',
+            boxShadow: '0 12px 32px rgba(37,99,235,0.2), 0 4px 12px rgba(0,0,0,0.08)',
+            border: '2px solid #e2e8f0',
+            overflow: 'hidden',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '40px', marginBottom: '24px',
-            boxShadow: '0 12px 32px rgba(37,99,235,0.35), 0 4px 12px rgba(37,99,235,0.2)',
-          }}>🦷</div>
+          }}>
+            <img src="/logo.png" alt="شعار عيادة د. وسام يوسف" style={{ width: '94px', height: '94px', objectFit: 'contain' }} />
+          </div>
 
           <h1 style={{ color: '#0f172a', fontSize: '32px', fontWeight: 900, textAlign: 'center', marginBottom: '6px', lineHeight: 1.25 }}>
             عيادة د. وسام يوسف

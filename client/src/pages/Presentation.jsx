@@ -196,7 +196,9 @@ export default function Presentation() {
         {/* ── NAV ── */}
         <nav className="p-nav">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'linear-gradient(135deg, #2563eb, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '19px', boxShadow: '0 4px 12px rgba(37,99,235,0.3)' }}>🦷</div>
+            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 2px 8px rgba(37,99,235,0.15)', border: '1px solid #e2e8f0' }}>
+              <img src="/logo.png" alt="شعار العيادة" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
+            </div>
             <div>
               <div style={{ fontWeight: 900, fontSize: '15px', color: '#0f172a' }}>دليل النظام</div>
               <div style={{ fontSize: '11px', color: '#64748b' }}>عيادة د. وسام يوسف</div>
