@@ -16,6 +16,7 @@ import PatientPortal from './pages/PatientPortal';
 import Notifications from './pages/Notifications';
 import Wallet from './pages/Wallet';
 import SiteManager from './pages/SiteManager';
+import Settings from './pages/Settings';
 
 const ProtectedRoute = ({ children, role }) => {
   const { user, loading } = useAuth();
@@ -45,6 +46,7 @@ const AppRoutes = () => {
         <Route path="notifications" element={<Notifications />} />
         <Route path="wallet" element={<Wallet />} />
         <Route path="site" element={<SiteManager />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
 
       <Route path="/portal" element={

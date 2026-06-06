@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import {
   FiHome, FiUsers, FiCalendar, FiDollarSign, FiBarChart2,
-  FiMenu, FiLogOut, FiChevronRight, FiBell, FiCreditCard, FiGlobe
+  FiMenu, FiLogOut, FiChevronRight, FiBell, FiCreditCard, FiGlobe, FiSettings
 } from 'react-icons/fi';
+import PushNotifBell from './PushNotifBell';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const navItems = [
   { to: '/doctor', icon: <FiHome />, label: 'لوحة التحكم', end: true },
@@ -16,6 +19,7 @@ const navItems = [
   { to: '/doctor/reports', icon: <FiBarChart2 />, label: 'التقارير' },
   { to: '/doctor/notifications', icon: <FiBell />, label: 'الإشعارات' },
   { to: '/doctor/site', icon: <FiGlobe />, label: 'إدارة الموقع' },
+  { to: '/doctor/settings', icon: <FiSettings />, label: 'الإعدادات' },
 ];
 
 export default function DoctorLayout() {
@@ -23,6 +27,25 @@ export default function DoctorLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const handleNotification = useCallback((data) => {
+    toast(
+      <div style={{ direction: 'rtl' }}>
+        <div style={{ fontWeight: 700 }}>{data.title}</div>
+        <div style={{ fontSize: '13px', color: '#64748b' }}>{data.body}</div>
+      </div>,
+      { icon: '🔔', duration: 5000 }
+    );
+    setUnreadCount(n => n + 1);
+  }, []);
+
+  const { connectWs, disconnectWs } = usePushNotifications({ onNotification: handleNotification });
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) connectWs(token);
+    return () => disconnectWs();
+  }, [connectWs, disconnectWs]);
 
   useEffect(() => {
     const fetchNotifCount = () => {
@@ -111,8 +134,7 @@ export default function DoctorLayout() {
             width: '100%', padding: '10px 12px', borderRadius: '8px',
             background: 'rgba(239,68,68,0.2)', border: 'none',
             color: '#fca5a5', fontSize: '14px', cursor: 'pointer',
-            fontFamily: 'Cairo, sans-serif',
-            transition: 'background 0.2s',
+            fontFamily: 'Cairo, sans-serif', transition: 'background 0.2s',
           }}>
             <FiLogOut style={{ flexShrink: 0 }} />
             {sidebarOpen && 'تسجيل الخروج'}
@@ -121,9 +143,34 @@ export default function DoctorLayout() {
       </aside>
 
       {/* Main */}
-      <main style={{ flex: 1, padding: '28px', overflowX: 'hidden', minWidth: 0 }}>
-        <Outlet />
-      </main>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        {/* Top bar */}
+        <div style={{
+          background: 'white', borderBottom: '1px solid #e2e8f0',
+          padding: '12px 28px', display: 'flex', alignItems: 'center',
+          justifyContent: 'flex-end', gap: '10px', position: 'sticky', top: 0, zIndex: 10,
+        }}>
+          <PushNotifBell />
+          <NavLink to="/doctor/notifications" style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: '20px', padding: '6px', display: 'flex', alignItems: 'center' }}>
+            <FiBell />
+            {unreadCount > 0 && (
+              <span style={{
+                position: 'absolute', top: '2px', right: '2px',
+                background: '#ef4444', color: 'white',
+                borderRadius: '50%', width: '14px', height: '14px',
+                fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 800,
+              }}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+            )}
+          </NavLink>
+          <NavLink to="/doctor/settings" style={{ background: '#f1f5f9', border: 'none', borderRadius: '8px', padding: '6px 12px', color: '#475569', fontSize: '13px', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <FiSettings style={{ fontSize: '14px' }} /> الإعدادات
+          </NavLink>
+        </div>
+        <main style={{ flex: 1, padding: '28px', overflowX: 'hidden' }}>
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

@@ -13,6 +13,11 @@ MONGODB_URI = "mongodb+srv://dr-wessam:ASDfgh123@dr-wessam.ebf5koa.mongodb.net/?
 JWT_SECRET = "dr-wessam-clinic-secret-key-2026"
 PORT = "3001"
 NODE_ENV = "development"
+VAPID_PUBLIC_KEY = "BOarTTY-bBOJCAPW5-7XZD3AA5S6GA5HtasvpcoKTrrxGE0Vi9TljJsUjeZ9kk27299dOUOiyhUk-HRfOBCxK0A"
+VAPID_PRIVATE_KEY = "NjwGhpl72tECmd3Q8CwL8Eej-QU5sMM3yrvY74QQ2bk"
+VAPID_EMAIL = "mailto:admin@dr-wessam.online"
+RP_ID = "f6c3e29c-ae1e-487d-8ff0-27ecf678574b-00-36xd8mrgw9txr.picard.replit.dev"
+ORIGIN = "https://f6c3e29c-ae1e-487d-8ff0-27ecf678574b-00-36xd8mrgw9txr.picard.replit.dev"
 
 [workflows]
 runButton = "Project"
