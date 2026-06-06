@@ -69,10 +69,14 @@ router.post('/doctor/login', async (req, res) => {
 
 router.post('/seed-doctor', async (req, res) => {
   try {
-    const existing = await User.findOne({ role: 'doctor' });
-    if (existing) return res.json({ message: 'Doctor already exists' });
-    
-    const doctor = new User({
+    let doctor = await User.findOne({ role: 'doctor' });
+    if (doctor) {
+      doctor.phone = '01156798324';
+      doctor.name = 'د. وسام يوسف';
+      await doctor.save();
+      return res.json({ message: 'Doctor updated', phone: '01156798324' });
+    }
+    doctor = new User({
       name: 'د. وسام يوسف',
       phone: '01156798324',
       password: 'doctor123',
