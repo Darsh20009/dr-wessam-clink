@@ -172,8 +172,30 @@ const STYLE = `
   .stat-num { font-size: 52px; font-weight: 900; line-height: 1; margin-bottom: 8px; }
   .stat-label { font-size: 14px; color: rgba(255,255,255,0.55); }
 
-  .nav-link { color: rgba(255,255,255,0.7); font-weight: 600; font-size: 14px; text-decoration: none; transition: color 0.2s; padding: 6px 4px; }
-  .nav-link:hover { color: white; }
+  .nav-pill-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50px;
+    padding: 5px;
+    backdrop-filter: blur(20px);
+  }
+
+  .nav-link {
+    display: flex; align-items: center; gap: 6px;
+    color: rgba(255,255,255,0.6); font-weight: 600; font-size: 13px;
+    text-decoration: none; padding: 8px 16px; border-radius: 40px;
+    transition: all 0.25s; white-space: nowrap; position: relative;
+  }
+  .nav-link:hover {
+    color: white;
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 0 20px rgba(14,165,233,0.15);
+  }
+  .nav-link .nav-icon { font-size: 15px; transition: transform 0.25s; }
+  .nav-link:hover .nav-icon { transform: scale(1.2); }
 
   .faq-item { border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; margin-bottom: 10px; overflow: hidden; transition: border-color 0.2s; }
   .faq-item.open { border-color: rgba(14,165,233,0.3); }
@@ -234,12 +256,22 @@ export default function Landing() {
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>{settings.doctorTitle}</div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
-            <a href="#about" className="nav-link">عن الطبيب</a>
-            <a href="#services" className="nav-link">الخدمات</a>
-            <a href="#reviews" className="nav-link">آراء المرضى</a>
-            <a href="#contact" className="nav-link">تواصل معنا</a>
-            <button onClick={() => navigate('/login')} className="btn-glow" style={{ padding: '10px 22px', fontSize: '14px', borderRadius: '10px' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div className="nav-pill-container">
+              <a href="#about" className="nav-link">
+                <span className="nav-icon">👨‍⚕️</span> عن الطبيب
+              </a>
+              <a href="#services" className="nav-link">
+                <span className="nav-icon">🦷</span> الخدمات
+              </a>
+              <a href="#reviews" className="nav-link">
+                <span className="nav-icon">⭐</span> آراء المرضى
+              </a>
+              <a href="#contact" className="nav-link">
+                <span className="nav-icon">📞</span> تواصل معنا
+              </a>
+            </div>
+            <button onClick={() => navigate('/login')} className="btn-glow" style={{ padding: '10px 22px', fontSize: '14px', borderRadius: '50px', gap: '8px' }}>
               <FiUser size={14} /> دخول النظام
             </button>
           </div>
