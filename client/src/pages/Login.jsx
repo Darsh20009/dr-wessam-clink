@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { FiLock, FiEye, FiEyeOff, FiArrowRight, FiKey, FiUser } from 'react-icons/fi';
-import { FaWhatsapp } from 'react-icons/fa';
+import { FaWhatsapp, FaPhone } from 'react-icons/fa';
 import { PasskeyLoginButton } from '../components/PasskeyButton';
 
 const STYLE = `
@@ -229,7 +229,7 @@ export default function Login() {
             <a href="tel:01156798324" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none', transition: 'color 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.color = 'white'}
               onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}>
-              📞 +20 115 679 8324
+              <FaPhone size={11} /> +20 115 679 8324
             </a>
           </div>
 

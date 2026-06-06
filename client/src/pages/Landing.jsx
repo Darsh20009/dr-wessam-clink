@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaWhatsapp, FaMapMarkerAlt, FaPhone, FaStar, FaGraduationCap, FaTrophy, FaInstagram, FaFacebook } from 'react-icons/fa';
-import { FiCalendar, FiUser, FiChevronDown, FiClock, FiAward, FiCheck, FiArrowLeft } from 'react-icons/fi';
+import { FaWhatsapp, FaMapMarkerAlt, FaPhone, FaStar, FaGraduationCap, FaTrophy } from 'react-icons/fa';
+import { FiCalendar, FiUser, FiChevronDown, FiClock, FiAward, FiCheck, FiArrowLeft, FiHeart, FiZap, FiShield, FiGrid, FiStar, FiMessageCircle } from 'react-icons/fi';
 
 const defaultSettings = {
   heroTitle: 'ابتسامة أجمل تبدأ من د. وسام يوسف',
@@ -49,6 +49,7 @@ const defaultSettings = {
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
 
+  body { background: #030b1a !important; }
   .landing-root { font-family: 'Cairo', sans-serif; direction: rtl; color: #f1f5f9; background: #030b1a; }
 
   @keyframes float1 { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-30px) rotate(5deg)} }
@@ -175,27 +176,35 @@ const STYLE = `
   .nav-pill-container {
     display: flex;
     align-items: center;
-    gap: 4px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    gap: 2px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 50px;
-    padding: 5px;
-    backdrop-filter: blur(20px);
+    padding: 4px;
+    backdrop-filter: blur(24px);
   }
 
   .nav-link {
-    display: flex; align-items: center; gap: 6px;
-    color: rgba(255,255,255,0.6); font-weight: 600; font-size: 13px;
-    text-decoration: none; padding: 8px 16px; border-radius: 40px;
-    transition: all 0.25s; white-space: nowrap; position: relative;
+    display: flex; align-items: center; gap: 7px;
+    color: rgba(255,255,255,0.55); font-weight: 600; font-size: 13px;
+    text-decoration: none; padding: 8px 18px; border-radius: 40px;
+    transition: all 0.22s; white-space: nowrap;
+    letter-spacing: 0.2px;
   }
+  .nav-link svg { opacity: 0.7; transition: opacity 0.22s; }
   .nav-link:hover {
     color: white;
-    background: rgba(255,255,255,0.1);
-    box-shadow: 0 0 20px rgba(14,165,233,0.15);
+    background: rgba(14,165,233,0.12);
+    box-shadow: inset 0 0 0 1px rgba(14,165,233,0.2);
   }
-  .nav-link .nav-icon { font-size: 15px; transition: transform 0.25s; }
-  .nav-link:hover .nav-icon { transform: scale(1.2); }
+  .nav-link:hover svg { opacity: 1; }
+
+  .service-icon-box {
+    width: 64px; height: 64px; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; margin: 0 auto 20px; flex-shrink: 0;
+    position: relative; z-index: 1;
+  }
 
   .faq-item { border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; margin-bottom: 10px; overflow: hidden; transition: border-color 0.2s; }
   .faq-item.open { border-color: rgba(14,165,233,0.3); }
@@ -234,6 +243,15 @@ export default function Landing() {
   const activeReviews = (settings.reviews || []).filter(r => r.isActive !== false);
   const activeFaqs = (settings.faqs || []).filter(f => f.isActive !== false);
 
+  const SERVICE_ICONS = [
+    { icon: <FiAward />, color: '#0ea5e9', bg: 'rgba(14,165,233,0.12)', border: 'rgba(14,165,233,0.25)' },
+    { icon: <FiShield />, color: '#6366f1', bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.25)' },
+    { icon: <FiHeart />, color: '#34d399', bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.25)' },
+    { icon: <FiUser />, color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)' },
+    { icon: <FiStar />, color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.25)' },
+    { icon: <FiZap />, color: '#a78bfa', bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.25)' },
+  ];
+
   return (
     <>
       <style>{STYLE}</style>
@@ -256,23 +274,23 @@ export default function Landing() {
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>{settings.doctorTitle}</div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <div className="nav-pill-container">
               <a href="#about" className="nav-link">
-                <span className="nav-icon">👨‍⚕️</span> عن الطبيب
+                <FiUser size={13} /> عن الطبيب
               </a>
               <a href="#services" className="nav-link">
-                <span className="nav-icon">🦷</span> الخدمات
+                <FiGrid size={13} /> الخدمات
               </a>
               <a href="#reviews" className="nav-link">
-                <span className="nav-icon">⭐</span> آراء المرضى
+                <FiStar size={13} /> آراء المرضى
               </a>
               <a href="#contact" className="nav-link">
-                <span className="nav-icon">📞</span> تواصل معنا
+                <FiMessageCircle size={13} /> تواصل معنا
               </a>
             </div>
-            <button onClick={() => navigate('/login')} className="btn-glow" style={{ padding: '10px 22px', fontSize: '14px', borderRadius: '50px', gap: '8px' }}>
-              <FiUser size={14} /> دخول النظام
+            <button onClick={() => navigate('/login')} className="btn-glow" style={{ padding: '10px 24px', fontSize: '13px', borderRadius: '50px', gap: '8px', letterSpacing: '0.3px' }}>
+              <FiUser size={13} /> دخول النظام
             </button>
           </div>
         </nav>
@@ -294,7 +312,7 @@ export default function Landing() {
 
           <div style={{ maxWidth: '760px', position: 'relative', zIndex: 2, animation: 'fadeUp 0.8s ease-out' }}>
             <div className="section-tag" style={{ marginBottom: '28px' }}>
-              <span style={{ fontSize: '16px' }}>🦷</span> عيادة تقويم الأسنان المتخصصة
+              <FiAward size={14} /> عيادة تقويم الأسنان المتخصصة
             </div>
 
             <h1 style={{ fontSize: 'clamp(36px, 5.5vw, 68px)', fontWeight: 900, lineHeight: 1.2, marginBottom: '24px', color: 'white' }}>
@@ -413,7 +431,9 @@ export default function Landing() {
                     </h4>
                     {settings.achievements.map((a, i) => (
                       <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '14px' }}>
-                        <span style={{ fontSize: '20px', flexShrink: 0 }}>🏆</span>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <FaTrophy style={{ color: '#f59e0b', fontSize: '14px' }} />
+                        </div>
                         <div>
                           <div style={{ fontWeight: 700, fontSize: '14px', color: 'white' }}>{a.title}</div>
                           {a.description && <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '3px' }}>{a.description}</div>}
@@ -438,43 +458,46 @@ export default function Landing() {
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '16px' }}>خدمات متكاملة في تقويم الأسنان بأعلى معايير الجودة</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
-              {activeServices.map((s, i) => (
-                <div key={i} className="service-card">
-                  <div style={{ fontSize: '52px', marginBottom: '18px', lineHeight: 1, position: 'relative', zIndex: 1 }}>{s.icon}</div>
-                  <h3 style={{ fontWeight: 800, fontSize: '17px', marginBottom: '10px', color: 'white', position: 'relative', zIndex: 1 }}>{s.title}</h3>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: 1.8, position: 'relative', zIndex: 1 }}>{s.description}</p>
-                </div>
-              ))}
+              {activeServices.map((s, i) => {
+                const si = SERVICE_ICONS[i % SERVICE_ICONS.length];
+                return (
+                  <div key={i} className="service-card">
+                    <div className="service-icon-box" style={{ background: si.bg, border: `1px solid ${si.border}`, color: si.color, fontSize: '24px' }}>
+                      {si.icon}
+                    </div>
+                    <h3 style={{ fontWeight: 800, fontSize: '17px', marginBottom: '10px', color: 'white', position: 'relative', zIndex: 1 }}>{s.title}</h3>
+                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: 1.8, position: 'relative', zIndex: 1 }}>{s.description}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* ── BEFORE / AFTER ── */}
+        {/* ── PROCESS / HOW IT WORKS ── */}
         <section style={{ padding: '100px 5%', background: 'linear-gradient(135deg, #040d1e, #061428, #050f20)' }}>
           <div style={{ maxWidth: '960px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-              <div className="section-tag">النتائج</div>
+              <div className="section-tag">كيف نعمل</div>
               <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, color: 'white' }}>
-                قبل <span className="gold-text">وبعد</span> العلاج
+                رحلتك نحو <span className="gold-text">ابتسامة مثالية</span>
               </h2>
-              <p style={{ color: 'rgba(255,255,255,0.5)', marginTop: '12px' }}>نتائج حقيقية لمرضى عيادتنا</p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', marginTop: '12px' }}>أربع خطوات بسيطة للوصول إلى نتيجتك</p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-              {[1, 2, 3].map(i => (
-                <div key={i} className="glass-card" style={{ overflow: 'hidden', padding: 0 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-                    <div style={{ padding: '28px 20px', background: 'rgba(239,68,68,0.06)', borderLeft: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '44px' }}>🦷</span>
-                      <span style={{ fontSize: '12px', color: 'rgba(255,100,100,0.9)', fontWeight: 700, background: 'rgba(239,68,68,0.1)', padding: '3px 12px', borderRadius: '20px' }}>قبل</span>
-                    </div>
-                    <div style={{ padding: '28px 20px', background: 'rgba(14,165,233,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '44px' }}>😁</span>
-                      <span style={{ fontSize: '12px', color: '#38bdf8', fontWeight: 700, background: 'rgba(14,165,233,0.1)', padding: '3px 12px', borderRadius: '20px' }}>بعد</span>
-                    </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+              {[
+                { num: '01', title: 'الفحص المجاني', desc: 'نقيّم حالتك ونضع خطة علاج مناسبة', icon: <FiUser size={20} />, color: '#0ea5e9' },
+                { num: '02', title: 'خطة العلاج', desc: 'نصمم لك خطة علاج دقيقة بأحدث التقنيات', icon: <FiCalendar size={20} />, color: '#6366f1' },
+                { num: '03', title: 'بدء العلاج', desc: 'نبدأ رحلة علاجك بمتابعة دورية منتظمة', icon: <FiAward size={20} />, color: '#34d399' },
+                { num: '04', title: 'النتيجة المثالية', desc: 'نحقق لك الابتسامة التي تحلم بها', icon: <FiCheck size={20} />, color: '#f59e0b' },
+              ].map((step, i) => (
+                <div key={i} className="glass-card" style={{ padding: '32px 24px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: '16px', left: '20px', fontSize: '48px', fontWeight: 900, color: `${step.color}15`, lineHeight: 1, fontFamily: 'monospace' }}>{step.num}</div>
+                  <div style={{ width: '50px', height: '50px', borderRadius: '14px', background: `${step.color}18`, border: `1px solid ${step.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: step.color, marginBottom: '16px' }}>
+                    {step.icon}
                   </div>
-                  <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>حالة تقويم ناجحة #{i}</p>
-                  </div>
+                  <h4 style={{ fontWeight: 800, color: 'white', fontSize: '15px', marginBottom: '8px' }}>{step.title}</h4>
+                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '13px', lineHeight: 1.7 }}>{step.desc}</p>
                 </div>
               ))}
             </div>
