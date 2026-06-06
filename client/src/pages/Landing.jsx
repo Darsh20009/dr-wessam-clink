@@ -1,18 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaWhatsapp, FaMapMarkerAlt, FaPhone, FaStar, FaGraduationCap, FaTrophy } from 'react-icons/fa';
-import { FiCalendar, FiUser, FiChevronDown, FiClock, FiAward, FiCheck, FiArrowLeft, FiHeart, FiZap, FiShield, FiGrid, FiStar, FiMessageCircle } from 'react-icons/fi';
+import { FaWhatsapp, FaStar, FaGraduationCap, FaPhone } from 'react-icons/fa';
+import { FiCalendar, FiUser, FiCheck, FiArrowLeft, FiHeart, FiZap, FiShield, FiStar, FiMessageCircle, FiAward, FiGrid, FiMapPin, FiClock, FiChevronDown, FiPhone } from 'react-icons/fi';
 
 const defaultSettings = {
-  heroTitle: 'ابتسامة أجمل تبدأ من د. وسام يوسف',
+  heroTitle: 'ابتسامة أجمل تبدأ من هنا',
   heroSubtitle: 'خبرة متخصصة في تقويم الأسنان بأحدث التقنيات وأعلى معايير الجودة',
   doctorName: 'د. وسام يوسف',
   doctorTitle: 'أخصائي تقويم الأسنان',
   doctorBio: 'طبيب متخصص في تقويم الأسنان بخبرة أكثر من 10 سنوات في علاج حالات التقويم المختلفة للأطفال والبالغين.',
-  doctorExperience: '+10 سنوات خبرة',
-  doctorPatients: '+1000 مريض سعيد',
-  doctorSuccess: '98% نسبة نجاح',
   phone: '01156798324',
   whatsapp: '201156798324',
   address: 'القاهرة، مصر',
@@ -47,182 +44,316 @@ const defaultSettings = {
 };
 
 const STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
-  body { background: #030b1a !important; }
-  .landing-root { font-family: 'Cairo', sans-serif; direction: rtl; color: #f1f5f9; background: #030b1a; }
+  .landing-root { font-family: 'Cairo', sans-serif; direction: rtl; color: #0f172a; background: #fff; -webkit-font-smoothing: antialiased; }
 
-  @keyframes float1 { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-30px) rotate(5deg)} }
-  @keyframes float2 { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-20px) rotate(-8deg)} }
-  @keyframes float3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
-  @keyframes pulse-ring { 0%{transform:scale(1);opacity:0.8} 100%{transform:scale(1.6);opacity:0} }
-  @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes rotate-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-  @keyframes gradient-shift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-  @keyframes counter { from{opacity:0;transform:scale(0.5)} to{opacity:1;transform:scale(1)} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  @keyframes shimmer-line { 0%{width:0} 100%{width:60px} }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  @keyframes countUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
-  .hero-gradient {
-    background: linear-gradient(135deg, #030b1a 0%, #061428 30%, #0a1f3d 60%, #062040 100%);
-    position: relative;
-    overflow: hidden;
+  /* NAV */
+  .l-nav {
+    position: sticky; top:0; z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 6%;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 68px;
+    transition: box-shadow 0.3s;
   }
+  .l-nav.scrolled { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
 
-  .glass-card {
-    background: rgba(255,255,255,0.04);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 20px;
+  .l-nav-links { display: flex; align-items: center; gap: 4px; }
+  .l-nav-link {
+    padding: 7px 14px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; color: #475569;
+    text-decoration: none; transition: all 0.18s;
+    display: flex; align-items: center; gap: 6px;
   }
+  .l-nav-link:hover { color: #2563eb; background: #eff6ff; }
 
-  .glass-card-blue {
-    background: rgba(14,165,233,0.06);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(14,165,233,0.15);
-    border-radius: 20px;
-  }
-
-  .gradient-text {
-    background: linear-gradient(135deg, #ffffff 0%, #93c5fd 40%, #0ea5e9 70%, #38bdf8 100%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: shimmer 4s linear infinite;
-  }
-
-  .gold-text {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .btn-glow {
-    background: linear-gradient(135deg, #0ea5e9, #2563eb);
-    color: white;
-    border: none;
-    padding: 16px 36px;
-    border-radius: 14px;
-    font-weight: 800;
-    font-size: 16px;
-    cursor: pointer;
+  .l-nav-cta {
+    background: #2563eb; color: white;
+    padding: 9px 20px; border-radius: 9px;
+    font-size: 14px; font-weight: 700;
+    border: none; cursor: pointer;
     font-family: 'Cairo', sans-serif;
-    transition: all 0.3s;
-    box-shadow: 0 0 30px rgba(14,165,233,0.35), 0 4px 15px rgba(0,0,0,0.3);
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-  }
-  .btn-glow:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(14,165,233,0.5), 0 8px 25px rgba(0,0,0,0.4); }
-
-  .btn-outline-glass {
-    background: rgba(255,255,255,0.07);
-    color: white;
-    border: 1.5px solid rgba(255,255,255,0.2);
-    padding: 16px 36px;
-    border-radius: 14px;
-    font-weight: 700;
-    font-size: 16px;
-    cursor: pointer;
-    font-family: 'Cairo', sans-serif;
-    transition: all 0.3s;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    backdrop-filter: blur(10px);
-  }
-  .btn-outline-glass:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.35); transform: translateY(-2px); }
-
-  .service-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 20px;
-    padding: 32px 24px;
-    text-align: center;
-    transition: all 0.35s;
-    cursor: default;
-    position: relative;
-    overflow: hidden;
-  }
-  .service-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(14,165,233,0.08), rgba(37,99,235,0.05));
-    opacity: 0;
-    transition: opacity 0.35s;
-    border-radius: 20px;
-  }
-  .service-card:hover { transform: translateY(-6px); border-color: rgba(14,165,233,0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 30px rgba(14,165,233,0.1); }
-  .service-card:hover::before { opacity: 1; }
-
-  .review-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 20px;
-    padding: 28px;
-    transition: all 0.3s;
-  }
-  .review-card:hover { border-color: rgba(14,165,233,0.25); transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,0.25); }
-
-  .stat-item { text-align: center; }
-  .stat-num { font-size: 52px; font-weight: 900; line-height: 1; margin-bottom: 8px; }
-  .stat-label { font-size: 14px; color: rgba(255,255,255,0.55); }
-
-  .nav-pill-container {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 50px;
-    padding: 4px;
-    backdrop-filter: blur(24px);
-  }
-
-  .nav-link {
     display: flex; align-items: center; gap: 7px;
-    color: rgba(255,255,255,0.55); font-weight: 600; font-size: 13px;
-    text-decoration: none; padding: 8px 18px; border-radius: 40px;
-    transition: all 0.22s; white-space: nowrap;
-    letter-spacing: 0.2px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+    text-decoration: none;
   }
-  .nav-link svg { opacity: 0.7; transition: opacity 0.22s; }
-  .nav-link:hover {
-    color: white;
-    background: rgba(14,165,233,0.12);
-    box-shadow: inset 0 0 0 1px rgba(14,165,233,0.2);
-  }
-  .nav-link:hover svg { opacity: 1; }
+  .l-nav-cta:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
 
-  .service-icon-box {
-    width: 64px; height: 64px; border-radius: 18px;
+  /* HERO */
+  .l-hero {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 40%, #f5f0ff 100%);
+    padding: 90px 6% 80px;
+    position: relative; overflow: hidden;
+    min-height: 88vh; display: flex; align-items: center;
+  }
+  .l-hero::before {
+    content: '';
+    position: absolute; inset:0;
+    background:
+      radial-gradient(ellipse 800px 600px at 80% 50%, rgba(37,99,235,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 400px at 20% 80%, rgba(6,182,212,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .l-hero-grid {
+    max-width: 1200px; margin: 0 auto; width: 100%;
+    display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 60px; align-items: center;
+    position: relative; z-index:1;
+  }
+
+  .l-hero-tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: white; color: #2563eb;
+    border: 1.5px solid #bfdbfe; border-radius: 30px;
+    padding: 6px 14px; font-size: 13px; font-weight: 700;
+    margin-bottom: 22px; box-shadow: 0 2px 8px rgba(37,99,235,0.1);
+    animation: fadeUp 0.5s ease-out;
+  }
+  .l-hero-tag .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #2563eb; animation: pulse-dot 1.5s infinite;
+  }
+
+  .l-hero-title {
+    font-size: clamp(32px, 4.5vw, 58px); font-weight: 900;
+    line-height: 1.18; color: #0f172a;
+    margin-bottom: 20px; letter-spacing: -0.5px;
+    animation: fadeUp 0.6s ease-out 0.1s both;
+  }
+  .l-hero-title .blue { color: #2563eb; }
+  .l-hero-title .teal { color: #0891b2; }
+
+  .l-hero-sub {
+    font-size: 17px; color: #475569; line-height: 1.8;
+    margin-bottom: 28px; max-width: 480px;
+    animation: fadeUp 0.6s ease-out 0.2s both;
+  }
+
+  .l-hero-checks { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; animation: fadeUp 0.6s ease-out 0.3s both; }
+  .l-hero-check {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14.5px; font-weight: 500; color: #334155;
+  }
+  .l-hero-check-icon {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #dbeafe; color: #2563eb;
     display: flex; align-items: center; justify-content: center;
-    font-size: 26px; margin: 0 auto 20px; flex-shrink: 0;
+    flex-shrink: 0; font-size: 12px;
+  }
+
+  .l-hero-btns { display: flex; gap: 12px; flex-wrap: wrap; animation: fadeUp 0.6s ease-out 0.4s both; }
+
+  .l-btn-primary {
+    background: #2563eb; color: white;
+    padding: 14px 28px; border-radius: 11px;
+    font-size: 15px; font-weight: 800;
+    border: none; cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    display: inline-flex; align-items: center; gap: 9px;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+    transition: all 0.2s;
+  }
+  .l-btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 10px 28px rgba(37,99,235,0.45); }
+
+  .l-btn-secondary {
+    background: white; color: #334155;
+    padding: 14px 28px; border-radius: 11px;
+    font-size: 15px; font-weight: 700;
+    border: 1.5px solid #e2e8f0; cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    display: inline-flex; align-items: center; gap: 9px;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: all 0.2s;
+  }
+  .l-btn-secondary:hover { border-color: #bfdbfe; color: #2563eb; background: #f8fbff; transform: translateY(-1px); }
+
+  /* HERO CARD */
+  .l-hero-card {
+    background: white; border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1), 0 4px 16px rgba(37,99,235,0.08);
+    padding: 32px; border: 1px solid #e8f0fe;
+    animation: fadeUp 0.7s ease-out 0.2s both;
+    position: relative;
+  }
+  .l-hero-card::before {
+    content: ''; position: absolute; top: -1px; left: -1px; right: -1px;
+    height: 4px; border-radius: 20px 20px 0 0;
+    background: linear-gradient(90deg, #2563eb, #06b6d4);
+  }
+
+  /* STATS BAR */
+  .l-stats-bar {
+    background: white; border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 24px 32px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    max-width: 900px; margin: 0 auto;
     position: relative; z-index: 1;
   }
+  .l-stat-item { text-align: center; }
+  .l-stat-num { font-size: 32px; font-weight: 900; line-height: 1; color: #0f172a; letter-spacing: -1px; }
+  .l-stat-label { font-size: 13px; color: #64748b; margin-top: 5px; font-weight: 500; }
+  .l-stat-divider { width: 1px; background: #e2e8f0; }
 
-  .faq-item { border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; margin-bottom: 10px; overflow: hidden; transition: border-color 0.2s; }
-  .faq-item.open { border-color: rgba(14,165,233,0.3); }
-  .faq-btn { width: 100%; padding: 20px 24px; background: rgba(255,255,255,0.03); border: none; display: flex; align-items: center; justify-content: space-between; font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 15px; color: white; cursor: pointer; text-align: right; }
-  .faq-answer { padding: 0 24px 20px; color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.9; }
+  /* SECTION */
+  .l-section { padding: 90px 6%; }
+  .l-section-alt { background: #f8fafc; }
+  .l-section-inner { max-width: 1200px; margin: 0 auto; }
 
-  .orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+  .l-section-header { text-align: center; margin-bottom: 56px; }
+  .l-section-tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: #eff6ff; color: #2563eb;
+    border: 1px solid #bfdbfe; border-radius: 30px;
+    padding: 5px 14px; font-size: 13px; font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .l-section-title {
+    font-size: clamp(26px, 3vw, 40px); font-weight: 900;
+    color: #0f172a; line-height: 1.25; letter-spacing: -0.3px;
+    margin-bottom: 12px;
+  }
+  .l-section-sub { font-size: 16px; color: #64748b; max-width: 560px; margin: 0 auto; line-height: 1.7; }
 
-  .section-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(14,165,233,0.1); border: 1px solid rgba(14,165,233,0.25); color: #38bdf8; padding: 6px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; margin-bottom: 16px; }
+  .l-underline {
+    width: 60px; height: 4px; border-radius: 4px;
+    background: linear-gradient(90deg, #2563eb, #06b6d4);
+    margin: 14px auto 0;
+  }
 
-  .divider-glow { height: 1px; background: linear-gradient(90deg, transparent, rgba(14,165,233,0.4), rgba(37,99,235,0.4), transparent); margin: 0 auto; }
+  /* SERVICE CARD */
+  .l-service-card {
+    background: white; border-radius: 16px;
+    border: 1.5px solid #e2e8f0; padding: 28px 22px;
+    text-align: center; transition: all 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .l-service-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px; background: linear-gradient(90deg, #2563eb, #06b6d4);
+    transform: scaleX(0); transition: transform 0.25s; transform-origin: right;
+  }
+  .l-service-card:hover { border-color: #bfdbfe; transform: translateY(-5px); box-shadow: 0 16px 40px rgba(37,99,235,0.1); }
+  .l-service-card:hover::after { transform: scaleX(1); }
 
-  .contact-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 28px 20px; text-align: center; text-decoration: none; display: block; transition: all 0.3s; }
-  .contact-card:hover { background: rgba(14,165,233,0.08); border-color: rgba(14,165,233,0.3); transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,0.3); }
+  .l-service-icon {
+    width: 64px; height: 64px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; margin: 0 auto 18px;
+  }
 
-  .logo-img { mix-blend-mode: screen; }
-  .logo-img-dark { mix-blend-mode: screen; filter: brightness(1.15) drop-shadow(0 4px 16px rgba(14,165,233,0.4)); }
+  /* REVIEW CARD */
+  .l-review-card {
+    background: white; border-radius: 16px;
+    border: 1.5px solid #e2e8f0; padding: 26px;
+    transition: all 0.2s; position: relative;
+  }
+  .l-review-card::before {
+    content: '"'; position: absolute; top: 14px; right: 20px;
+    font-size: 60px; color: #dbeafe; font-family: serif;
+    line-height: 1; pointer-events: none;
+  }
+  .l-review-card:hover { border-color: #bfdbfe; box-shadow: 0 8px 24px rgba(37,99,235,0.08); }
+
+  /* FAQ */
+  .l-faq-item {
+    border: 1.5px solid #e2e8f0; border-radius: 12px;
+    margin-bottom: 8px; overflow: hidden; transition: border-color 0.2s;
+    background: white;
+  }
+  .l-faq-item.open { border-color: #bfdbfe; box-shadow: 0 4px 16px rgba(37,99,235,0.06); }
+  .l-faq-btn {
+    width: 100%; padding: 18px 22px; background: none; border: none;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 15px;
+    color: #1e293b; cursor: pointer; text-align: right;
+    transition: color 0.2s;
+  }
+  .l-faq-item.open .l-faq-btn { color: #2563eb; }
+  .l-faq-answer { padding: 0 22px 18px; color: #64748b; font-size: 14.5px; line-height: 1.85; }
+  .l-faq-chevron { transition: transform 0.25s; color: #94a3b8; flex-shrink: 0; }
+  .l-faq-item.open .l-faq-chevron { transform: rotate(180deg); color: #2563eb; }
+
+  /* DOCTOR SECTION */
+  .l-doctor-card {
+    background: white; border-radius: 20px;
+    border: 1.5px solid #e2e8f0;
+    padding: 36px; box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+  }
+  .l-cert-item {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 14px 16px; border-radius: 10px;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    margin-bottom: 10px;
+  }
+
+  /* CONTACT CARD */
+  .l-contact-card {
+    background: white; border-radius: 14px;
+    border: 1.5px solid #e2e8f0; padding: 24px 20px;
+    text-align: center; text-decoration: none;
+    display: block; transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .l-contact-card:hover { border-color: #bfdbfe; box-shadow: 0 8px 24px rgba(37,99,235,0.1); transform: translateY(-3px); }
+  .l-contact-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin: 0 auto 12px;
+  }
+
+  /* FOOTER */
+  .l-footer {
+    background: #0f172a; color: rgba(255,255,255,0.65);
+    padding: 48px 6% 24px;
+  }
+
+  /* WA FLOAT */
+  .l-wa-float {
+    position: fixed; bottom: 24px; left: 24px; z-index: 99;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: #25d366; color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 6px 20px rgba(37,211,102,0.45);
+    text-decoration: none; transition: all 0.25s;
+    animation: float 3s ease-in-out infinite;
+  }
+  .l-wa-float:hover { transform: scale(1.1) translateY(-2px); box-shadow: 0 10px 30px rgba(37,211,102,0.55); }
+
+  @media (max-width: 900px) {
+    .l-hero-grid { grid-template-columns: 1fr; }
+    .l-hero { padding: 60px 5% 60px; min-height: auto; }
+    .l-stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .l-stat-divider { display: none; }
+  }
 `;
+
+const SERVICE_COLORS = [
+  { bg: '#eff6ff', border: '#bfdbfe', text: '#2563eb' },
+  { bg: '#f0fdfa', border: '#99f6e4', text: '#0d9488' },
+  { bg: '#fdf4ff', border: '#e9d5ff', text: '#9333ea' },
+  { bg: '#fff7ed', border: '#fed7aa', text: '#ea580c' },
+  { bg: '#f0fdf4', border: '#bbf7d0', text: '#16a34a' },
+  { bg: '#fff1f2', border: '#fecdd3', text: '#e11d48' },
+];
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -234,7 +365,7 @@ export default function Landing() {
     axios.get('/api/site').then(r => {
       if (r.data && r.data._id) setSettings({ ...defaultSettings, ...r.data });
     }).catch(() => {});
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -243,230 +374,180 @@ export default function Landing() {
   const activeReviews = (settings.reviews || []).filter(r => r.isActive !== false);
   const activeFaqs = (settings.faqs || []).filter(f => f.isActive !== false);
 
-  const SERVICE_ICONS = [
-    { icon: <FiAward />, color: '#0ea5e9', bg: 'rgba(14,165,233,0.12)', border: 'rgba(14,165,233,0.25)' },
-    { icon: <FiShield />, color: '#6366f1', bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.25)' },
-    { icon: <FiHeart />, color: '#34d399', bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.25)' },
-    { icon: <FiUser />, color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)' },
-    { icon: <FiStar />, color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.25)' },
-    { icon: <FiZap />, color: '#a78bfa', bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.25)' },
-  ];
-
   return (
     <>
       <style>{STYLE}</style>
       <div className="landing-root">
 
         {/* ── NAVBAR ── */}
-        <nav style={{
-          position: 'sticky', top: 0, zIndex: 100,
-          background: scrolled ? 'rgba(3,11,26,0.92)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
-          padding: '0 5%',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '72px',
-          transition: 'all 0.4s ease',
-        }}>
+        <nav className={`l-nav${scrolled ? ' scrolled' : ''}`}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src="/logo-transparent.png" alt="logo" className="logo-img-dark" style={{ height: '46px', width: '46px', objectFit: 'cover', borderRadius: '12px' }} />
+            <div style={{
+              width: '42px', height: '42px', borderRadius: '11px',
+              background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '20px', flexShrink: 0, boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
+            }}>🦷</div>
             <div>
-              <div style={{ fontWeight: 900, fontSize: '17px', color: 'white', letterSpacing: '0.3px' }}>{settings.doctorName}</div>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>{settings.doctorTitle}</div>
+              <div style={{ fontWeight: 900, fontSize: '16px', color: '#0f172a' }}>{settings.doctorName}</div>
+              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '1px' }}>{settings.doctorTitle}</div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <div className="nav-pill-container">
-              <a href="#about" className="nav-link">
-                <FiUser size={13} /> عن الطبيب
-              </a>
-              <a href="#services" className="nav-link">
-                <FiGrid size={13} /> الخدمات
-              </a>
-              <a href="#reviews" className="nav-link">
-                <FiStar size={13} /> آراء المرضى
-              </a>
-              <a href="#contact" className="nav-link">
-                <FiMessageCircle size={13} /> تواصل معنا
-              </a>
-            </div>
-            <button onClick={() => navigate('/login')} className="btn-glow" style={{ padding: '10px 24px', fontSize: '13px', borderRadius: '50px', gap: '8px', letterSpacing: '0.3px' }}>
-              <FiUser size={13} /> دخول النظام
-            </button>
+
+          <div className="l-nav-links">
+            <a href="#about" className="l-nav-link"><FiUser size={13} /> عن الطبيب</a>
+            <a href="#services" className="l-nav-link"><FiGrid size={13} /> الخدمات</a>
+            <a href="#reviews" className="l-nav-link"><FiStar size={13} /> آراء المرضى</a>
+            <a href="#contact" className="l-nav-link"><FiMessageCircle size={13} /> تواصل معنا</a>
           </div>
+
+          <button onClick={() => navigate('/login')} className="l-nav-cta">
+            <FiUser size={13} /> دخول النظام
+          </button>
         </nav>
 
         {/* ── HERO ── */}
-        <section className="hero-gradient" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '80px 5% 60px', position: 'relative' }}>
-
-          {/* Background orbs */}
-          <div className="orb" style={{ width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%)', top: '-100px', right: '-150px' }} />
-          <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 70%)', bottom: '-100px', left: '10%' }} />
-          <div className="orb" style={{ width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)', top: '30%', left: '40%' }} />
-
-          {/* Floating geometric shapes */}
-          <div style={{ position: 'absolute', top: '15%', right: '12%', width: '80px', height: '80px', border: '1.5px solid rgba(14,165,233,0.25)', borderRadius: '18px', animation: 'float1 7s ease-in-out infinite', transform: 'rotate(20deg)' }} />
-          <div style={{ position: 'absolute', top: '60%', right: '6%', width: '50px', height: '50px', border: '1.5px solid rgba(245,158,11,0.2)', borderRadius: '50%', animation: 'float2 9s ease-in-out infinite' }} />
-          <div style={{ position: 'absolute', bottom: '20%', left: '8%', width: '60px', height: '60px', border: '1.5px solid rgba(14,165,233,0.2)', borderRadius: '12px', animation: 'float3 6s ease-in-out infinite', transform: 'rotate(-15deg)' }} />
-          <div style={{ position: 'absolute', top: '25%', left: '15%', width: '10px', height: '10px', background: '#0ea5e9', borderRadius: '50%', opacity: 0.6, animation: 'float2 5s ease-in-out infinite' }} />
-          <div style={{ position: 'absolute', bottom: '35%', right: '22%', width: '8px', height: '8px', background: '#f59e0b', borderRadius: '50%', opacity: 0.5, animation: 'float1 8s ease-in-out infinite' }} />
-
-          <div style={{ maxWidth: '760px', position: 'relative', zIndex: 2, animation: 'fadeUp 0.8s ease-out' }}>
-            <div className="section-tag" style={{ marginBottom: '28px' }}>
-              <FiAward size={14} /> عيادة تقويم الأسنان المتخصصة
-            </div>
-
-            <h1 style={{ fontSize: 'clamp(36px, 5.5vw, 68px)', fontWeight: 900, lineHeight: 1.2, marginBottom: '24px', color: 'white' }}>
-              ابتسامة أجمل<br />
-              <span className="gradient-text">تبدأ من هنا</span>
-            </h1>
-
-            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '18px', lineHeight: 1.9, marginBottom: '20px', maxWidth: '540px' }}>
-              {settings.heroSubtitle}
-            </p>
-
-            {/* Checkpoints */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '40px' }}>
-              {['خبرة أكثر من 10 سنوات في تقويم الأسنان', 'أحدث التقنيات والمواد العالمية', 'رعاية شاملة ومتابعة دقيقة لكل مريض'].map((t, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.75)', fontSize: '15px' }}>
-                  <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(14,165,233,0.2)', border: '1px solid rgba(14,165,233,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <FiCheck style={{ color: '#38bdf8', fontSize: '12px' }} />
-                  </div>
-                  {t}
-                </div>
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-              <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" className="btn-glow">
-                <FaWhatsapp size={18} /> احجز موعدك الآن
-              </a>
-              <button onClick={() => navigate('/login')} className="btn-outline-glass">
-                <FiUser size={16} /> بوابة المريض
-              </button>
-            </div>
-          </div>
-
-          {/* Stats floating card */}
-          <div style={{ position: 'absolute', bottom: '40px', left: '5%', right: '5%', zIndex: 2 }}>
-            <div className="glass-card" style={{ display: 'flex', justifyContent: 'space-around', padding: '28px 40px', maxWidth: '700px', margin: '0 auto' }}>
-              {[
-                { num: '1000+', label: 'مريض سعيد', color: '#38bdf8' },
-                { num: '98%', label: 'نسبة النجاح', color: '#f59e0b' },
-                { num: '10+', label: 'سنوات خبرة', color: '#34d399' },
-                { num: '5★', label: 'تقييم المرضى', color: '#a78bfa' },
-              ].map((s, i) => (
-                <div key={i} className="stat-item">
-                  <div className="stat-num" style={{ color: s.color }}>{s.num}</div>
-                  <div className="stat-label">{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── ABOUT ── */}
-        <section id="about" style={{ padding: '100px 5%', background: 'linear-gradient(180deg, #030b1a 0%, #061020 100%)' }}>
-          <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-              <div className="section-tag">تعرف على الطبيب</div>
-              <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, color: 'white' }}>
-                نبذة عن <span className="gradient-text">{settings.doctorName}</span>
-              </h2>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'center' }}>
-              {/* Left */}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '28px' }}>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', inset: '-6px', borderRadius: '50%', background: 'linear-gradient(135deg, #0ea5e9, #6366f1)', animation: 'rotate-slow 8s linear infinite', opacity: 0.6 }} />
-                    <img src="/logo-transparent.png" alt="doctor" className="logo-img-dark" style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', position: 'relative', zIndex: 1 }} />
-                  </div>
-                  <div>
-                    <h3 style={{ fontWeight: 900, fontSize: '24px', color: 'white' }}>{settings.doctorName}</h3>
-                    <p style={{ color: '#38bdf8', fontSize: '14px', fontWeight: 600 }}>{settings.doctorTitle}</p>
-                    <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
-                      {[1,2,3,4,5].map(i => <FaStar key={i} style={{ color: '#f59e0b', fontSize: '13px' }} />)}
-                    </div>
-                  </div>
-                </div>
-                <p style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 2, fontSize: '15px', marginBottom: '32px' }}>{settings.doctorBio}</p>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                  {[
-                    { val: '+10', label: 'سنوات', color: '#0ea5e9' },
-                    { val: '+1K', label: 'مريض', color: '#f59e0b' },
-                    { val: '98%', label: 'نجاح', color: '#34d399' },
-                  ].map((s, i) => (
-                    <div key={i} className="glass-card-blue" style={{ padding: '16px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '26px', fontWeight: 900, color: s.color }}>{s.val}</div>
-                      <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>{s.label}</div>
-                    </div>
-                  ))}
-                </div>
+        <section className="l-hero">
+          <div className="l-hero-grid">
+            {/* LEFT CONTENT */}
+            <div>
+              <div className="l-hero-tag">
+                <span className="dot" />
+                عيادة تقويم الأسنان المتخصصة
               </div>
 
-              {/* Right: certificates */}
-              <div>
-                {settings.certificates?.length > 0 && (
-                  <div style={{ marginBottom: '32px' }}>
-                    <h4 style={{ fontWeight: 800, color: 'white', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '17px' }}>
-                      <FaGraduationCap style={{ color: '#0ea5e9' }} /> المؤهلات والشهادات
-                    </h4>
-                    {settings.certificates.map((c, i) => (
-                      <div key={i} className="glass-card" style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: '12px', padding: '16px 20px', borderRight: '3px solid #0ea5e9' }}>
-                        <FiAward style={{ color: '#0ea5e9', marginTop: '2px', flexShrink: 0, fontSize: '18px' }} />
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: '14px', color: 'white' }}>{c.title}</div>
-                          <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '3px' }}>{c.institution}{c.year && ` — ${c.year}`}</div>
-                        </div>
-                      </div>
-                    ))}
+              <h1 className="l-hero-title">
+                ابتسامة أجمل<br />
+                <span className="blue">تبدأ من </span>
+                <span className="teal">هنا</span>
+              </h1>
+
+              <p className="l-hero-sub">{settings.heroSubtitle}</p>
+
+              <div className="l-hero-checks">
+                {['خبرة أكثر من 10 سنوات في تقويم الأسنان', 'أحدث التقنيات والمواد العالمية المعتمدة', 'رعاية شاملة ومتابعة دقيقة لكل مريض'].map((t, i) => (
+                  <div key={i} className="l-hero-check">
+                    <div className="l-hero-check-icon"><FiCheck /></div>
+                    {t}
                   </div>
-                )}
-                {settings.achievements?.length > 0 && (
+                ))}
+              </div>
+
+              <div className="l-hero-btns">
+                <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" className="l-btn-primary">
+                  <FaWhatsapp size={18} /> احجز موعدك الآن
+                </a>
+                <button onClick={() => navigate('/login')} className="l-btn-secondary">
+                  <FiUser size={15} /> بوابة المريض
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT CARD */}
+            <div>
+              <div className="l-hero-card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid #f1f5f9' }}>
+                  <div style={{
+                    width: '60px', height: '60px', borderRadius: '16px',
+                    background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '28px', flexShrink: 0, boxShadow: '0 8px 20px rgba(37,99,235,0.3)',
+                  }}>🦷</div>
                   <div>
-                    <h4 style={{ fontWeight: 800, color: 'white', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '17px' }}>
-                      <FaTrophy style={{ color: '#f59e0b' }} /> الإنجازات
-                    </h4>
-                    {settings.achievements.map((a, i) => (
-                      <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '14px' }}>
-                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <FaTrophy style={{ color: '#f59e0b', fontSize: '14px' }} />
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: '14px', color: 'white' }}>{a.title}</div>
-                          {a.description && <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '3px' }}>{a.description}</div>}
-                        </div>
-                      </div>
-                    ))}
+                    <div style={{ fontWeight: 900, fontSize: '18px', color: '#0f172a' }}>{settings.doctorName}</div>
+                    <div style={{ fontSize: '13px', color: '#2563eb', fontWeight: 600, marginTop: '2px' }}>{settings.doctorTitle}</div>
+                    <div style={{ display: 'flex', gap: '3px', marginTop: '5px' }}>
+                      {[1,2,3,4,5].map(i => <FaStar key={i} style={{ color: '#f59e0b', fontSize: '12px' }} />)}
+                      <span style={{ fontSize: '12px', color: '#64748b', marginRight: '4px' }}>5.0</span>
+                    </div>
                   </div>
-                )}
+                </div>
+
+                {[
+                  { icon: <FiClock size={15} />, label: 'مواعيد العمل', value: settings.workingHours, color: '#2563eb', bg: '#eff6ff' },
+                  { icon: <FiMapPin size={15} />, label: 'الموقع', value: settings.address, color: '#0891b2', bg: '#ecfeff' },
+                  { icon: <FiPhone size={15} />, label: 'الاتصال', value: settings.phone, color: '#16a34a', bg: '#f0fdf4' },
+                ].map((item, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    padding: '12px 14px', borderRadius: '10px',
+                    background: '#f8fafc', border: '1px solid #f1f5f9',
+                    marginBottom: '10px',
+                  }}>
+                    <div style={{
+                      width: '34px', height: '34px', borderRadius: '9px',
+                      background: item.bg, color: item.color,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{item.label}</div>
+                      <div style={{ fontSize: '13.5px', color: '#334155', fontWeight: 600, marginTop: '1px' }}>{item.value}</div>
+                    </div>
+                  </div>
+                ))}
+
+                <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  width: '100%', padding: '12px', borderRadius: '10px', marginTop: '14px',
+                  background: 'linear-gradient(135deg, #25d366, #128c7e)', color: 'white',
+                  fontWeight: 800, fontSize: '14.5px', textDecoration: 'none',
+                  boxShadow: '0 4px 14px rgba(37,211,102,0.3)',
+                  transition: 'all 0.2s',
+                }}>
+                  <FaWhatsapp size={18} /> احجز عبر واتساب
+                </a>
+              </div>
+
+              {/* Stats under card */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
+                {[
+                  { num: '+1000', label: 'مريض سعيد', icon: '😊', bg: '#eff6ff', color: '#2563eb' },
+                  { num: '98%', label: 'نسبة النجاح', icon: '⭐', bg: '#fff7ed', color: '#ea580c' },
+                  { num: '+10', label: 'سنوات خبرة', icon: '🏆', bg: '#f0fdf4', color: '#16a34a' },
+                  { num: '5★', label: 'تقييم المرضى', icon: '💯', bg: '#fdf4ff', color: '#9333ea' },
+                ].map((s, i) => (
+                  <div key={i} style={{
+                    background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '12px',
+                    padding: '14px', display: 'flex', alignItems: 'center', gap: '10px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
+                      {s.icon}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '18px', fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.num}</div>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{s.label}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </section>
 
         {/* ── SERVICES ── */}
-        <section id="services" style={{ padding: '100px 5%', background: '#040d1e' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-              <div className="section-tag">خدماتنا</div>
-              <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, color: 'white', marginBottom: '14px' }}>
-                ماذا نقدم <span className="gradient-text">لك؟</span>
-              </h2>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '16px' }}>خدمات متكاملة في تقويم الأسنان بأعلى معايير الجودة</p>
+        <section id="services" className="l-section l-section-alt">
+          <div className="l-section-inner">
+            <div className="l-section-header">
+              <div className="l-section-tag"><FiAward size={13} /> خدماتنا</div>
+              <h2 className="l-section-title">ماذا نقدم لك؟</h2>
+              <p className="l-section-sub">نوفر مجموعة متكاملة من خدمات تقويم الأسنان بأحدث التقنيات العالمية</p>
+              <div className="l-underline" />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '18px' }}>
               {activeServices.map((s, i) => {
-                const si = SERVICE_ICONS[i % SERVICE_ICONS.length];
+                const c = SERVICE_COLORS[i % SERVICE_COLORS.length];
                 return (
-                  <div key={i} className="service-card">
-                    <div className="service-icon-box" style={{ background: si.bg, border: `1px solid ${si.border}`, color: si.color, fontSize: '24px' }}>
-                      {si.icon}
+                  <div key={i} className="l-service-card">
+                    <div className="l-service-icon" style={{ background: c.bg, border: `1.5px solid ${c.border}` }}>
+                      <span style={{ fontSize: '28px' }}>{s.icon}</span>
                     </div>
-                    <h3 style={{ fontWeight: 800, fontSize: '17px', marginBottom: '10px', color: 'white', position: 'relative', zIndex: 1 }}>{s.title}</h3>
-                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: 1.8, position: 'relative', zIndex: 1 }}>{s.description}</p>
+                    <h3 style={{ fontWeight: 800, fontSize: '16px', color: '#0f172a', marginBottom: '8px' }}>{s.title}</h3>
+                    <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.7 }}>{s.description}</p>
                   </div>
                 );
               })}
@@ -474,155 +555,230 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ── PROCESS / HOW IT WORKS ── */}
-        <section style={{ padding: '100px 5%', background: 'linear-gradient(135deg, #040d1e, #061428, #050f20)' }}>
-          <div style={{ maxWidth: '960px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-              <div className="section-tag">كيف نعمل</div>
-              <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, color: 'white' }}>
-                رحلتك نحو <span className="gold-text">ابتسامة مثالية</span>
-              </h2>
-              <p style={{ color: 'rgba(255,255,255,0.5)', marginTop: '12px' }}>أربع خطوات بسيطة للوصول إلى نتيجتك</p>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
-              {[
-                { num: '01', title: 'الفحص المجاني', desc: 'نقيّم حالتك ونضع خطة علاج مناسبة', icon: <FiUser size={20} />, color: '#0ea5e9' },
-                { num: '02', title: 'خطة العلاج', desc: 'نصمم لك خطة علاج دقيقة بأحدث التقنيات', icon: <FiCalendar size={20} />, color: '#6366f1' },
-                { num: '03', title: 'بدء العلاج', desc: 'نبدأ رحلة علاجك بمتابعة دورية منتظمة', icon: <FiAward size={20} />, color: '#34d399' },
-                { num: '04', title: 'النتيجة المثالية', desc: 'نحقق لك الابتسامة التي تحلم بها', icon: <FiCheck size={20} />, color: '#f59e0b' },
-              ].map((step, i) => (
-                <div key={i} className="glass-card" style={{ padding: '32px 24px', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', top: '16px', left: '20px', fontSize: '48px', fontWeight: 900, color: `${step.color}15`, lineHeight: 1, fontFamily: 'monospace' }}>{step.num}</div>
-                  <div style={{ width: '50px', height: '50px', borderRadius: '14px', background: `${step.color}18`, border: `1px solid ${step.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: step.color, marginBottom: '16px' }}>
-                    {step.icon}
-                  </div>
-                  <h4 style={{ fontWeight: 800, color: 'white', fontSize: '15px', marginBottom: '8px' }}>{step.title}</h4>
-                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '13px', lineHeight: 1.7 }}>{step.desc}</p>
+        {/* ── ABOUT ── */}
+        <section id="about" className="l-section">
+          <div className="l-section-inner">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '56px', alignItems: 'start' }}>
+              <div>
+                <div className="l-section-tag" style={{ display: 'inline-flex' }}><FiUser size={13} /> عن الطبيب</div>
+                <h2 className="l-section-title" style={{ textAlign: 'right', marginTop: '8px' }}>
+                  {settings.doctorName}
+                </h2>
+                <p style={{ color: '#2563eb', fontWeight: 700, fontSize: '15px', marginBottom: '16px' }}>{settings.doctorTitle}</p>
+                <p style={{ color: '#475569', lineHeight: 1.9, fontSize: '15px', marginBottom: '28px' }}>{settings.doctorBio}</p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '32px' }}>
+                  {[
+                    { val: '+10', label: 'سنوات خبرة', color: '#2563eb', bg: '#eff6ff' },
+                    { val: '+1K', label: 'مريض', color: '#0891b2', bg: '#ecfeff' },
+                    { val: '98%', label: 'نجاح', color: '#16a34a', bg: '#f0fdf4' },
+                  ].map((s, i) => (
+                    <div key={i} style={{ textAlign: 'center', padding: '16px 10px', background: s.bg, borderRadius: '12px', border: `1.5px solid ${s.bg === '#eff6ff' ? '#bfdbfe' : s.bg === '#ecfeff' ? '#a5f3fc' : '#bbf7d0'}` }}>
+                      <div style={{ fontSize: '26px', fontWeight: 900, color: s.color }}>{s.val}</div>
+                      <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{s.label}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+
+                <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" className="l-btn-primary" style={{ fontSize: '14px' }}>
+                  <FaWhatsapp size={16} /> تواصل الآن
+                </a>
+              </div>
+
+              <div>
+                {settings.certificates?.length > 0 && (
+                  <div style={{ marginBottom: '28px' }}>
+                    <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}>
+                      <FaGraduationCap style={{ color: '#2563eb' }} /> المؤهلات والشهادات
+                    </h4>
+                    {settings.certificates.map((c, i) => (
+                      <div key={i} className="l-cert-item">
+                        <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb', flexShrink: 0 }}>
+                          <FiAward size={17} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>{c.title}</div>
+                          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{c.institution}{c.year && ` — ${c.year}`}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {settings.achievements?.length > 0 && (
+                  <div>
+                    <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}>
+                      <FiAward style={{ color: '#2563eb' }} /> الإنجازات
+                    </h4>
+                    {settings.achievements.map((a, i) => (
+                      <div key={i} style={{
+                        display: 'flex', gap: '12px', alignItems: 'flex-start',
+                        padding: '14px 16px', borderRadius: '10px',
+                        background: 'white', border: '1.5px solid #e2e8f0',
+                        marginBottom: '10px', transition: 'all 0.2s',
+                      }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2563eb', marginTop: '6px', flexShrink: 0 }} />
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>{a.title}</div>
+                          <div style={{ fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>{a.description}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>
 
         {/* ── REVIEWS ── */}
-        <section id="reviews" style={{ padding: '100px 5%', background: '#030b1a' }}>
-          <div style={{ maxWidth: '1060px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-              <div className="section-tag">آراء المرضى</div>
-              <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, color: 'white' }}>
-                ماذا يقول <span className="gradient-text">مرضانا؟</span>
-              </h2>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-              {activeReviews.map((r, i) => (
-                <div key={i} className="review-card">
-                  <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
-                    {[...Array(r.rating || 5)].map((_, j) => <FaStar key={j} style={{ color: '#f59e0b', fontSize: '15px' }} />)}
-                  </div>
-                  <p style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.9, marginBottom: '20px', fontSize: '14px' }}>"{r.text}"</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #0ea5e9, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '14px' }}>
-                      {r.name[0]}
+        {activeReviews.length > 0 && (
+          <section id="reviews" className="l-section l-section-alt">
+            <div className="l-section-inner">
+              <div className="l-section-header">
+                <div className="l-section-tag"><FiStar size={13} /> آراء المرضى</div>
+                <h2 className="l-section-title">ماذا يقول مرضانا؟</h2>
+                <div className="l-underline" />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '18px' }}>
+                {activeReviews.map((r, i) => (
+                  <div key={i} className="l-review-card">
+                    <div style={{ display: 'flex', gap: '3px', marginBottom: '14px' }}>
+                      {[1,2,3,4,5].map(s => <FaStar key={s} style={{ color: s <= r.rating ? '#f59e0b' : '#e2e8f0', fontSize: '14px' }} />)}
                     </div>
-                    <div style={{ fontWeight: 700, color: 'white', fontSize: '14px' }}>{r.name}</div>
+                    <p style={{ color: '#475569', lineHeight: 1.8, fontSize: '14.5px', marginBottom: '18px', position: 'relative', zIndex: 1 }}>
+                      {r.text}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '14px', borderTop: '1px solid #f1f5f9' }}>
+                      <div style={{
+                        width: '36px', height: '36px', borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: 'white', fontWeight: 800, fontSize: '14px',
+                      }}>
+                        {r.name[0]}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>{r.name}</div>
+                        <div style={{ fontSize: '11.5px', color: '#94a3b8' }}>مريض</div>
+                      </div>
+                    </div>
                   </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── FAQ ── */}
+        {activeFaqs.length > 0 && (
+          <section className="l-section">
+            <div className="l-section-inner" style={{ maxWidth: '780px' }}>
+              <div className="l-section-header">
+                <div className="l-section-tag">الأسئلة الشائعة</div>
+                <h2 className="l-section-title">أسئلة يسألها مرضانا</h2>
+                <div className="l-underline" />
+              </div>
+
+              {activeFaqs.map((f, i) => (
+                <div key={i} className={`l-faq-item${openFaq === i ? ' open' : ''}`}>
+                  <button className="l-faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                    <span>{f.question}</span>
+                    <FiChevronDown className="l-faq-chevron" size={18} />
+                  </button>
+                  {openFaq === i && (
+                    <div className="l-faq-answer">{f.answer}</div>
+                  )}
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* ── FAQ ── */}
-        <section style={{ padding: '100px 5%', background: '#040d1e' }}>
-          <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-              <div className="section-tag">الأسئلة الشائعة</div>
-              <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, color: 'white' }}>
-                لديك <span className="gradient-text">سؤال؟</span>
-              </h2>
-              <p style={{ color: 'rgba(255,255,255,0.5)', marginTop: '12px' }}>إجابات على أكثر الأسئلة شيوعاً</p>
-            </div>
-            {activeFaqs.map((f, i) => (
-              <div key={i} className={`faq-item${openFaq === i ? ' open' : ''}`}>
-                <button className="faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                  <span>{f.question}</span>
-                  <FiChevronDown style={{ transition: 'transform 0.3s', transform: openFaq === i ? 'rotate(180deg)' : '', flexShrink: 0, color: '#0ea5e9' }} />
-                </button>
-                {openFaq === i && <div className="faq-answer">{f.answer}</div>}
-              </div>
-            ))}
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ── CONTACT ── */}
-        <section id="contact" style={{ padding: '100px 5%', background: 'linear-gradient(180deg, #040d1e, #030b1a)' }}>
-          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-              <div className="section-tag">تواصل معنا</div>
-              <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, color: 'white' }}>
-                نحن هنا <span className="gradient-text">لمساعدتك</span>
-              </h2>
-              <p style={{ color: 'rgba(255,255,255,0.5)', marginTop: '12px' }}>تواصل معنا الآن واحجز موعدك</p>
+        <section id="contact" className="l-section l-section-alt">
+          <div className="l-section-inner">
+            <div className="l-section-header">
+              <div className="l-section-tag"><FiMessageCircle size={13} /> تواصل معنا</div>
+              <h2 className="l-section-title">نحن هنا لخدمتك</h2>
+              <p className="l-section-sub">تواصل معنا لحجز موعدك أو الاستفسار عن أي شيء</p>
+              <div className="l-underline" />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', maxWidth: '860px', margin: '0 auto' }}>
               {[
-                { icon: <FaPhone />, title: 'الهاتف', value: '+20 115 679 8324', href: `tel:${settings.phone}`, color: '#34d399' },
-                { icon: <FaWhatsapp />, title: 'واتساب', value: '+20 115 679 8324', href: `https://wa.me/${settings.whatsapp}`, color: '#25d366' },
-                { icon: <FaMapMarkerAlt />, title: 'العنوان', value: settings.address, href: settings.googleMapsUrl || '#', color: '#f87171' },
-                { icon: <FiClock />, title: 'ساعات العمل', value: settings.workingHours, href: '#', color: '#a78bfa' },
+                { icon: <FaWhatsapp size={24} />, label: 'واتساب', value: `+${settings.whatsapp}`, href: `https://wa.me/${settings.whatsapp}`, bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' },
+                { icon: <FaPhone size={22} />, label: 'اتصل بنا', value: settings.phone, href: `tel:${settings.phone}`, bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
+                { icon: <FiMapPin size={22} />, label: 'الموقع', value: settings.address, href: '#', bg: '#fdf4ff', color: '#9333ea', border: '#e9d5ff' },
+                { icon: <FiClock size={22} />, label: 'ساعات العمل', value: settings.workingHours, href: '#', bg: '#fff7ed', color: '#ea580c', border: '#fed7aa' },
               ].map((c, i) => (
-                <a key={i} href={c.href} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer" className="contact-card">
-                  <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: `${c.color}18`, border: `1px solid ${c.color}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', color: c.color, margin: '0 auto 16px' }}>{c.icon}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', marginBottom: '6px' }}>{c.title}</div>
-                  <div style={{ color: 'white', fontWeight: 700, fontSize: '14px' }}>{c.value}</div>
+                <a key={i} href={c.href} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer" className="l-contact-card">
+                  <div className="l-contact-icon" style={{ background: c.bg, border: `1.5px solid ${c.border}`, color: c.color }}>
+                    {c.icon}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600, marginBottom: '4px' }}>{c.label}</div>
+                  <div style={{ fontSize: '14px', color: '#334155', fontWeight: 700 }}>{c.value}</div>
                 </a>
               ))}
             </div>
 
             {/* CTA Banner */}
-            <div className="glass-card-blue" style={{ marginTop: '48px', padding: '40px', textAlign: 'center' }}>
-              <h3 style={{ fontSize: '26px', fontWeight: 900, color: 'white', marginBottom: '12px' }}>هل أنت جاهز لابتسامة مثالية؟</h3>
-              <p style={{ color: 'rgba(255,255,255,0.55)', marginBottom: '28px', fontSize: '15px' }}>احجز استشارتك المجانية اليوم مع {settings.doctorName}</p>
-              <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" className="btn-glow">
-                <FaWhatsapp size={18} /> احجز الآن مجاناً
+            <div style={{
+              marginTop: '48px', background: 'linear-gradient(135deg, #2563eb 0%, #0891b2 100%)',
+              borderRadius: '20px', padding: '40px 48px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: '24px', flexWrap: 'wrap',
+            }}>
+              <div>
+                <h3 style={{ color: 'white', fontSize: '24px', fontWeight: 900, marginBottom: '6px' }}>جاهز لابتسامة أجمل؟</h3>
+                <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14.5px' }}>احجز استشارتك المجانية الآن ودعنا نبدأ رحلتك معنا</p>
+              </div>
+              <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" style={{
+                background: 'white', color: '#2563eb',
+                padding: '14px 28px', borderRadius: '12px',
+                fontWeight: 800, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px',
+                textDecoration: 'none', boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
+                flexShrink: 0, transition: 'all 0.2s',
+              }}>
+                <FaWhatsapp size={18} /> احجز الآن
               </a>
             </div>
           </div>
         </section>
 
         {/* ── FOOTER ── */}
-        <footer style={{ background: '#020810', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '40px 5%' }}>
-          <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <img src="/logo-transparent.png" alt="logo" className="logo-img-dark" style={{ height: '40px', width: '40px', objectFit: 'cover', borderRadius: '10px' }} />
-              <div>
-                <div style={{ color: 'white', fontWeight: 800, fontSize: '15px' }}>{settings.doctorName}</div>
-                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px' }}>أخصائي تقويم الأسنان</div>
+        <footer className="l-footer">
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #2563eb, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🦷</div>
+                <div>
+                  <div style={{ color: 'white', fontWeight: 800 }}>{settings.doctorName}</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '1px' }}>{settings.doctorTitle}</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '20px' }}>
+                {['#about', '#services', '#reviews', '#contact'].map((h, i) => (
+                  <a key={i} href={h} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none', transition: 'color 0.2s' }}
+                    onMouseEnter={e => e.target.style.color = 'white'}
+                    onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.5)'}>
+                    {['الطبيب', 'الخدمات', 'المرضى', 'تواصل'][i]}
+                  </a>
+                ))}
               </div>
             </div>
-            <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px', textAlign: 'center' }}>
-              © 2026 عيادة {settings.doctorName} — جميع الحقوق محفوظة
-            </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25d366', fontSize: '18px', textDecoration: 'none', transition: 'all 0.2s' }}>
-                <FaWhatsapp />
-              </a>
+            <div style={{ paddingTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+              <p style={{ fontSize: '13px' }}>جميع الحقوق محفوظة © {new Date().getFullYear()} — عيادة {settings.doctorName}</p>
+              <button onClick={() => navigate('/login')} style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.12)', padding: '7px 16px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                <FiUser size={13} /> دخول النظام
+              </button>
             </div>
           </div>
         </footer>
 
         {/* WhatsApp Float */}
-        <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" style={{
-          position: 'fixed', bottom: '28px', left: '28px', zIndex: 999,
-          background: 'linear-gradient(135deg, #25d366, #128c7e)',
-          color: 'white', borderRadius: '50%',
-          width: '60px', height: '60px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '30px', boxShadow: '0 0 30px rgba(37,211,102,0.45), 0 4px 16px rgba(0,0,0,0.3)',
-          textDecoration: 'none', transition: 'all 0.3s',
-        }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.12)'; e.currentTarget.style.boxShadow = '0 0 45px rgba(37,211,102,0.6), 0 8px 25px rgba(0,0,0,0.35)'; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 0 30px rgba(37,211,102,0.45), 0 4px 16px rgba(0,0,0,0.3)'; }}>
+        <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" className="l-wa-float">
           <FaWhatsapp />
         </a>
       </div>

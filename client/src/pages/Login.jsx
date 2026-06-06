@@ -2,109 +2,95 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import { FiLock, FiEye, FiEyeOff, FiArrowRight, FiKey, FiUser } from 'react-icons/fi';
-import { FaWhatsapp, FaPhone } from 'react-icons/fa';
+import { FiLock, FiEye, FiEyeOff, FiArrowRight, FiUser, FiPhone } from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
 import { PasskeyLoginButton } from '../components/PasskeyButton';
 
 const STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
-  .login-root { font-family: 'Cairo', sans-serif; direction: rtl; }
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
-  @keyframes float1 { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-25px) rotate(6deg)} }
-  @keyframes float2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
-  @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
-  @keyframes pulse-orb { 0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:0.7;transform:scale(1.05)} }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  body { background: #f0f6ff !important; }
+  .login-root { font-family: 'Cairo', sans-serif; direction: rtl; -webkit-font-smoothing: antialiased; }
 
-  .gradient-text-login {
-    background: linear-gradient(135deg, #ffffff 0%, #93c5fd 40%, #0ea5e9 70%, #38bdf8 100%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: shimmer 4s linear infinite;
-  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-12px) rotate(4deg)} }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
 
-  .login-input {
+  .l-input {
     width: 100%;
-    padding: 13px 16px;
-    background: rgba(255,255,255,0.06);
-    border: 1.5px solid rgba(255,255,255,0.12);
-    border-radius: 12px;
-    font-size: 15px;
-    color: white;
+    padding: 12px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14.5px;
+    color: #1e293b;
+    background: white;
     font-family: 'Cairo', sans-serif;
     outline: none;
-    transition: all 0.25s;
-    direction: ltr;
-    text-align: right;
+    transition: all 0.2s;
   }
-  .login-input::placeholder { color: rgba(255,255,255,0.3); }
-  .login-input:focus { border-color: rgba(14,165,233,0.6); background: rgba(14,165,233,0.06); box-shadow: 0 0 0 4px rgba(14,165,233,0.1); }
+  .l-input:hover { border-color: #cbd5e1; }
+  .l-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+  .l-input::placeholder { color: #94a3b8; }
 
-  .phone-input {
-    flex: 1;
-    padding: 13px 16px;
-    background: transparent;
-    border: none;
-    font-size: 15px;
-    color: white;
-    font-family: 'Cairo', sans-serif;
-    outline: none;
-    direction: ltr;
-    text-align: left;
+  .l-phone-wrap {
+    display: flex; align-items: center;
+    border: 1.5px solid #e2e8f0; border-radius: 10px;
+    background: white; overflow: hidden; transition: all 0.2s;
   }
-  .phone-input::placeholder { color: rgba(255,255,255,0.3); }
-
-  .phone-wrapper {
-    display: flex;
-    align-items: center;
-    background: rgba(255,255,255,0.06);
-    border: 1.5px solid rgba(255,255,255,0.12);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: all 0.25s;
+  .l-phone-wrap:focus-within { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+  .l-phone-prefix {
+    display: flex; align-items: center; gap: 6px;
+    padding: 12px 12px; border-left: 1.5px solid #f1f5f9;
+    background: #f8fafc; white-space: nowrap; flex-shrink: 0;
   }
-  .phone-wrapper:focus-within { border-color: rgba(14,165,233,0.6); background: rgba(14,165,233,0.06); box-shadow: 0 0 0 4px rgba(14,165,233,0.1); }
-
-  .btn-login {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #0ea5e9, #2563eb);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: 'Cairo', sans-serif;
-    transition: all 0.3s;
-    box-shadow: 0 0 25px rgba(14,165,233,0.3), 0 4px 12px rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 8px;
+  .l-phone-input {
+    flex: 1; border: none; outline: none;
+    padding: 12px 12px; font-size: 14.5px;
+    font-family: 'Cairo', sans-serif; color: #1e293b;
+    background: transparent; direction: ltr; text-align: left;
   }
-  .btn-login:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 40px rgba(14,165,233,0.45), 0 8px 20px rgba(0,0,0,0.4); }
-  .btn-login:disabled { opacity: 0.55; cursor: not-allowed; }
+  .l-phone-input::placeholder { color: #94a3b8; direction: rtl; text-align: right; }
 
-  .mode-tab {
-    flex: 1; padding: 11px; border: none;
+  .l-btn-submit {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white; border: none; border-radius: 11px;
+    font-size: 15px; font-weight: 800;
+    cursor: pointer; font-family: 'Cairo', sans-serif;
+    transition: all 0.2s;
+    box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .l-btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(37,99,235,0.45); background: linear-gradient(135deg, #1d4ed8, #1e40af); }
+  .l-btn-submit:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+  .l-tab-btn {
+    flex: 1; padding: 10px; border: none;
     background: transparent; font-weight: 700; font-size: 14px;
     cursor: pointer; font-family: 'Cairo', sans-serif;
-    color: rgba(255,255,255,0.45); border-radius: 10px;
-    transition: all 0.25s;
+    color: #64748b; border-radius: 8px; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
   }
-  .mode-tab.active {
-    background: rgba(14,165,233,0.18);
-    color: #38bdf8;
-    box-shadow: 0 0 15px rgba(14,165,233,0.15);
+  .l-tab-btn.active { background: white; color: #2563eb; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+
+  .l-label { display: block; font-weight: 700; font-size: 13px; color: #475569; margin-bottom: 7px; }
+
+  .l-feature-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 16px; border-radius: 11px;
+    background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.9);
+    backdrop-filter: blur(8px); margin-bottom: 10px;
+  }
+  .l-feature-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
   }
 
-  .login-label { display: block; font-weight: 700; font-size: 13px; color: rgba(255,255,255,0.65); margin-bottom: 8px; }
-
-  .orb-login { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+  .l-bg-shape {
+    position: absolute; border-radius: 50%; pointer-events: none;
+  }
 `;
 
 export default function Login() {
@@ -164,85 +150,87 @@ export default function Login() {
       <style>{STYLE}</style>
       <div className="login-root" style={{
         minHeight: '100vh', display: 'flex',
-        background: 'linear-gradient(135deg, #030b1a 0%, #061428 50%, #050f20 100%)',
+        background: 'linear-gradient(135deg, #f0f6ff 0%, #e8f2ff 50%, #f5f0ff 100%)',
         position: 'relative', overflow: 'hidden',
       }}>
 
-        {/* Background orbs */}
-        <div className="orb-login" style={{ width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(37,99,235,0.16) 0%, transparent 70%)', top: '-150px', right: '-200px', animation: 'pulse-orb 8s ease-in-out infinite' }} />
-        <div className="orb-login" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(14,165,233,0.1) 0%, transparent 70%)', bottom: '-150px', left: '20%', animation: 'pulse-orb 10s ease-in-out infinite 2s' }} />
+        {/* Background shapes */}
+        <div className="l-bg-shape" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%)', top: '-150px', right: '-100px' }} />
+        <div className="l-bg-shape" style={{ width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(6,182,212,0.07) 0%, transparent 70%)', bottom: '-100px', left: '30%' }} />
+        <div className="l-bg-shape" style={{ width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)', top: '30%', left: '5%' }} />
 
-        {/* Floating shapes */}
-        <div style={{ position: 'absolute', top: '12%', right: '52%', width: '70px', height: '70px', border: '1.5px solid rgba(14,165,233,0.2)', borderRadius: '16px', animation: 'float1 8s ease-in-out infinite', transform: 'rotate(20deg)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '20%', right: '55%', width: '40px', height: '40px', border: '1.5px solid rgba(245,158,11,0.2)', borderRadius: '50%', animation: 'float2 6s ease-in-out infinite', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '55%', left: '4%', width: '55px', height: '55px', border: '1.5px solid rgba(99,102,241,0.2)', borderRadius: '12px', animation: 'float2 9s ease-in-out infinite', transform: 'rotate(-15deg)', pointerEvents: 'none' }} />
+        {/* Floating geometric shapes */}
+        <div style={{ position: 'absolute', top: '12%', right: '42%', width: '64px', height: '64px', border: '2px solid rgba(37,99,235,0.15)', borderRadius: '16px', animation: 'float 8s ease-in-out infinite', transform: 'rotate(20deg)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '18%', right: '44%', width: '40px', height: '40px', border: '2px solid rgba(6,182,212,0.2)', borderRadius: '50%', animation: 'float 6s ease-in-out infinite 1s', pointerEvents: 'none' }} />
 
         {/* ── LEFT BRAND PANEL ── */}
         <div style={{
           flex: 1, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          padding: '60px 40px', position: 'relative', zIndex: 1,
-          animation: 'fadeUp 0.7s ease-out',
+          padding: '60px 48px', position: 'relative', zIndex: 1,
+          animation: 'fadeUp 0.6s ease-out',
         }}>
-          {/* Logo ring */}
-          <div style={{ position: 'relative', marginBottom: '32px' }}>
-            <div style={{
-              position: 'absolute', inset: '-12px', borderRadius: '50%',
-              background: 'conic-gradient(from 0deg, #0ea5e9, #6366f1, #0ea5e9)',
-              animation: 'float1 6s ease-in-out infinite',
-              opacity: 0.5,
-            }} />
-            <div style={{ position: 'absolute', inset: '-3px', borderRadius: '50%', background: 'linear-gradient(135deg, #0ea5e9, #6366f1)', opacity: 0.7 }} />
-            <img src="/logo-transparent.png" alt="logo" style={{
-              width: '130px', height: '130px', borderRadius: '50%',
-              objectFit: 'cover', position: 'relative', zIndex: 1,
-              mixBlendMode: 'screen', filter: 'brightness(1.1)',
-            }} />
-          </div>
 
-          <h1 style={{ color: 'white', fontSize: '36px', fontWeight: 900, textAlign: 'center', marginBottom: '12px', lineHeight: 1.3 }}>
-            عيادة<br /><span className="gradient-text-login">د. وسام يوسف</span>
+          {/* Logo */}
+          <div style={{
+            width: '88px', height: '88px', borderRadius: '24px',
+            background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '40px', marginBottom: '24px',
+            boxShadow: '0 12px 32px rgba(37,99,235,0.35), 0 4px 12px rgba(37,99,235,0.2)',
+          }}>🦷</div>
+
+          <h1 style={{ color: '#0f172a', fontSize: '32px', fontWeight: 900, textAlign: 'center', marginBottom: '6px', lineHeight: 1.25 }}>
+            عيادة د. وسام يوسف
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '15px', textAlign: 'center', lineHeight: 1.8, marginBottom: '8px' }}>
+          <p style={{ color: '#2563eb', fontSize: '15px', fontWeight: 700, textAlign: 'center', marginBottom: '4px' }}>
             أخصائي تقويم الأسنان
           </p>
-          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px', textAlign: 'center', marginBottom: '36px' }}>
+          <p style={{ color: '#94a3b8', fontSize: '13px', textAlign: 'center', marginBottom: '36px' }}>
             نظام إدارة العيادة المتكامل
           </p>
 
           {/* Stats */}
-          <div style={{ display: 'flex', gap: '28px', marginBottom: '40px' }}>
+          <div style={{ display: 'flex', gap: '0', background: 'rgba(255,255,255,0.7)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', marginBottom: '32px', overflow: 'hidden' }}>
             {[
-              { val: '+1000', label: 'مريض' },
-              { val: '98%', label: 'نجاح' },
-              { val: '+10', label: 'سنوات' },
+              { val: '+1000', label: 'مريض', color: '#2563eb' },
+              { val: '98%', label: 'نجاح', color: '#0891b2' },
+              { val: '+10', label: 'سنوات', color: '#16a34a' },
             ].map((s, i) => (
-              <div key={i} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '22px', fontWeight: 900, color: '#38bdf8' }}>{s.val}</div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{s.label}</div>
+              <div key={i} style={{ textAlign: 'center', padding: '14px 22px', borderLeft: i < 2 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: s.color }}>{s.val}</div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>{s.label}</div>
               </div>
             ))}
           </div>
 
-          {/* Contact */}
-          <div style={{ display: 'flex', flex: 'column', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
-            <a href="tel:01156798324" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none', transition: 'color 0.2s' }}
-              onMouseEnter={e => e.currentTarget.style.color = 'white'}
-              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}>
-              <FaPhone size={11} /> +20 115 679 8324
-            </a>
+          {/* Features */}
+          <div style={{ width: '100%', maxWidth: '320px' }}>
+            {[
+              { icon: '🔒', label: 'نظام آمن ومحمي', sub: 'تشفير كامل للبيانات', bg: '#eff6ff' },
+              { icon: '📋', label: 'ملف طبي شامل', sub: 'جلسات ومدفوعات وصور', bg: '#f0fdf4' },
+              { icon: '📅', label: 'إدارة المواعيد', sub: 'تنظيم الجدول الزمني', bg: '#fdf4ff' },
+            ].map((f, i) => (
+              <div key={i} className="l-feature-item">
+                <div className="l-feature-icon" style={{ background: f.bg }}>{f.icon}</div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '13.5px', color: '#1e293b' }}>{f.label}</div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '1px' }}>{f.sub}</div>
+                </div>
+              </div>
+            ))}
           </div>
 
           <button onClick={() => navigate('/')} style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)',
-            border: '1px solid rgba(255,255,255,0.12)', padding: '10px 22px',
+            display: 'flex', alignItems: 'center', gap: '7px', marginTop: '24px',
+            background: 'rgba(255,255,255,0.7)', color: '#475569',
+            border: '1.5px solid rgba(255,255,255,0.9)', padding: '9px 20px',
             borderRadius: '10px', cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
-            fontSize: '14px', fontWeight: 600, transition: 'all 0.2s',
+            fontSize: '13.5px', fontWeight: 600, transition: 'all 0.2s',
           }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'white'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}>
-            <FiArrowRight /> العودة للموقع
+            onMouseEnter={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#2563eb'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.7)'; e.currentTarget.style.color = '#475569'; }}>
+            <FiArrowRight size={14} /> العودة للموقع
           </button>
         </div>
 
@@ -251,58 +239,53 @@ export default function Login() {
           width: '480px', display: 'flex', alignItems: 'center',
           justifyContent: 'center', padding: '40px',
           position: 'relative', zIndex: 1,
-          animation: 'fadeUp 0.7s ease-out 0.1s both',
+          animation: 'fadeUp 0.6s ease-out 0.1s both',
         }}>
           <div style={{
-            background: 'rgba(255,255,255,0.04)',
-            backdropFilter: 'blur(30px)',
-            WebkitBackdropFilter: 'blur(30px)',
-            border: '1px solid rgba(255,255,255,0.09)',
-            borderRadius: '24px', padding: '40px', width: '100%',
-            boxShadow: '0 30px 80px rgba(0,0,0,0.5)',
+            background: 'white',
+            borderRadius: '20px', padding: '36px', width: '100%',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.05)',
+            border: '1px solid rgba(255,255,255,0.8)',
           }}>
 
-            <div style={{ marginBottom: '28px' }}>
-              <h2 style={{ fontSize: '26px', fontWeight: 900, color: 'white', marginBottom: '6px' }}>
-                {mode === 'setup' ? 'إنشاء كلمة مرور' : 'تسجيل الدخول'}
+            {/* Header */}
+            <div style={{ marginBottom: '26px' }}>
+              <h2 style={{ fontSize: '23px', fontWeight: 900, color: '#0f172a', marginBottom: '5px' }}>
+                {mode === 'setup' ? '🔐 إنشاء كلمة مرور' : 'مرحباً بك'}
               </h2>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
-                {mode === 'setup' ? 'أدخل كلمة مرور لتفعيل حسابك' : 'أدخل بياناتك للوصول لحسابك'}
+              <p style={{ color: '#94a3b8', fontSize: '13.5px' }}>
+                {mode === 'setup' ? 'أدخل كلمة مرور لتفعيل حسابك' : 'سجّل دخولك للوصول إلى حسابك'}
               </p>
             </div>
 
             {/* Mode tabs */}
             {mode !== 'setup' && (
-              <div style={{ display: 'flex', gap: '4px', marginBottom: '28px', background: 'rgba(255,255,255,0.04)', padding: '4px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', background: '#f1f5f9', padding: '4px', borderRadius: '11px' }}>
                 {[
-                  { key: 'patient', icon: <FiUser size={14} />, label: 'مريض' },
+                  { key: 'patient', icon: '🧑‍⚕️', label: 'مريض' },
                   { key: 'doctor', icon: '🩺', label: 'طبيب' },
                 ].map(m => (
-                  <button key={m.key} onClick={() => setMode(m.key)} className={`mode-tab${mode === m.key ? ' active' : ''}`}>
-                    <span style={{ marginLeft: '6px' }}>{m.icon}</span> {m.label}
+                  <button key={m.key} onClick={() => setMode(m.key)} className={`l-tab-btn${mode === m.key ? ' active' : ''}`}>
+                    <span>{m.icon}</span> {m.label}
                   </button>
                 ))}
               </div>
             )}
 
-            {/* Phone field with Egypt flag */}
-            <div style={{ marginBottom: '18px' }}>
-              <label className="login-label">رقم الجوال</label>
-              <div className="phone-wrapper">
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '13px 14px', borderLeft: '1px solid rgba(255,255,255,0.08)',
-                  flexShrink: 0, whiteSpace: 'nowrap',
-                }}>
+            {/* Phone field */}
+            <div style={{ marginBottom: '16px' }}>
+              <label className="l-label">رقم الجوال</label>
+              <div className="l-phone-wrap">
+                <div className="l-phone-prefix">
                   <span style={{ fontSize: '20px', lineHeight: 1 }}>🇪🇬</span>
-                  <span style={{ fontWeight: 800, color: '#38bdf8', fontSize: '14px', fontFamily: 'Cairo, sans-serif' }}>+20</span>
+                  <span style={{ fontWeight: 800, color: '#2563eb', fontSize: '13px' }}>+20</span>
                 </div>
                 <input
                   type="tel"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder="1156798324"
-                  className="phone-input"
+                  className="l-phone-input"
                   autoComplete="tel"
                 />
               </div>
@@ -310,26 +293,26 @@ export default function Login() {
 
             <form onSubmit={mode === 'setup' ? handleSetup : handleLogin}>
               {/* Password */}
-              <div style={{ marginBottom: '18px' }}>
-                <label className="login-label">
+              <div style={{ marginBottom: '16px' }}>
+                <label className="l-label">
                   {mode === 'setup' ? 'كلمة المرور الجديدة' : 'كلمة المرور'}
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <FiLock style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)', fontSize: '16px' }} />
+                  <FiLock style={{ position: 'absolute', right: '13px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '16px' }} />
                   <input
                     type={showPass ? 'text' : 'password'}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="login-input"
-                    style={{ paddingRight: '44px', paddingLeft: '44px' }}
+                    className="l-input"
+                    style={{ paddingRight: '42px', paddingLeft: '42px' }}
                     autoComplete={mode === 'setup' ? 'new-password' : 'current-password'}
                   />
                   <button type="button" onClick={() => setShowPass(!showPass)} style={{
-                    position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
-                    background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)',
-                    cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center',
+                    position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer',
+                    fontSize: '16px', display: 'flex', alignItems: 'center', padding: '2px',
                   }}>
                     {showPass ? <FiEyeOff /> : <FiEye />}
                   </button>
@@ -337,33 +320,31 @@ export default function Login() {
               </div>
 
               {mode === 'setup' && (
-                <div style={{ marginBottom: '18px' }}>
-                  <label className="login-label">تأكيد كلمة المرور</label>
+                <div style={{ marginBottom: '16px' }}>
+                  <label className="l-label">تأكيد كلمة المرور</label>
                   <div style={{ position: 'relative' }}>
-                    <FiLock style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)', fontSize: '16px' }} />
+                    <FiLock style={{ position: 'absolute', right: '13px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '16px' }} />
                     <input
                       type={showPass ? 'text' : 'password'}
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
                       required
-                      className="login-input"
-                      style={{ paddingRight: '44px' }}
+                      className="l-input"
+                      style={{ paddingRight: '42px' }}
                       autoComplete="new-password"
                     />
                   </div>
                 </div>
               )}
 
-              <button type="submit" disabled={loading} className="btn-login">
+              <button type="submit" disabled={loading} className="l-btn-submit">
                 {loading ? (
                   <>
-                    <div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'float1 0.7s linear infinite' }} />
+                    <div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
                     جاري الدخول...
                   </>
-                ) : (
-                  mode === 'setup' ? 'إنشاء الحساب' : 'دخول'
-                )}
+                ) : mode === 'setup' ? '✓ إنشاء الحساب' : 'تسجيل الدخول'}
               </button>
             </form>
 
@@ -371,19 +352,32 @@ export default function Login() {
             {mode !== 'setup' && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '18px 0' }}>
-                  <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
-                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' }}>أو</span>
-                  <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
+                  <div style={{ flex: 1, height: '1px', background: '#f1f5f9' }} />
+                  <span style={{ fontSize: '12px', color: '#94a3b8', whiteSpace: 'nowrap', fontWeight: 600 }}>أو</span>
+                  <div style={{ flex: 1, height: '1px', background: '#f1f5f9' }} />
                 </div>
                 <PasskeyLoginButton phone={phone} onSuccess={handlePasskeySuccess} />
               </div>
             )}
 
             {mode === 'patient' && (
-              <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '12px', marginTop: '16px', lineHeight: 1.6 }}>
-                أول مرة تدخل؟ سيطلب منك إنشاء كلمة مرور تلقائياً
-              </p>
+              <div style={{ marginTop: '16px', padding: '12px 14px', background: '#f0f9ff', borderRadius: '9px', border: '1px solid #bae6fd' }}>
+                <p style={{ textAlign: 'center', color: '#0369a1', fontSize: '12.5px', fontWeight: 500, lineHeight: 1.6 }}>
+                  أول مرة تدخل؟ سيطلب منك إنشاء كلمة مرور تلقائياً
+                </p>
+              </div>
             )}
+
+            {/* Contact */}
+            <div style={{ marginTop: '20px', paddingTop: '18px', borderTop: '1px solid #f1f5f9', textAlign: 'center' }}>
+              <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>تحتاج مساعدة؟</p>
+              <a href="https://wa.me/201156798324" target="_blank" rel="noreferrer" style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                color: '#16a34a', fontSize: '13px', fontWeight: 700, textDecoration: 'none',
+              }}>
+                <FaWhatsapp size={15} /> تواصل معنا على واتساب
+              </a>
+            </div>
           </div>
         </div>
       </div>

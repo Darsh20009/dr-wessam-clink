@@ -5,74 +5,70 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import {
   FiHome, FiUsers, FiCalendar, FiDollarSign, FiBarChart2,
-  FiMenu, FiLogOut, FiChevronLeft, FiBell, FiCreditCard, FiGlobe, FiSettings, FiX
+  FiMenu, FiLogOut, FiChevronLeft, FiBell, FiCreditCard,
+  FiGlobe, FiSettings, FiX, FiActivity
 } from 'react-icons/fi';
 import PushNotifBell from './PushNotifBell';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const navItems = [
-  { to: '/doctor', icon: <FiHome />, label: 'لوحة التحكم', end: true },
-  { to: '/doctor/patients', icon: <FiUsers />, label: 'المرضى' },
-  { to: '/doctor/appointments', icon: <FiCalendar />, label: 'المواعيد' },
-  { to: '/doctor/payments', icon: <FiDollarSign />, label: 'المدفوعات' },
-  { to: '/doctor/wallet', icon: <FiCreditCard />, label: 'المحفظة' },
-  { to: '/doctor/reports', icon: <FiBarChart2 />, label: 'التقارير' },
-  { to: '/doctor/notifications', icon: <FiBell />, label: 'الإشعارات' },
-  { to: '/doctor/site', icon: <FiGlobe />, label: 'إدارة الموقع' },
-  { to: '/doctor/settings', icon: <FiSettings />, label: 'الإعدادات' },
+  { to: '/doctor', icon: <FiHome size={17} />, label: 'لوحة التحكم', end: true },
+  { to: '/doctor/patients', icon: <FiUsers size={17} />, label: 'المرضى' },
+  { to: '/doctor/appointments', icon: <FiCalendar size={17} />, label: 'المواعيد' },
+  { to: '/doctor/payments', icon: <FiDollarSign size={17} />, label: 'المدفوعات' },
+  { to: '/doctor/wallet', icon: <FiCreditCard size={17} />, label: 'المحفظة' },
+  { to: '/doctor/reports', icon: <FiBarChart2 size={17} />, label: 'التقارير' },
+  { to: '/doctor/notifications', icon: <FiBell size={17} />, label: 'الإشعارات', notif: true },
+  { to: '/doctor/site', icon: <FiGlobe size={17} />, label: 'إدارة الموقع' },
+  { to: '/doctor/settings', icon: <FiSettings size={17} />, label: 'الإعدادات' },
 ];
 
 const STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
-  .sidebar-nav-link {
-    display: flex; align-items: center; gap: 12px;
-    padding: 11px 14px; border-radius: 12px; margin-bottom: 3px;
-    font-size: 14px; font-weight: 500; transition: all 0.2s;
-    white-space: nowrap; text-decoration: none; position: relative;
-    color: rgba(255,255,255,0.5);
-  }
-  .sidebar-nav-link:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.06); }
-  .sidebar-nav-link.active {
-    color: white; font-weight: 700;
-    background: linear-gradient(135deg, rgba(14,165,233,0.22), rgba(37,99,235,0.18));
-    border: 1px solid rgba(14,165,233,0.2);
-    box-shadow: 0 4px 12px rgba(14,165,233,0.1);
-  }
-  .sidebar-nav-link.active::before {
-    content: '';
-    position: absolute;
-    right: 0; top: 25%; bottom: 25%;
-    width: 3px; border-radius: 2px;
-    background: linear-gradient(180deg, #38bdf8, #2563eb);
-  }
-
-  .topbar-btn {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px; padding: 8px 14px;
-    color: rgba(255,255,255,0.7); font-size: 13px;
-    font-weight: 600; cursor: pointer;
-    font-family: 'Cairo', sans-serif;
-    display: flex; align-items: center; gap: 6px;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-  .topbar-btn:hover { background: rgba(255,255,255,0.09); color: white; border-color: rgba(255,255,255,0.15); }
-
-  .logout-btn {
+  .dl-sidebar-link {
     display: flex; align-items: center; gap: 10px;
-    width: 100%; padding: 11px 14px; border-radius: 12px;
-    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.15);
-    color: rgba(252,165,165,0.9); font-size: 14px; cursor: pointer;
-    font-family: 'Cairo', sans-serif; transition: all 0.2s;
+    padding: 10px 12px; border-radius: 9px; margin-bottom: 2px;
+    font-size: 14px; font-weight: 500; transition: all 0.18s;
+    white-space: nowrap; text-decoration: none; position: relative;
+    color: #64748b;
   }
-  .logout-btn:hover { background: rgba(239,68,68,0.18); border-color: rgba(239,68,68,0.3); color: #fca5a5; }
+  .dl-sidebar-link:hover { color: #2563eb; background: #eff6ff; }
+  .dl-sidebar-link.active {
+    color: #2563eb; font-weight: 700;
+    background: #eff6ff; border: 1px solid #dbeafe;
+  }
+  .dl-sidebar-link.active::before {
+    content: ''; position: absolute;
+    right: 0; top: 20%; bottom: 20%;
+    width: 3px; border-radius: 0 3px 3px 0;
+    background: #2563eb;
+  }
 
-  .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+  .dl-topbar-btn {
+    background: #f8fafc; border: 1.5px solid #e2e8f0;
+    border-radius: 9px; padding: 7px 13px;
+    color: #475569; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: 'Cairo', sans-serif;
+    display: flex; align-items: center; gap: 6px;
+    text-decoration: none; transition: all 0.18s;
+  }
+  .dl-topbar-btn:hover { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
 
-  @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
-  .page-anim { animation: slideIn 0.3s ease-out; }
+  .dl-logout-btn {
+    display: flex; align-items: center; gap: 9px;
+    width: 100%; padding: 10px 12px; border-radius: 9px;
+    background: #fff5f5; border: 1.5px solid #fecaca;
+    color: #dc2626; font-size: 14px; cursor: pointer;
+    font-family: 'Cairo', sans-serif; transition: all 0.18s;
+    font-weight: 600;
+  }
+  .dl-logout-btn:hover { background: #fee2e2; border-color: #fca5a5; }
+
+  @keyframes slideIn { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
+  .page-anim { animation: slideIn 0.25s ease-out; }
+
+  .dl-nav-section { font-size: 10.5px; font-weight: 700; color: #94a3b8; letter-spacing: 1.2px; padding: 10px 12px 6px; text-transform: uppercase; }
 `;
 
 export default function DoctorLayout() {
@@ -87,7 +83,7 @@ export default function DoctorLayout() {
         <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: '3px' }}>{data.title}</div>
         <div style={{ fontSize: '13px', color: '#64748b' }}>{data.body}</div>
       </div>,
-      { icon: '🔔', duration: 5000, style: { borderRadius: '12px' } }
+      { icon: '🔔', duration: 5000, style: { borderRadius: '12px', border: '1px solid #e2e8f0' } }
     );
     setUnreadCount(n => n + 1);
   }, []);
@@ -102,7 +98,7 @@ export default function DoctorLayout() {
 
   useEffect(() => {
     const fetchNotifCount = () => {
-      axios.get('/api/notifications').then(r => setUnreadCount(r.data.unreadCount || 0)).catch(() => {});
+      axios.get('/notifications').then(r => setUnreadCount(r.data.unreadCount || 0)).catch(() => {});
     };
     fetchNotifCount();
     const interval = setInterval(fetchNotifCount, 30000);
@@ -114,96 +110,85 @@ export default function DoctorLayout() {
   return (
     <>
       <style>{STYLE}</style>
-      <div style={{ display: 'flex', minHeight: '100vh', background: '#f0f4f8', fontFamily: 'Cairo, sans-serif' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: 'Cairo, sans-serif' }}>
 
         {/* ── SIDEBAR ── */}
         <aside style={{
-          width: sidebarOpen ? '260px' : '72px',
-          background: 'linear-gradient(180deg, #030b1a 0%, #061020 60%, #040d1e 100%)',
+          width: sidebarOpen ? '256px' : '68px',
+          background: 'white',
+          borderLeft: '1px solid #e2e8f0',
           display: 'flex', flexDirection: 'column',
-          transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)',
+          transition: 'width 0.28s cubic-bezier(0.4,0,0.2,1)',
           flexShrink: 0,
           position: 'sticky', top: 0, height: '100vh',
           overflowX: 'hidden',
-          boxShadow: '4px 0 24px rgba(0,0,0,0.25)',
+          boxShadow: '2px 0 12px rgba(0,0,0,0.05)',
           zIndex: 20,
         }}>
 
           {/* Logo area */}
           <div style={{
-            padding: '18px 14px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            padding: '16px 14px',
+            borderBottom: '1px solid #f1f5f9',
             display: 'flex', alignItems: 'center', gap: '10px',
-            minHeight: '72px',
+            minHeight: '68px',
           }}>
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <div style={{
-                position: 'absolute', inset: '-2px', borderRadius: '12px',
-                background: 'linear-gradient(135deg, #0ea5e9, #6366f1)',
-                opacity: 0.6,
-              }} />
-              <img
-                src="/logo-transparent.png"
-                alt="logo"
-                style={{
-                  width: '42px', height: '42px',
-                  borderRadius: '10px', objectFit: 'cover',
-                  position: 'relative', zIndex: 1,
-                  mixBlendMode: 'screen',
-                  filter: 'brightness(1.1)',
-                }}
-              />
-            </div>
+            <div style={{
+              width: '40px', height: '40px', borderRadius: '11px',
+              background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '20px', flexShrink: 0,
+              boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
+            }}>🦷</div>
+
             {sidebarOpen && (
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: 'white', fontWeight: 800, fontSize: '14px', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                <div style={{ color: '#0f172a', fontWeight: 800, fontSize: '14px', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   د. وسام يوسف
                 </div>
-                <div style={{ color: 'rgba(14,165,233,0.8)', fontSize: '11px', fontWeight: 600, marginTop: '2px' }}>
+                <div style={{ color: '#2563eb', fontSize: '11px', fontWeight: 600, marginTop: '2px' }}>
                   أخصائي تقويم الأسنان
                 </div>
               </div>
             )}
+
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               style={{
-                marginRight: 'auto', background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px', color: 'rgba(255,255,255,0.5)',
-                fontSize: '16px', cursor: 'pointer',
+                marginRight: 'auto', background: '#f8fafc',
+                border: '1.5px solid #e2e8f0',
+                borderRadius: '8px', color: '#64748b',
+                fontSize: '15px', cursor: 'pointer',
                 width: '30px', height: '30px', display: 'flex',
                 alignItems: 'center', justifyContent: 'center',
-                transition: 'all 0.2s', flexShrink: 0,
+                transition: 'all 0.18s', flexShrink: 0,
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'white'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = '#2563eb'; e.currentTarget.style.borderColor = '#bfdbfe'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#64748b'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
             >
-              {sidebarOpen ? <FiChevronLeft /> : <FiMenu />}
+              {sidebarOpen ? <FiChevronLeft size={15} /> : <FiMenu size={15} />}
             </button>
           </div>
 
           {/* Nav items */}
-          <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
-            {sidebarOpen && (
-              <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.25)', letterSpacing: '1.5px', padding: '6px 14px 10px', textTransform: 'uppercase' }}>
-                القائمة الرئيسية
-              </div>
-            )}
+          <nav style={{ flex: 1, padding: '10px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
+            {sidebarOpen && <div className="dl-nav-section">القائمة الرئيسية</div>}
+
             {navItems.map(item => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                className={({ isActive }) => `sidebar-nav-link${isActive ? ' active' : ''}`}
+                className={({ isActive }) => `dl-sidebar-link${isActive ? ' active' : ''}`}
                 title={!sidebarOpen ? item.label : undefined}
               >
-                <span style={{ fontSize: '19px', flexShrink: 0, position: 'relative' }}>
+                <span style={{ flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center' }}>
                   {item.icon}
-                  {item.to === '/doctor/notifications' && unreadCount > 0 && (
+                  {item.notif && unreadCount > 0 && (
                     <span style={{
                       position: 'absolute', top: '-6px', left: '-6px',
                       background: '#ef4444', color: 'white',
-                      borderRadius: '50%', width: '16px', height: '16px',
+                      borderRadius: '50%', width: '15px', height: '15px',
                       fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontWeight: 800, lineHeight: 1,
                     }}>{unreadCount > 9 ? '9+' : unreadCount}</span>
@@ -211,13 +196,12 @@ export default function DoctorLayout() {
                 </span>
                 {sidebarOpen && (
                   <>
-                    <span style={{ flex: 1 }}>{item.label}</span>
-                    {item.to === '/doctor/notifications' && unreadCount > 0 && (
+                    <span style={{ flex: 1, fontSize: '13.5px' }}>{item.label}</span>
+                    {item.notif && unreadCount > 0 && (
                       <span style={{
-                        background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                        color: 'white', borderRadius: '20px',
-                        padding: '2px 8px', fontSize: '11px', fontWeight: 800,
-                        boxShadow: '0 2px 8px rgba(239,68,68,0.35)',
+                        background: '#ef4444', color: 'white',
+                        borderRadius: '20px', padding: '2px 7px',
+                        fontSize: '11px', fontWeight: 800,
                       }}>{unreadCount}</span>
                     )}
                   </>
@@ -227,77 +211,89 @@ export default function DoctorLayout() {
           </nav>
 
           {/* Bottom user section */}
-          <div style={{ padding: '10px 8px 14px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ padding: '10px 8px 14px', borderTop: '1px solid #f1f5f9' }}>
             {sidebarOpen && (
               <div style={{
-                padding: '10px 14px', marginBottom: '8px',
-                background: 'rgba(255,255,255,0.04)',
-                borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)',
+                padding: '10px 12px', marginBottom: '8px',
+                background: '#f8fafc', borderRadius: '9px',
+                border: '1px solid #f1f5f9',
+                display: 'flex', alignItems: 'center', gap: '10px',
               }}>
-                <div style={{ color: 'white', fontWeight: 700, fontSize: '13px' }}>{user?.name}</div>
-                <div style={{ color: 'rgba(14,165,233,0.7)', fontSize: '11px', marginTop: '2px' }}>🩺 طبيب</div>
+                <div style={{
+                  width: '34px', height: '34px', borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontWeight: 900, fontSize: '14px', flexShrink: 0,
+                }}>
+                  {user?.name?.[0] || 'د'}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ color: '#1e293b', fontWeight: 700, fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
+                  <div style={{ color: '#2563eb', fontSize: '11px', marginTop: '1px' }}>🩺 طبيب</div>
+                </div>
               </div>
             )}
-            <button onClick={handleLogout} className="logout-btn">
-              <FiLogOut style={{ flexShrink: 0, fontSize: '16px' }} />
+            <button onClick={handleLogout} className="dl-logout-btn">
+              <FiLogOut size={15} style={{ flexShrink: 0 }} />
               {sidebarOpen && 'تسجيل الخروج'}
             </button>
           </div>
         </aside>
 
         {/* ── MAIN ── */}
-        <div className="main-content">
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
 
           {/* Top bar */}
           <div style={{
             background: 'white',
-            borderBottom: '1px solid #e8ecf0',
-            padding: '0 28px',
+            borderBottom: '1px solid #e2e8f0',
+            padding: '0 24px',
             display: 'flex', alignItems: 'center',
             justifyContent: 'space-between',
             height: '64px',
             position: 'sticky', top: 0, zIndex: 10,
-            boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
           }}>
-            {/* Left side - page breadcrumb / greeting */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <img src="/logo-transparent.png" alt="logo" style={{ height: '32px', width: '32px', borderRadius: '8px', objectFit: 'cover', mixBlendMode: 'multiply' }} />
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: '13px', color: '#1a3a6b' }}>د. وسام يوسف</div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>لوحة تحكم العيادة</div>
-                </div>
+            {/* Greeting */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '8px', height: '8px', borderRadius: '50%', background: '#10b981',
+                boxShadow: '0 0 0 3px rgba(16,185,129,0.2)',
+              }} />
+              <div>
+                <span style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>مرحباً، {user?.name || 'الدكتور'}</span>
+                <span style={{ fontSize: '12px', color: '#94a3b8', marginRight: '8px' }}>— لوحة تحكم العيادة</span>
               </div>
             </div>
 
-            {/* Right side actions */}
+            {/* Actions */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <PushNotifBell />
 
-              <NavLink to="/doctor/notifications" style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer' }} className="topbar-btn">
-                <FiBell style={{ fontSize: '16px' }} />
+              <NavLink to="/doctor/notifications" style={{ position: 'relative', textDecoration: 'none' }} className="dl-topbar-btn">
+                <FiBell size={15} />
                 {unreadCount > 0 && (
                   <span style={{
                     position: 'absolute', top: '4px', right: '10px',
                     background: '#ef4444', color: 'white',
                     borderRadius: '50%', width: '14px', height: '14px',
-                    fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontWeight: 800,
                   }}>{unreadCount > 9 ? '9+' : unreadCount}</span>
                 )}
               </NavLink>
 
-              <NavLink to="/doctor/settings" className="topbar-btn">
-                <FiSettings style={{ fontSize: '16px' }} /> الإعدادات
+              <NavLink to="/doctor/settings" className="dl-topbar-btn">
+                <FiSettings size={15} /> الإعدادات
               </NavLink>
 
               <div style={{
                 width: '36px', height: '36px', borderRadius: '10px',
-                background: 'linear-gradient(135deg, #0ea5e9, #2563eb)',
+                background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: 'white', fontWeight: 900, fontSize: '15px',
                 flexShrink: 0, cursor: 'default',
-                boxShadow: '0 4px 12px rgba(14,165,233,0.3)',
+                boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
               }}>
                 {user?.name?.[0] || 'د'}
               </div>
@@ -305,7 +301,7 @@ export default function DoctorLayout() {
           </div>
 
           {/* Page content */}
-          <main style={{ flex: 1, padding: '28px', overflowX: 'hidden' }} className="page-anim">
+          <main style={{ flex: 1, padding: '24px', overflowX: 'hidden' }} className="page-anim">
             <Outlet />
           </main>
         </div>
