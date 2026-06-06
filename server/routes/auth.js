@@ -74,12 +74,12 @@ router.post('/seed-doctor', async (req, res) => {
     
     const doctor = new User({
       name: 'د. وسام يوسف',
-      phone: '01000000000',
+      phone: '01156798324',
       password: 'doctor123',
       role: 'doctor'
     });
     await doctor.save();
-    res.json({ message: 'Doctor created', phone: '01000000000', password: 'doctor123' });
+    res.json({ message: 'Doctor created', phone: '01156798324', password: 'doctor123' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

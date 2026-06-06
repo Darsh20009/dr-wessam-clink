@@ -59,7 +59,7 @@ export default function PatientPortal() {
       <div style={{ background: 'linear-gradient(135deg, #1a3a6b, #1e40af)', padding: '20px 24px', color: 'white' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <img src="/logo.png" alt="logo" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+            <img src="/logo-transparent.png" alt="logo" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
             <div>
               <div style={{ fontWeight: 800, fontSize: '18px' }}>أهلاً {patient.fullName}</div>
               <div style={{ fontSize: '13px', opacity: 0.8 }}>بوابة المريض - عيادة د. وسام يوسف</div>

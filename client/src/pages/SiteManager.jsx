@@ -276,11 +276,11 @@ export default function SiteManager() {
             <div className="grid-2">
               <div className="form-group">
                 <label>رقم الهاتف</label>
-                <input className="form-control" value={settings.phone || ''} onChange={e => set('phone', e.target.value)} placeholder="01000000000" />
+                <input className="form-control" value={settings.phone || ''} onChange={e => set('phone', e.target.value)} placeholder="01156798324" />
               </div>
               <div className="form-group">
                 <label>رقم واتساب (بالكود الدولي)</label>
-                <input className="form-control" value={settings.whatsapp || ''} onChange={e => set('whatsapp', e.target.value)} placeholder="201000000000" />
+                <input className="form-control" value={settings.whatsapp || ''} onChange={e => set('whatsapp', e.target.value)} placeholder="201156798324" />
               </div>
             </div>
             <div className="form-group">

@@ -18,8 +18,11 @@ A full-stack dental clinic management system for Dr. Wessam Youssef's orthodonti
 - Backend workflow: `cd server && node index.js` (port 3001)
 
 ## Doctor Login
-- Phone: `01000000000`
+- Phone: `01156798324`
 - Password: `doctor123`
+
+## Clinic Contact
+- Phone/WhatsApp: `+20 115 679 8324`
 
 ## Key Features
 - Doctor dashboard with statistics and charts
