@@ -1,3 +1,4 @@
-- [Dr Wessam Clinic Stack](dr-wessam-stack.md) — Full-stack: Vite+React client (port 5000), Express server (port 3001), MongoDB Atlas. Doctor login: 01000000000 / doctor123.
+- [Dr Wessam Clinic Stack](dr-wessam-stack.md) — Full-stack: Vite+React client (port 5000), Express server (port 3001), MongoDB Atlas. Doctor login: 01156798324 / doctor123.
 - [Dr Wessam Features v2](dr-wessam-features-v2.md) — Models/routes: Notification, Wallet, SiteSettings. Pages: Notifications, Wallet, SiteManager. Landing loads from /api/site.
 - [Dr Wessam Push+Passkey](dr-wessam-push-passkey.md) — Web Push (VAPID), WebSocket real-time, WebAuthn passkey. FiFingerprint does NOT exist in react-icons/fi — use FiKey instead.
+- [Dr Wessam Auth Routes](dr-wessam-auth.md) — Forgot password flow: POST /auth/verify-identity (patientId+phone), then POST /auth/reset-password. Pages /forgot-password + /presentation exist in App.jsx.

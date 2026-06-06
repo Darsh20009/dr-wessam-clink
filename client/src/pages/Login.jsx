@@ -361,10 +361,29 @@ export default function Login() {
             )}
 
             {mode === 'patient' && (
-              <div style={{ marginTop: '16px', padding: '12px 14px', background: '#f0f9ff', borderRadius: '9px', border: '1px solid #bae6fd' }}>
-                <p style={{ textAlign: 'center', color: '#0369a1', fontSize: '12.5px', fontWeight: 500, lineHeight: 1.6 }}>
-                  أول مرة تدخل؟ سيطلب منك إنشاء كلمة مرور تلقائياً
-                </p>
+              <div style={{ marginTop: '12px' }}>
+                <div style={{ padding: '12px 14px', background: '#f0f9ff', borderRadius: '9px', border: '1px solid #bae6fd', marginBottom: '10px' }}>
+                  <p style={{ textAlign: 'center', color: '#0369a1', fontSize: '12.5px', fontWeight: 500, lineHeight: 1.6 }}>
+                    أول مرة تدخل؟ سيطلب منك إنشاء كلمة مرور تلقائياً
+                  </p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/forgot-password')}
+                    style={{
+                      background: 'none', border: 'none', color: '#2563eb',
+                      fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                      fontFamily: 'Cairo, sans-serif', textDecoration: 'underline',
+                      textDecorationStyle: 'dotted', textUnderlineOffset: '3px',
+                      padding: '4px', transition: 'color 0.2s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#1d4ed8'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#2563eb'}
+                  >
+                    🔑 نسيت كلمة المرور؟
+                  </button>
+                </div>
               </div>
             )}
 

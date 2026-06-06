@@ -47,6 +47,48 @@ router.post('/setup-password', async (req, res) => {
   }
 });
 
+// ── Reset Password (Forgot Password) ─────────────────────────────
+// Patient verifies with patientId + phone, then sets new password
+router.post('/verify-identity', async (req, res) => {
+  try {
+    const { patientId, phone } = req.body;
+    if (!patientId || !phone) return res.status(400).json({ message: 'يرجى إدخال رقم الملف ورقم الجوال' });
+
+    const patient = await Patient.findOne({ _id: patientId, phone });
+    if (!patient) return res.status(400).json({ message: 'بيانات غير صحيحة. تأكد من رقم الملف ورقم جوالك' });
+
+    res.json({ verified: true, name: patient.fullName, patientId: patient._id });
+  } catch (err) {
+    if (err.name === 'CastError') return res.status(400).json({ message: 'رقم الملف غير صحيح' });
+    res.status(500).json({ message: 'خطأ في الخادم' });
+  }
+});
+
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { patientId, phone, newPassword } = req.body;
+    if (!patientId || !phone || !newPassword) return res.status(400).json({ message: 'بيانات ناقصة' });
+    if (newPassword.length < 6) return res.status(400).json({ message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
+
+    const patient = await Patient.findOne({ _id: patientId, phone });
+    if (!patient) return res.status(400).json({ message: 'بيانات غير صحيحة' });
+
+    let user = await User.findOne({ phone });
+    if (!user) {
+      user = new User({ name: patient.fullName, phone, role: 'patient', patientId: patient._id });
+    }
+    user.password = newPassword;
+    user.patientId = patient._id;
+    await user.save();
+
+    const token = generateToken(user._id);
+    res.json({ success: true, token, user: { id: user._id, name: user.name, phone: user.phone, role: user.role, patientId: user.patientId } });
+  } catch (err) {
+    if (err.name === 'CastError') return res.status(400).json({ message: 'رقم الملف غير صحيح' });
+    res.status(500).json({ message: 'خطأ في الخادم' });
+  }
+});
+
 router.get('/me', auth, async (req, res) => {
   res.json(req.user);
 });
