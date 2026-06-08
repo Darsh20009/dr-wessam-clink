@@ -180,7 +180,7 @@ export default function Login() {
             overflow: 'hidden',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <img src="/logo.png" alt="شعار عيادة د. وسام يوسف" style={{ width: '94px', height: '94px', objectFit: 'contain' }} />
+            <img src="/icon-512.png" alt="شعار عيادة د. وسام يوسف" style={{ width: '94px', height: '94px', objectFit: 'cover' }} />
           </div>
 
           <h1 style={{ color: '#0f172a', fontSize: '32px', fontWeight: 900, textAlign: 'center', marginBottom: '6px', lineHeight: 1.25 }}>

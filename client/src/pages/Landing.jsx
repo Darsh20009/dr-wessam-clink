@@ -492,7 +492,7 @@ export default function Landing() {
               border: '1.5px solid #e2e8f0', overflow: 'hidden',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <img src="/logo.png" alt="شعار العيادة" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+              <img src="/icon-512.png" alt="شعار العيادة" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
             </div>
             <div>
               <div style={{ fontWeight: 900, fontSize: '16px', color: '#0f172a' }}>{settings.doctorName}</div>
@@ -572,7 +572,7 @@ export default function Landing() {
                     border: '2px solid #e2e8f0', overflow: 'hidden',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <img src="/logo.png" alt="شعار العيادة" style={{ width: '58px', height: '58px', objectFit: 'contain' }} />
+                    <img src="/icon-512.png" alt="شعار العيادة" style={{ width: '58px', height: '58px', objectFit: 'cover' }} />
                   </div>
                   <div>
                     <div style={{ fontWeight: 900, fontSize: '18px', color: '#0f172a' }}>{settings.doctorName}</div>
@@ -874,7 +874,7 @@ export default function Landing() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexWrap: 'wrap', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-                  <img src="/logo.png" alt="شعار العيادة" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
+                  <img src="/icon-512.png" alt="شعار العيادة" style={{ width: '38px', height: '38px', objectFit: 'cover' }} />
                 </div>
                 <div>
                   <div style={{ color: 'white', fontWeight: 800 }}>{settings.doctorName}</div>

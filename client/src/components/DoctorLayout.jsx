@@ -142,7 +142,7 @@ export default function DoctorLayout() {
               border: '1px solid #e2e8f0',
               overflow: 'hidden',
             }}>
-              <img src="/logo.png" alt="شعار العيادة" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
+              <img src="/icon-512.png" alt="شعار العيادة" style={{ width: '38px', height: '38px', objectFit: 'cover' }} />
             </div>
 
             {sidebarOpen && (
