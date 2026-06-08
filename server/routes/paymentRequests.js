@@ -84,6 +84,18 @@ router.patch('/:id/approve', auth, async (req, res) => {
       notes: `دفع عبر InstaPay — تم التأكيد`,
     });
 
+    const patient = await Patient.findById(pr.patientId._id);
+    if (patient) {
+      patient.financials.totalPaid = (patient.financials.totalPaid || 0) + pr.amount;
+      patient.financials.remaining = (patient.financials.totalCost || 0) - patient.financials.totalPaid;
+      if (patient.financials.totalPaid >= patient.financials.totalCost && patient.financials.totalCost > 0) {
+        patient.financials.status = 'paid';
+      } else if (patient.financials.totalPaid > 0) {
+        patient.financials.status = 'partial';
+      }
+      await patient.save();
+    }
+
     if (pr.userId) {
       await fireNotify(
         pr.userId,
