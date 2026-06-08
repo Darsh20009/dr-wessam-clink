@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -121,6 +121,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showQrScanner, setShowQrScanner] = useState(false);
   const [qrLoading, setQrLoading] = useState(false);
+  const bgVideoRef = useRef(null);
 
   useEffect(() => {
     const qrToken = searchParams.get('qr');
@@ -198,10 +199,12 @@ export default function Login() {
       }}>
 
         {/* Video background */}
-        <video autoPlay muted loop playsInline style={{
-          position: 'absolute', inset: 0, width: '100%', height: '100%',
-          objectFit: 'cover', zIndex: 0,
-        }}>
+        <video ref={bgVideoRef} autoPlay muted loop playsInline
+          onCanPlay={() => { if (bgVideoRef.current) bgVideoRef.current.playbackRate = 4; }}
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%',
+            objectFit: 'cover', zIndex: 0,
+          }}>
           <source src="/bg-video.mp4" type="video/mp4" />
         </video>
         {/* Dark overlay */}
