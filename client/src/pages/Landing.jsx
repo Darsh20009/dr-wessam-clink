@@ -891,6 +891,179 @@ export default function Landing() {
           </section>
         )}
 
+        {/* ── SPECIAL THANKS ── */}
+        <section className="l-section" style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0f2044 50%, #0a1628 100%)', overflow: 'hidden', position: 'relative' }}>
+          {/* Background decorative circles */}
+          <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '320px', height: '320px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: '-60px', left: '-60px', width: '280px', height: '280px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,182,212,0.14) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+          <div className="l-section-inner" style={{ position: 'relative', zIndex: 1 }}>
+            {/* Header */}
+            <div className="l-section-header">
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.4)',
+                borderRadius: '30px', padding: '6px 18px',
+                marginBottom: '16px',
+              }}>
+                <span style={{ fontSize: '16px' }}>🌟</span>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#fbbf24' }}>شكر خاص وتقدير</span>
+              </div>
+              <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 900, color: '#f1f5f9', marginBottom: '12px', letterSpacing: '-0.3px' }}>
+                شرّفونا بزيارتهم الكريمة
+              </h2>
+              <p style={{ fontSize: '16px', color: '#94a3b8', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
+                يسعدنا أن نُعبّر عن خالص شكرنا وامتناننا لهذه الزيارة الرائعة
+              </p>
+              <div style={{ width: '60px', height: '4px', borderRadius: '4px', background: 'linear-gradient(90deg, #f59e0b, #f97316)', margin: '16px auto 0' }} />
+            </div>
+
+            {/* Main content — photo + names */}
+            <div style={{
+              display: 'grid', gridTemplateColumns: '1.1fr 0.9fr',
+              gap: '56px', alignItems: 'center', marginTop: '8px',
+            }}>
+              {/* Photo with creative frame */}
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <div style={{ position: 'relative' }}>
+                  {/* Outer glow */}
+                  <div style={{
+                    position: 'absolute', inset: '-12px', borderRadius: '28px',
+                    background: 'linear-gradient(135deg, rgba(245,158,11,0.3), rgba(37,99,235,0.3))',
+                    filter: 'blur(14px)',
+                  }} />
+                  {/* Gold gradient border */}
+                  <div style={{
+                    position: 'relative', padding: '4px', borderRadius: '24px',
+                    background: 'linear-gradient(135deg, #f59e0b, #2563eb, #06b6d4)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+                  }}>
+                    <img
+                      src="/dr-visit.png"
+                      alt="زيارة د. بسمة و د. فادي للعيادة"
+                      style={{
+                        width: '100%', maxWidth: '420px',
+                        height: '340px', objectFit: 'cover',
+                        objectPosition: 'center top',
+                        borderRadius: '20px', display: 'block',
+                      }}
+                    />
+                    {/* Overlay label at bottom */}
+                    <div style={{
+                      position: 'absolute', bottom: '14px', left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: 'rgba(10,22,40,0.85)',
+                      backdropFilter: 'blur(8px)',
+                      borderRadius: '30px', padding: '8px 20px',
+                      border: '1px solid rgba(245,158,11,0.4)',
+                      whiteSpace: 'nowrap',
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                    }}>
+                      <span style={{ fontSize: '14px' }}>📸</span>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#fbbf24', fontFamily: 'Cairo, sans-serif' }}>
+                        زيارة كريمة للعيادة
+                      </span>
+                    </div>
+                  </div>
+                  {/* Decorative badge top-left */}
+                  <div style={{
+                    position: 'absolute', top: '-14px', left: '-14px',
+                    width: '44px', height: '44px', borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #f59e0b, #f97316)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '20px', boxShadow: '0 6px 16px rgba(245,158,11,0.5)',
+                  }}>💛</div>
+                </div>
+              </div>
+
+              {/* Names & thank-you cards */}
+              <div>
+                {/* Quote */}
+                <div style={{
+                  padding: '20px 24px', borderRadius: '16px', marginBottom: '28px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRight: '4px solid #f59e0b',
+                }}>
+                  <p style={{
+                    color: '#cbd5e1', fontSize: '15px', lineHeight: 1.9,
+                    fontStyle: 'italic', margin: 0,
+                  }}>
+                    "يشرّفنا تشريف زملائنا الأفاضل لعيادتنا، ونُعبّر عن خالص شكرنا وتقديرنا لكل لحظة أمضوها معنا."
+                  </p>
+                  <div style={{ marginTop: '10px', fontSize: '13px', fontWeight: 700, color: '#fbbf24' }}>
+                    — د. وسام يوسف
+                  </div>
+                </div>
+
+                {/* Dr. Basma card */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '16px',
+                  padding: '18px 20px', borderRadius: '14px', marginBottom: '14px',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  transition: 'all 0.2s',
+                }}>
+                  <div style={{
+                    width: '52px', height: '52px', borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #ec4899, #f97316)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '22px', flexShrink: 0,
+                    boxShadow: '0 6px 18px rgba(236,72,153,0.35)',
+                  }}>👩‍⚕️</div>
+                  <div>
+                    <div style={{ fontWeight: 900, fontSize: '17px', color: '#f1f5f9', marginBottom: '3px' }}>
+                      د. بسمة
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#94a3b8' }}>
+                      ضيفة شرف كريمة — شكراً جزيلاً لتشريفك إيانا 💛
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dr. Fadi card */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '16px',
+                  padding: '18px 20px', borderRadius: '14px', marginBottom: '14px',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  transition: 'all 0.2s',
+                }}>
+                  <div style={{
+                    width: '52px', height: '52px', borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '22px', flexShrink: 0,
+                    boxShadow: '0 6px 18px rgba(37,99,235,0.4)',
+                  }}>👨‍⚕️</div>
+                  <div>
+                    <div style={{ fontWeight: 900, fontSize: '17px', color: '#f1f5f9', marginBottom: '3px' }}>
+                      د. فادي
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#94a3b8' }}>
+                      ضيف شرف كريم — شكراً جزيلاً لتشريفك إيانا 💙
+                    </div>
+                  </div>
+                </div>
+
+                {/* Thank you badge */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                  padding: '14px 20px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(249,115,22,0.1))',
+                  border: '1px solid rgba(245,158,11,0.3)',
+                  marginTop: '4px',
+                }}>
+                  <span style={{ fontSize: '20px' }}>🤝</span>
+                  <span style={{ color: '#fbbf24', fontWeight: 800, fontSize: '14px' }}>
+                    دائماً يسعدنا استقبال زملائنا الكرام
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── CONTACT ── */}
         <section id="contact" className="l-section l-section-alt">
           <div className="l-section-inner">
