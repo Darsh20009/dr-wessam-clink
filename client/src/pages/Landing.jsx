@@ -332,6 +332,40 @@ const STYLE = `
     font-size: 22px; margin: 0 auto 12px;
   }
 
+  /* MENTORS */
+  .l-mentors-section {
+    padding: 80px 6%;
+    background: linear-gradient(160deg, #0f172a 0%, #1e3a8a 60%, #1e40af 100%);
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .l-mentors-section::before {
+    content: '❝';
+    position: absolute; top: 20px; right: 6%;
+    font-size: 160px; color: rgba(255,255,255,0.04);
+    font-family: Georgia, serif; line-height: 1;
+    pointer-events: none;
+  }
+  .l-mentor-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 32px 28px;
+    transition: all 0.3s;
+    backdrop-filter: blur(4px);
+  }
+  .l-mentor-card:hover {
+    background: rgba(255,255,255,0.12);
+    transform: translateY(-5px);
+    border-color: rgba(255,255,255,0.3);
+  }
+  .l-mentor-avatar {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; font-size: 28px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
   /* FOOTER */
   .l-footer {
     background: #0f172a; color: rgba(255,255,255,0.65);
@@ -1325,6 +1359,98 @@ export default function Landing() {
               }}>
                 <FaWhatsapp size={18} /> احجز الآن
               </a>
+            </div>
+          </div>
+        </section>
+
+        {/* ── MENTORS / ACKNOWLEDGMENT ── */}
+        <section className="l-mentors-section">
+          <div style={{ maxWidth: '860px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+
+            {/* Tag */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '7px',
+              background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '50px', padding: '6px 18px', marginBottom: '28px',
+              color: 'rgba(255,255,255,0.85)', fontSize: '13px', fontWeight: 600,
+            }}>
+              🎓 شكر وتقدير
+            </div>
+
+            {/* Main quote */}
+            <h2 style={{
+              color: 'white', fontSize: 'clamp(20px, 4vw, 30px)',
+              fontWeight: 800, lineHeight: 1.65, margin: '0 0 12px',
+            }}>
+              فخور بكوني تعلّمت تقويم الأسنان على يد أشطر الدكاترة في مصر والعالم العربي
+            </h2>
+            <p style={{
+              color: 'rgba(255,255,255,0.55)', fontSize: '15px',
+              fontStyle: 'italic', marginBottom: '48px', letterSpacing: '0.5px',
+            }}>
+              "Proud of being a student of such great mentors"
+            </p>
+
+            {/* Mentor cards */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '24px',
+              textAlign: 'center',
+            }}>
+              {/* Mentor 1 */}
+              <div className="l-mentor-card">
+                <div className="l-mentor-avatar">👨‍⚕️</div>
+                <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '12px', fontWeight: 600, letterSpacing: '1.5px', marginBottom: '8px', textTransform: 'uppercase' }}>
+                  Professor · أستاذ دكتور
+                </div>
+                <div style={{ color: 'white', fontSize: '20px', fontWeight: 800, marginBottom: '8px' }}>
+                  فادي حسين
+                </div>
+                <div style={{
+                  display: 'inline-block',
+                  background: 'rgba(96,165,250,0.15)',
+                  border: '1px solid rgba(96,165,250,0.3)',
+                  color: '#93c5fd', borderRadius: '50px',
+                  padding: '4px 14px', fontSize: '12px', fontWeight: 600,
+                }}>
+                  🏆 أستاذ تقويم الأسنان
+                </div>
+              </div>
+
+              {/* Mentor 2 */}
+              <div className="l-mentor-card">
+                <div className="l-mentor-avatar" style={{ background: 'linear-gradient(135deg, #f9a8d4, #c084fc)' }}>👩‍⚕️</div>
+                <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '12px', fontWeight: 600, letterSpacing: '1.5px', marginBottom: '8px', textTransform: 'uppercase' }}>
+                  Doctor · دكتورة
+                </div>
+                <div style={{ color: 'white', fontSize: '20px', fontWeight: 800, marginBottom: '8px' }}>
+                  بسمة نبيل
+                </div>
+                <div style={{
+                  display: 'inline-block',
+                  background: 'rgba(192,132,252,0.15)',
+                  border: '1px solid rgba(192,132,252,0.3)',
+                  color: '#d8b4fe', borderRadius: '50px',
+                  padding: '4px 14px', fontSize: '12px', fontWeight: 600,
+                }}>
+                  🏆 متخصصة تقويم الأسنان
+                </div>
+              </div>
+            </div>
+
+            {/* Signature line */}
+            <div style={{
+              marginTop: '44px',
+              paddingTop: '32px',
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.45)',
+              fontSize: '14px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+            }}>
+              <span>— د. وسام يوسف</span>
+              <span style={{ color: 'rgba(255,255,255,0.2)' }}>|</span>
+              <span>أخصائي تقويم الأسنان</span>
             </div>
           </div>
         </section>
