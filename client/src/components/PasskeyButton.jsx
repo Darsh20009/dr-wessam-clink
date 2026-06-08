@@ -26,14 +26,32 @@ export function PasskeyManager() {
     setLoading(true);
     try {
       const { data: options } = await axios.post('/webauthn/register-options');
+      const deviceName = (() => {
+        const ua = navigator.userAgent;
+        if (/iPhone|iPad|iPod/.test(ua)) return 'iPhone/iPad';
+        if (/Android/.test(ua)) return 'Android';
+        if (/Mac/.test(ua)) return 'Mac';
+        if (/Windows/.test(ua)) return 'Windows';
+        return navigator.platform || 'جهازي';
+      })();
       const response = await startRegistration({ optionsJSON: options });
-      const deviceName = navigator.platform || 'جهازي';
       await axios.post('/webauthn/register-verify', { ...response, deviceName });
-      toast.success('تم إضافة البصمة بنجاح');
+      toast.success('✅ تم إضافة البصمة بنجاح');
       fetchCreds();
     } catch (err) {
-      if (err.name === 'NotAllowedError') toast.error('تم إلغاء التسجيل');
-      else toast.error(err.response?.data?.message || 'خطأ في إضافة البصمة');
+      if (err.name === 'InvalidStateError') {
+        toast.error('هذا الجهاز لديه بصمة مسجّلة بالفعل — يمكنك إضافة بصمة من جهاز آخر', { duration: 5000 });
+      } else if (err.name === 'NotAllowedError') {
+        toast.error('تم إلغاء التسجيل أو انتهت المهلة');
+      } else if (err.name === 'NotSupportedError') {
+        toast.error('جهازك لا يدعم هذا النوع من البصمة');
+      } else if (err.name === 'SecurityError') {
+        toast.error('خطأ أمني — تأكد من فتح التطبيق في نافذة المتصفح مباشرةً (ليس داخل إطار مضمّن)', { duration: 6000 });
+      } else if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error(`خطأ في إضافة البصمة: ${err.message || err.name || 'خطأ غير معروف'}`);
+      }
     }
     setLoading(false);
   };
