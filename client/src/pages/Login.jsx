@@ -194,14 +194,22 @@ export default function Login() {
       )}
       <div className="login-root" style={{
         minHeight: '100vh', display: 'flex',
-        background: 'linear-gradient(135deg, #f0f6ff 0%, #e8f2ff 50%, #f5f0ff 100%)',
         position: 'relative', overflow: 'hidden',
       }}>
 
-        {/* Background shapes */}
-        <div className="l-bg-shape" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%)', top: '-150px', right: '-100px' }} />
-        <div className="l-bg-shape" style={{ width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(6,182,212,0.07) 0%, transparent 70%)', bottom: '-100px', left: '30%' }} />
-        <div className="l-bg-shape" style={{ width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)', top: '30%', left: '5%' }} />
+        {/* Video background */}
+        <video autoPlay muted loop playsInline style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover', zIndex: 0,
+        }}>
+          <source src="/bg-video.mp4" type="video/mp4" />
+        </video>
+        {/* Dark overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(135deg, rgba(15,23,42,0.75) 0%, rgba(30,58,138,0.65) 50%, rgba(15,23,42,0.75) 100%)',
+          zIndex: 1,
+        }} />
 
         {/* Floating geometric shapes */}
         <div style={{ position: 'absolute', top: '12%', right: '42%', width: '64px', height: '64px', border: '2px solid rgba(37,99,235,0.15)', borderRadius: '16px', animation: 'float 8s ease-in-out infinite', transform: 'rotate(20deg)', pointerEvents: 'none' }} />
@@ -211,7 +219,7 @@ export default function Login() {
         <div className="login-left-panel" style={{
           flex: 1, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          padding: '60px 48px', position: 'relative', zIndex: 1,
+          padding: '60px 48px', position: 'relative', zIndex: 2,
           animation: 'fadeUp 0.6s ease-out',
         }}>
 
@@ -227,13 +235,13 @@ export default function Login() {
             <img src="/logo-transparent.png" alt="شعار عيادة د. وسام يوسف" style={{ width: '94px', height: '94px', objectFit: 'contain' }} />
           </div>
 
-          <h1 style={{ color: '#0f172a', fontSize: '32px', fontWeight: 900, textAlign: 'center', marginBottom: '6px', lineHeight: 1.25 }}>
+          <h1 style={{ color: 'white', fontSize: '32px', fontWeight: 900, textAlign: 'center', marginBottom: '6px', lineHeight: 1.25, textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
             عيادة د. وسام يوسف
           </h1>
-          <p style={{ color: '#2563eb', fontSize: '15px', fontWeight: 700, textAlign: 'center', marginBottom: '4px' }}>
+          <p style={{ color: '#93c5fd', fontSize: '15px', fontWeight: 700, textAlign: 'center', marginBottom: '4px' }}>
             أخصائي تقويم الأسنان — بني مزار، المنيا
           </p>
-          <p style={{ color: '#94a3b8', fontSize: '13px', textAlign: 'center', marginBottom: '36px' }}>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', textAlign: 'center', marginBottom: '36px' }}>
             نظام إدارة العيادة المتكامل
           </p>
 
@@ -261,8 +269,8 @@ export default function Login() {
               <div key={i} className="l-feature-item">
                 <div className="l-feature-icon" style={{ background: f.bg }}>{f.icon}</div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '13.5px', color: '#1e293b' }}>{f.label}</div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '1px' }}>{f.sub}</div>
+                  <div style={{ fontWeight: 700, fontSize: '13.5px', color: 'white' }}>{f.label}</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginTop: '1px' }}>{f.sub}</div>
                 </div>
               </div>
             ))}
@@ -285,7 +293,7 @@ export default function Login() {
         <div className="login-right-panel" style={{
           width: '480px', display: 'flex', alignItems: 'center',
           justifyContent: 'center', padding: '40px',
-          position: 'relative', zIndex: 1,
+          position: 'relative', zIndex: 2,
           animation: 'fadeUp 0.6s ease-out 0.1s both',
         }}>
           <div style={{

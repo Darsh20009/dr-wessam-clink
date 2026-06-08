@@ -1601,6 +1601,13 @@ export default function Landing() {
                 <FiUser size={13} /> دخول النظام
               </button>
             </div>
+            <div style={{ paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+              <a href="https://qiroxstudio.online" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px', textDecoration: 'none', transition: 'color 0.2s' }}
+                onMouseEnter={e => e.target.style.color = 'rgba(255,255,255,0.7)'}
+                onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.35)'}>
+                صنع عبر كيروكس استوديو | Qirox Studio
+              </a>
+            </div>
           </div>
         </footer>
 
