@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaWhatsapp, FaStar, FaGraduationCap, FaPhone } from 'react-icons/fa';
-import { FiCalendar, FiUser, FiCheck, FiArrowLeft, FiHeart, FiZap, FiShield, FiStar, FiMessageCircle, FiAward, FiGrid, FiMapPin, FiClock, FiChevronDown, FiPhone, FiUsers, FiTrendingUp, FiX, FiBookOpen, FiMail, FiGlobe } from 'react-icons/fi';
+import { FiCalendar, FiUser, FiCheck, FiArrowLeft, FiHeart, FiZap, FiShield, FiStar, FiMessageCircle, FiAward, FiGrid, FiMapPin, FiClock, FiChevronDown, FiPhone, FiUsers, FiTrendingUp, FiX, FiBookOpen, FiMail, FiGlobe, FiLock, FiFileText, FiSmartphone } from 'react-icons/fi';
 
 const defaultSettings = {
   heroTitle: 'ابتسامة أجمل تبدأ من هنا',
@@ -1138,76 +1138,137 @@ export default function Landing() {
         </section>
 
         {/* ── PATIENT PORTAL CTA ── */}
-        <section style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0c2340 100%)', padding: '80px 24px', overflow: 'hidden', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(37,99,235,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(6,182,212,0.12) 0%, transparent 50%)', pointerEvents: 'none' }} />
-          <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-            {/* Heading */}
-            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(37,99,235,0.2)', border: '1px solid rgba(37,99,235,0.35)', borderRadius: '30px', padding: '6px 18px', marginBottom: '18px' }}>
-                <span style={{ fontSize: '14px' }}>🎉</span>
-                <span style={{ color: '#93c5fd', fontSize: '13px', fontWeight: 700 }}>بوابة المرضى الإلكترونية</span>
+        <section className="l-section" style={{ background: '#fff', overflow: 'hidden', position: 'relative' }}>
+          {/* subtle bg blobs */}
+          <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '320px', height: '320px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: '-80px', left: '-80px', width: '320px', height: '320px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,182,212,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+          <div className="l-section-inner" style={{ position: 'relative', zIndex: 1 }}>
+            {/* Section header */}
+            <div className="l-section-header">
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '30px', padding: '6px 18px', marginBottom: '16px' }}>
+                <FiUser size={13} style={{ color: '#2563eb' }} />
+                <span style={{ color: '#2563eb', fontSize: '13px', fontWeight: 700 }}>بوابة المرضى الإلكترونية</span>
               </div>
-              <h2 style={{ color: 'white', fontSize: 'clamp(26px, 4vw, 38px)', fontWeight: 900, lineHeight: 1.3, marginBottom: '14px' }}>
-                عندك ملف طبي؟<br />
-                <span style={{ background: 'linear-gradient(90deg, #60a5fa, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  تابع رحلتك العلاجية الآن
-                </span>
+              <h2 style={{ fontSize: 'clamp(26px, 4vw, 38px)', fontWeight: 900, color: '#0f172a', lineHeight: 1.3, marginBottom: '12px' }}>
+                عندك ملف طبي؟ <span style={{ color: '#2563eb' }}>تابع رحلتك العلاجية</span>
               </h2>
-              <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '15.5px', lineHeight: 1.8, maxWidth: '580px', margin: '0 auto' }}>
-                من لوحة تحكمك الخاصة تابع جلساتك وخطة علاجك ومواعيدك وحسابك المالي في أي وقت ومن أي مكان
+              <p style={{ fontSize: '15.5px', color: '#64748b', maxWidth: '540px', margin: '0 auto', lineHeight: 1.8 }}>
+                من لوحة تحكمك الخاصة تابع جلساتك وخطة علاجك ومواعيدك وحسابك المالي في أي وقت
               </p>
+              <div style={{ width: '60px', height: '4px', borderRadius: '4px', background: 'linear-gradient(90deg, #2563eb, #06b6d4)', margin: '16px auto 0' }} />
             </div>
 
-            {/* Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '40px' }}>
-              {/* Login card */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '28px', backdropFilter: 'blur(10px)', transition: 'all 0.2s', cursor: 'pointer' }}
-                onClick={() => navigate('/login')}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(37,99,235,0.15)'; e.currentTarget.style.borderColor = 'rgba(37,99,235,0.5)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-                <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginBottom: '16px', boxShadow: '0 6px 20px rgba(37,99,235,0.4)' }}>🔑</div>
-                <h3 style={{ color: 'white', fontWeight: 800, fontSize: '17px', marginBottom: '8px' }}>تسجيل الدخول</h3>
-                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13.5px', lineHeight: 1.7, marginBottom: '18px' }}>عندك ملف بالفعل؟ سجّل دخولك بجوالك وكلمة مرورك وتابع كل شيء</p>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(37,99,235,0.3)', color: '#93c5fd', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 700 }}>
-                  دخول البوابة →
-                </div>
+            {/* Split layout: checklist | divider | action cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', gap: '0', alignItems: 'stretch', marginTop: '8px' }}>
+
+              {/* ── LEFT: checklist features ── */}
+              <div style={{ paddingLeft: '8px', paddingRight: '48px' }}>
+                <h3 style={{ fontWeight: 800, fontSize: '17px', color: '#0f172a', marginBottom: '28px' }}>
+                  كل ما تحتاجه في مكان واحد
+                </h3>
+                {[
+                  { icon: <FiCalendar size={17} />, title: 'متابعة المواعيد', desc: 'عرض وإدارة كل مواعيدك القادمة بسهولة', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
+                  { icon: <FiFileText size={17} />, title: 'الملف الطبي الكامل', desc: 'جلساتك وخطة علاجك وصور الأشعة في متناول يدك', color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe' },
+                  { icon: <FiTrendingUp size={17} />, title: 'متابعة تقدم العلاج', desc: 'تتبع مسيرتك العلاجية خطوة بخطوة', color: '#0891b2', bg: '#ecfeff', border: '#a5f3fc' },
+                  { icon: <FiShield size={17} />, title: 'بيانات محمية بالكامل', desc: 'حسابك آمن ومحمي بكلمة مرور خاصة بك', color: '#10b981', bg: '#f0fdf4', border: '#bbf7d0' },
+                ].map((item, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: i < 3 ? '0' : '0' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '0' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '11px', background: item.bg, border: `1.5px solid ${item.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: item.color, flexShrink: 0 }}>
+                        {item.icon}
+                      </div>
+                      {i < 3 && (
+                        <div style={{ width: '1px', flex: 1, minHeight: '24px', background: 'linear-gradient(to bottom, #e2e8f0, transparent)', margin: '6px 0' }} />
+                      )}
+                    </div>
+                    <div style={{ flex: 1, paddingBottom: i < 3 ? '18px' : '0' }}>
+                      <div style={{ fontWeight: 700, fontSize: '15px', color: '#0f172a', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <FiCheck size={13} style={{ color: '#10b981', flexShrink: 0 }} />
+                        {item.title}
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.65 }}>{item.desc}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              {/* Register card */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '28px', backdropFilter: 'blur(10px)', transition: 'all 0.2s', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
-                onClick={() => navigate('/register')}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(16,185,129,0.12)'; e.currentTarget.style.borderColor = 'rgba(16,185,129,0.4)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-                <div style={{ position: 'absolute', top: '14px', left: '14px', background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '20px' }}>جديد ✨</div>
-                <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginBottom: '16px', boxShadow: '0 6px 20px rgba(16,185,129,0.4)' }}>📋</div>
-                <h3 style={{ color: 'white', fontWeight: 800, fontSize: '17px', marginBottom: '8px' }}>افتح ملفك الآن</h3>
-                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13.5px', lineHeight: 1.7, marginBottom: '18px' }}>سجّل بياناتك وافتح ملفك الطبي بنفسك في ثوانٍ — كشف بالعيادة أو استشارة هاتفية</p>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16,185,129,0.25)', color: '#6ee7b7', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 700 }}>
-                  إنشاء ملف جديد →
-                </div>
-              </div>
+              {/* ── VERTICAL DIVIDER ── */}
+              <div style={{ background: 'linear-gradient(to bottom, transparent 5%, #e2e8f0 25%, #e2e8f0 75%, transparent 95%)', width: '1px' }} />
 
-              {/* Forgot Password card */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '28px', backdropFilter: 'blur(10px)', transition: 'all 0.2s', cursor: 'pointer' }}
-                onClick={() => navigate('/forgot-password')}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.12)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.4)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-                <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginBottom: '16px', boxShadow: '0 6px 20px rgba(139,92,246,0.4)' }}>🔓</div>
-                <h3 style={{ color: 'white', fontWeight: 800, fontSize: '17px', marginBottom: '8px' }}>اعمل باسورد جديد</h3>
-                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13.5px', lineHeight: 1.7, marginBottom: '18px' }}>نسيت كلمة مرورك؟ استعدها بسهولة باستخدام رقم ملفك الطبي ورقم جوالك</p>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(139,92,246,0.25)', color: '#c4b5fd', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 700 }}>
-                  استعادة كلمة المرور →
+              {/* ── RIGHT: action cards ── */}
+              <div style={{ paddingRight: '8px', paddingLeft: '48px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Login card */}
+                <div
+                  style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '16px', padding: '22px', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onClick={() => navigate('/login')}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#bfdbfe'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(37,99,235,0.1)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '10px' }}>
+                    <div style={{ width: '46px', height: '46px', borderRadius: '12px', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(37,99,235,0.35)', flexShrink: 0 }}>
+                      <FiLock size={20} style={{ color: 'white' }} />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: '15px', color: '#0f172a' }}>تسجيل الدخول</div>
+                      <div style={{ fontSize: '12px', color: '#94a3b8' }}>عندك ملف بالفعل</div>
+                    </div>
+                  </div>
+                  <p style={{ color: '#475569', fontSize: '13px', lineHeight: 1.7, margin: '0 0 14px' }}>سجّل دخولك بجوالك وكلمة مرورك وتابع كل شيء في لوحتك</p>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#eff6ff', color: '#2563eb', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 700 }}>
+                    دخول البوابة <FiArrowLeft size={13} />
+                  </div>
                 </div>
+
+                {/* Register card */}
+                <div
+                  style={{ background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: '16px', padding: '22px', cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden' }}
+                  onClick={() => navigate('/register')}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#86efac'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(16,185,129,0.12)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#bbf7d0'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                  <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '20px' }}>جديد</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '10px' }}>
+                    <div style={{ width: '46px', height: '46px', borderRadius: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(16,185,129,0.35)', flexShrink: 0 }}>
+                      <FiFileText size={20} style={{ color: 'white' }} />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: '15px', color: '#0f172a' }}>افتح ملفك الآن</div>
+                      <div style={{ fontSize: '12px', color: '#94a3b8' }}>مريض جديد</div>
+                    </div>
+                  </div>
+                  <p style={{ color: '#475569', fontSize: '13px', lineHeight: 1.7, margin: '0 0 14px' }}>سجّل بياناتك وافتح ملفك الطبي بنفسك في ثوانٍ — كشف أو استشارة</p>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#dcfce7', color: '#16a34a', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 700 }}>
+                    إنشاء ملف جديد <FiArrowLeft size={13} />
+                  </div>
+                </div>
+
+                {/* Forgot Password link */}
+                <button
+                  onClick={() => navigate('/forgot-password')}
+                  style={{ background: 'none', border: '1.5px dashed #e2e8f0', borderRadius: '12px', padding: '14px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', color: '#64748b', fontSize: '13.5px', fontWeight: 600, transition: 'all 0.2s', fontFamily: 'Cairo, sans-serif' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#c4b5fd'; e.currentTarget.style.color = '#7c3aed'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.color = '#64748b'; }}
+                >
+                  <FiLock size={15} />
+                  نسيت كلمة مرورك؟ استعدها بسهولة
+                </button>
               </div>
             </div>
 
-            {/* Bottom stats */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
-              {[['🛡️', 'بيانات محمية', '100%'], ['📱', 'يعمل على الجوال', 'كاملاً'], ['⚡', 'تحديث فوري', 'للبيانات']].map(([icon, label, val]) => (
-                <div key={label} style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '24px', marginBottom: '4px' }}>{icon}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 800, fontSize: '16px' }}>{val}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '12px' }}>{label}</div>
+            {/* Bottom stats bar */}
+            <div style={{ marginTop: '48px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+              {[
+                { icon: <FiShield size={20} />, label: 'بيانات محمية', val: '100%', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
+                { icon: <FiSmartphone size={20} />, label: 'يعمل على الجوال', val: 'كاملاً', color: '#10b981', bg: '#f0fdf4', border: '#bbf7d0' },
+                { icon: <FiZap size={20} />, label: 'تحديث فوري للبيانات', val: 'لحظي', color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
+              ].map((s, i) => (
+                <div key={i} style={{ textAlign: 'center', padding: '24px 20px', borderLeft: i > 0 ? '1px solid #e2e8f0' : 'none' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: s.bg, border: `1.5px solid ${s.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, margin: '0 auto 10px' }}>
+                    {s.icon}
+                  </div>
+                  <div style={{ color: '#0f172a', fontWeight: 900, fontSize: '20px', lineHeight: 1 }}>{s.val}</div>
+                  <div style={{ color: '#64748b', fontSize: '12px', marginTop: '5px' }}>{s.label}</div>
                 </div>
               ))}
             </div>
