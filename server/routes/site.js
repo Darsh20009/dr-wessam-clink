@@ -68,7 +68,8 @@ router.get('/', async (req, res) => {
       const needsMigration =
         settings.address === 'القاهرة، مصر' ||
         settings.address === 'القاهرة' ||
-        !settings.address?.includes('بني مزار');
+        !settings.address?.includes('بني مزار') ||
+        !settings.doctorBio?.includes('بني مزار');
       if (needsMigration) {
         await SiteSettings.findOneAndUpdate(
           { key: 'main' },
@@ -77,6 +78,7 @@ router.get('/', async (req, res) => {
             googleMapsUrl: defaultSettings.googleMapsUrl,
             doctorTitle: settings.doctorTitle === 'أخصائي تقويم الأسنان' ? defaultSettings.doctorTitle : settings.doctorTitle,
             heroSubtitle: settings.heroSubtitle === 'خبرة متخصصة في تقويم الأسنان بأحدث التقنيات وأعلى معايير الجودة' ? defaultSettings.heroSubtitle : settings.heroSubtitle,
+            doctorBio: !settings.doctorBio?.includes('بني مزار') ? defaultSettings.doctorBio : settings.doctorBio,
           },
           { new: true }
         );

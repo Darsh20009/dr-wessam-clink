@@ -216,7 +216,7 @@ export default function Login() {
             عيادة د. وسام يوسف
           </h1>
           <p style={{ color: '#2563eb', fontSize: '15px', fontWeight: 700, textAlign: 'center', marginBottom: '4px' }}>
-            أخصائي تقويم الأسنان
+            أخصائي تقويم الأسنان — بني مزار، المنيا
           </p>
           <p style={{ color: '#94a3b8', fontSize: '13px', textAlign: 'center', marginBottom: '36px' }}>
             نظام إدارة العيادة المتكامل

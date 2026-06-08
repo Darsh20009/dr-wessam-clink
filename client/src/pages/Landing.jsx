@@ -852,7 +852,7 @@ export default function Landing() {
                         whiteSpace: 'nowrap',
                       }}>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', fontFamily: 'Cairo, sans-serif' }}>أخصائي تقويم الأسنان</span>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', fontFamily: 'Cairo, sans-serif' }}>أخصائي تقويم الأسنان | المنيا</span>
                       </div>
                     </div>
                     {/* Corner decoration */}
@@ -1500,7 +1500,7 @@ export default function Landing() {
             }}>
               <span>— د. وسام يوسف</span>
               <span style={{ color: 'rgba(255,255,255,0.2)' }}>|</span>
-              <span>أخصائي تقويم الأسنان</span>
+              <span>أخصائي تقويم الأسنان — بني مزار، المنيا</span>
             </div>
           </div>
         </section>

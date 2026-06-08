@@ -120,7 +120,7 @@ export default function SelfRegister() {
               <img src="/logo-transparent.png" alt="شعار العيادة" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />
             </div>
             <h1 style={{ fontWeight: 900, fontSize: '22px', color: '#0f172a', marginBottom: '4px' }}>افتح ملفك الطبي الآن</h1>
-            <p style={{ color: '#64748b', fontSize: '13.5px' }}>عيادة د. وسام يوسف — أخصائي تقويم الأسنان</p>
+            <p style={{ color: '#64748b', fontSize: '13.5px' }}>عيادة د. وسام يوسف — أخصائي تقويم الأسنان | بني مزار، المنيا</p>
           </div>
 
           <form onSubmit={handleSubmit}>

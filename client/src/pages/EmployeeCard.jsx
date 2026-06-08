@@ -189,7 +189,7 @@ export default function EmployeeCard() {
                           color: '#93c5fd', fontSize: '11px', fontWeight: 700,
                           marginBottom: '12px', letterSpacing: '0.3px',
                         }}>
-                          أخصائي تقويم الأسنان
+                          أخصائي تقويم الأسنان — بني مزار، المنيا
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                           {[
@@ -270,7 +270,7 @@ export default function EmployeeCard() {
 
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '12px' }}>د. وسام يوسف</div>
-                      <div style={{ color: '#2563eb', fontSize: '10px', fontWeight: 600 }}>أخصائي تقويم الأسنان</div>
+                      <div style={{ color: '#2563eb', fontSize: '10px', fontWeight: 600 }}>أخصائي تقويم الأسنان | بني مزار، المنيا</div>
                       <div style={{ color: '#94a3b8', fontSize: '9px', marginTop: '3px' }}>امسح الباركود لتسجيل الدخول</div>
                     </div>
 

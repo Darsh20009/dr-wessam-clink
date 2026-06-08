@@ -160,7 +160,7 @@ export default function DoctorLayout() {
                   د. وسام يوسف
                 </div>
                 <div style={{ color: '#2563eb', fontSize: '11px', fontWeight: 600, marginTop: '2px' }}>
-                  أخصائي تقويم الأسنان
+                  أخصائي تقويم الأسنان | بني مزار
                 </div>
               </div>
             )}
