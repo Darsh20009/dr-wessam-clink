@@ -92,6 +92,19 @@ const STYLE = `
   .l-bg-shape {
     position: absolute; border-radius: 50%; pointer-events: none;
   }
+
+  /* ═══ MOBILE ═══ */
+  @media (max-width: 768px) {
+    .login-left-panel { display: none !important; }
+    .login-right-panel {
+      width: 100% !important; padding: 24px 16px !important;
+      align-items: flex-start !important; justify-content: flex-start !important;
+      min-height: 100vh;
+    }
+    .login-right-panel > div {
+      padding: 24px 20px !important; border-radius: 16px !important;
+    }
+  }
 `;
 
 export default function Login() {
@@ -193,7 +206,7 @@ export default function Login() {
         <div style={{ position: 'absolute', bottom: '18%', right: '44%', width: '40px', height: '40px', border: '2px solid rgba(6,182,212,0.2)', borderRadius: '50%', animation: 'float 6s ease-in-out infinite 1s', pointerEvents: 'none' }} />
 
         {/* ── LEFT BRAND PANEL ── */}
-        <div style={{
+        <div className="login-left-panel" style={{
           flex: 1, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           padding: '60px 48px', position: 'relative', zIndex: 1,
@@ -267,7 +280,7 @@ export default function Login() {
         </div>
 
         {/* ── RIGHT FORM ── */}
-        <div style={{
+        <div className="login-right-panel" style={{
           width: '480px', display: 'flex', alignItems: 'center',
           justifyContent: 'center', padding: '40px',
           position: 'relative', zIndex: 1,

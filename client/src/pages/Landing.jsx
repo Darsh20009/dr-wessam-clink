@@ -448,11 +448,108 @@ const STYLE = `
   .l-wa-popup-send:hover { filter: brightness(1.08); transform: translateY(-1px); }
   .l-wa-popup-send:disabled { opacity: 0.55; cursor: default; transform: none; }
 
+  /* ═══ MOBILE NAV MENU ═══ */
+  .l-mobile-menu-btn {
+    display: none; flex-direction: column; gap: 5px;
+    background: none; border: none; cursor: pointer; padding: 8px;
+  }
+  .l-mobile-menu-btn span {
+    display: block; width: 22px; height: 2px;
+    background: #334155; border-radius: 2px; transition: all 0.25s;
+  }
+  .l-mobile-menu-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .l-mobile-menu-btn.open span:nth-child(2) { opacity: 0; }
+  .l-mobile-menu-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .l-mobile-menu {
+    position: fixed; top: 68px; left: 0; right: 0; z-index: 99;
+    background: rgba(255,255,255,0.97); backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid #e2e8f0;
+    padding: 12px 5% 16px;
+    display: flex; flex-direction: column; gap: 4px;
+    animation: fadeUp 0.2s ease-out;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+  }
+  .l-mobile-menu a, .l-mobile-menu button {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-radius: 10px;
+    font-size: 15px; font-weight: 700; color: #334155;
+    text-decoration: none; border: none; background: none;
+    cursor: pointer; font-family: 'Cairo', sans-serif;
+    transition: all 0.18s; width: 100%; text-align: right;
+  }
+  .l-mobile-menu a:hover, .l-mobile-menu button:hover { background: #eff6ff; color: #2563eb; }
+  .l-mobile-menu .l-mobile-cta {
+    background: #2563eb; color: white; border-radius: 10px;
+    padding: 13px 16px; font-weight: 800; margin-top: 6px;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.3); justify-content: center;
+  }
+  .l-mobile-menu .l-mobile-cta:hover { background: #1d4ed8; color: white; }
+
+  /* ═══ TABLET (≤ 900px) ═══ */
   @media (max-width: 900px) {
-    .l-hero-grid { grid-template-columns: 1fr; }
+    .l-about-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+    .l-about-grid > div:last-child { display: flex; justify-content: center; }
+    .l-nav-links { display: none; }
+    .l-nav > .l-nav-cta { display: none; }
+    .l-mobile-menu-btn { display: flex; }
+
+    .l-hero-grid { grid-template-columns: 1fr; gap: 32px; }
     .l-hero { padding: 60px 5% 60px; min-height: auto; }
-    .l-stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .l-hero-title { font-size: clamp(28px, 7vw, 44px); }
+    .l-hero-sub { font-size: 15px; }
+    .l-stats-bar { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 18px 20px; }
     .l-stat-divider { display: none; }
+    .l-stat-num { font-size: 26px; }
+    .l-section { padding: 60px 5%; }
+    .l-section-title { font-size: clamp(22px, 5vw, 34px); }
+  }
+
+  /* ═══ MOBILE (≤ 640px) ═══ */
+  @media (max-width: 640px) {
+    .l-nav { padding: 0 4%; height: 60px; }
+
+    .l-hero { padding: 48px 4% 48px; }
+    .l-hero-title { font-size: clamp(24px, 8vw, 36px); }
+    .l-hero-sub { font-size: 14px; max-width: 100%; }
+    .l-hero-checks { margin-bottom: 24px; }
+    .l-hero-check { font-size: 13.5px; }
+    .l-hero-btns { flex-direction: column; gap: 10px; }
+    .l-hero-btns a, .l-hero-btns button { width: 100%; justify-content: center; }
+    .l-btn-primary, .l-btn-secondary { padding: 13px 20px; font-size: 14px; }
+    .l-hero-card { padding: 20px 16px; }
+
+    .l-stats-bar {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px; padding: 16px 14px;
+      border-radius: 12px; margin: 0 4px;
+    }
+    .l-stat-num { font-size: 22px; }
+    .l-stat-label { font-size: 12px; }
+
+    .l-section { padding: 48px 4%; }
+    .l-section-header { margin-bottom: 36px; }
+    .l-section-sub { font-size: 14px; }
+
+    .l-service-card { padding: 22px 16px; }
+    .l-service-icon { width: 54px; height: 54px; font-size: 22px; }
+
+    .l-doctor-card { padding: 20px 16px; }
+
+    .l-review-card { padding: 20px 16px; }
+
+    .l-mentors-section { padding: 52px 4%; }
+    .l-mentors-section::before { font-size: 80px; }
+
+    .l-footer { padding: 36px 4% 20px; }
+
+    .l-contact-card { padding: 20px 14px; }
+
+    .l-wa-popup { width: calc(100vw - 32px); right: 8px; }
+    .l-tooth-btn { bottom: 16px; }
+
+    .l-mobile-menu { top: 60px; }
   }
 `;
 
@@ -517,6 +614,7 @@ export default function Landing() {
   const videoRef = React.useRef(null);
   const [waOpen, setWaOpen] = React.useState(false);
   const [waMsg, setWaMsg] = React.useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     axios.get('/api/site').then(r => {
@@ -577,7 +675,25 @@ export default function Landing() {
           <button onClick={() => navigate('/login')} className="l-nav-cta">
             <FiUser size={13} /> دخول النظام
           </button>
+
+          {/* Hamburger */}
+          <button className={`l-mobile-menu-btn${mobileMenuOpen ? ' open' : ''}`} onClick={() => setMobileMenuOpen(o => !o)} aria-label="القائمة">
+            <span /><span /><span />
+          </button>
         </nav>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className="l-mobile-menu" onClick={() => setMobileMenuOpen(false)}>
+            <a href="#about"><FiUser size={15} /> عن الطبيب</a>
+            <a href="#services"><FiGrid size={15} /> الخدمات</a>
+            <a href="#reviews"><FiStar size={15} /> آراء المرضى</a>
+            <a href="#contact"><FiMessageCircle size={15} /> تواصل معنا</a>
+            <button className="l-mobile-cta" onClick={() => navigate('/login')}>
+              <FiUser size={15} /> دخول النظام
+            </button>
+          </div>
+        )}
 
         {/* ── HERO ── */}
         <section className="l-hero">
@@ -782,7 +898,7 @@ export default function Landing() {
         {/* ── ABOUT ── */}
         <section id="about" className="l-section">
           <div className="l-section-inner">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '56px', alignItems: 'start' }}>
+            <div className="l-about-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '56px', alignItems: 'start' }}>
               <div>
                 <div className="l-section-tag" style={{ display: 'inline-flex' }}><FiUser size={13} /> عن الطبيب</div>
                 <h2 className="l-section-title" style={{ textAlign: 'right', marginTop: '8px' }}>

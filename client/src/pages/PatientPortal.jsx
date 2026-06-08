@@ -132,6 +132,25 @@ const STYLE = `
     display: block; width: 100%;
     margin-bottom: -2px; line-height: 0;
   }
+
+  /* ═══ MOBILE ≤ 640px ═══ */
+  @media (max-width: 640px) {
+    .pp-hero { min-height: auto; }
+    .pp-hero-content { padding: 0 4% !important; }
+    .pp-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+    .pp-avatar { width: 60px !important; height: 60px !important; font-size: 22px !important; }
+
+    .pp-glass-pill { min-width: 70px !important; padding: 10px 12px !important; }
+    .pp-glass-pill > div:nth-child(2) { font-size: 15px !important; }
+    .pp-glass-pill > div:nth-child(3) { font-size: 10px !important; }
+
+    .pp-tab { padding: 9px 12px !important; font-size: 12px !important; gap: 5px !important; }
+
+    .pp-card { padding: 16px !important; }
+    .pp-session-header { padding: 12px 14px !important; }
+    .pp-wa-btn { padding: 10px 14px !important; font-size: 13px !important; }
+  }
 `;
 
 const statusConfig = {
@@ -434,7 +453,7 @@ export default function PatientPortal() {
           {activeTab === 'overview' && (
             <div>
               {/* Stats row */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+              <div className="pp-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '24px' }}>
                 {[
                   { val: `${totalPaid.toLocaleString()} ج.م`, label: 'إجمالي المدفوع', icon: <FiDollarSign size={20}/>, color: '#16a34a', style: '--stat-color: #16a34a' },
                   { val: `${remaining.toLocaleString()} ج.م`, label: 'المتبقي', icon: remaining > 0 ? <FiAlertCircle size={20}/> : <FiCheck size={20}/>, color: remaining > 0 ? '#dc2626' : '#16a34a', style: `--stat-color: ${remaining > 0 ? '#dc2626' : '#16a34a'}` },
