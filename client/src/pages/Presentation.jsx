@@ -197,7 +197,7 @@ export default function Presentation() {
         <nav className="p-nav">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 2px 8px rgba(37,99,235,0.15)', border: '1px solid #e2e8f0' }}>
-              <img src="/icon-512.png" alt="شعار العيادة" style={{ width: '36px', height: '36px', objectFit: 'cover' }} />
+              <img src="/logo-transparent.png" alt="شعار العيادة" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
             </div>
             <div>
               <div style={{ fontWeight: 900, fontSize: '15px', color: '#0f172a' }}>دليل النظام</div>

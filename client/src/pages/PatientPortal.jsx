@@ -142,7 +142,7 @@ export default function PatientPortal() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                <img src="/icon-512.png" alt="شعار العيادة" style={{ width: '36px', height: '36px', objectFit: 'cover' }} />
+                <img src="/logo-transparent.png" alt="شعار العيادة" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
               </div>
               <div>
                 <div style={{ color: 'white', fontWeight: 800, fontSize: '14px' }}>بوابة المريض</div>

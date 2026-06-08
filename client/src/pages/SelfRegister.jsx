@@ -116,8 +116,8 @@ export default function SelfRegister() {
         <div className="sr-card">
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'white', boxShadow: '0 4px 14px rgba(37,99,235,0.2)', border: '1.5px solid #e2e8f0', overflow: 'hidden', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src="/icon-512.png" alt="شعار العيادة" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+            <div style={{ width: '72px', height: '72px', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src="/logo-transparent.png" alt="شعار العيادة" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />
             </div>
             <h1 style={{ fontWeight: 900, fontSize: '22px', color: '#0f172a', marginBottom: '4px' }}>افتح ملفك الطبي الآن</h1>
             <p style={{ color: '#64748b', fontSize: '13.5px' }}>عيادة د. وسام يوسف — أخصائي تقويم الأسنان</p>
