@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { FiDollarSign, FiPlus, FiTrendingUp } from 'react-icons/fi';
+import { FiDollarSign, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
@@ -35,6 +35,15 @@ export default function Payments() {
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('هل تريد حذف هذه الدفعة؟ سيتم خصم المبلغ من إجمالي المدفوع للمريض.')) return;
+    try {
+      await axios.delete(`/payments/${id}`);
+      toast.success('تم حذف الدفعة');
+      fetchData();
+    } catch (err) { toast.error(err.response?.data?.message || 'خطأ في الحذف'); }
+  };
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -92,6 +101,7 @@ export default function Payments() {
                   <th>طريقة الدفع</th>
                   <th>التاريخ</th>
                   <th>ملاحظات</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -103,6 +113,13 @@ export default function Payments() {
                     <td><span className="badge badge-gray">{methodMap[p.method] || p.method}</span></td>
                     <td style={{ color: '#64748b', fontSize: '13px' }}>{format(new Date(p.date), 'd MMMM yyyy', { locale: ar })}</td>
                     <td style={{ color: '#94a3b8', fontSize: '13px' }}>{p.notes || '-'}</td>
+                    <td>
+                      <button
+                        onClick={() => handleDelete(p._id)}
+                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px 8px', borderRadius: '6px', fontSize: '16px' }}
+                        title="حذف الدفعة"
+                      ><FiTrash2 /></button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -14,20 +14,31 @@ const { auth } = require('../middleware/auth');
 const router = express.Router();
 
 const RP_NAME = 'عيادة د. وسام يوسف';
-const RP_ID = process.env.RP_ID || 'localhost';
-const ORIGIN = process.env.ORIGIN || `https://${RP_ID}`;
 
-const challengeStore = new Map();
+const challengeStore = new Map(); // userId -> { challenge, rpId, origin }
+
+function getRpConfig(req) {
+  const originHeader = req.headers.origin || req.headers.referer || '';
+  try {
+    const url = new URL(originHeader);
+    return { rpId: url.hostname, origin: url.origin };
+  } catch {
+    const replitDomain = process.env.REPLIT_DEV_DOMAIN;
+    if (replitDomain) return { rpId: replitDomain, origin: `https://${replitDomain}` };
+    return { rpId: process.env.RP_ID || 'localhost', origin: process.env.ORIGIN || 'http://localhost:5000' };
+  }
+}
 
 // ─── Registration ─────────────────────────────────────────────────
 router.post('/register-options', auth, async (req, res) => {
   try {
+    const { rpId, origin } = getRpConfig(req);
     const userId = req.user._id.toString();
     const existingCreds = await WebAuthnCredential.find({ userId: req.user._id });
 
     const options = await generateRegistrationOptions({
       rpName: RP_NAME,
-      rpID: RP_ID,
+      rpID: rpId,
       userID: new TextEncoder().encode(userId),
       userName: req.user.phone || req.user.name || userId,
       userDisplayName: req.user.name || 'مستخدم',
@@ -43,7 +54,7 @@ router.post('/register-options', auth, async (req, res) => {
       },
     });
 
-    challengeStore.set(userId, options.challenge);
+    challengeStore.set(userId, { challenge: options.challenge, rpId, origin });
     setTimeout(() => challengeStore.delete(userId), 5 * 60 * 1000);
 
     res.json(options);
@@ -55,14 +66,15 @@ router.post('/register-options', auth, async (req, res) => {
 router.post('/register-verify', auth, async (req, res) => {
   try {
     const userId = req.user._id.toString();
-    const expectedChallenge = challengeStore.get(userId);
-    if (!expectedChallenge) return res.status(400).json({ message: 'انتهى التحدي، حاول مجدداً' });
+    const stored = challengeStore.get(userId);
+    if (!stored) return res.status(400).json({ message: 'انتهى التحدي، حاول مجدداً' });
+    const { challenge: expectedChallenge, rpId: expectedRPID, origin: expectedOrigin } = stored;
 
     const verification = await verifyRegistrationResponse({
       response: req.body,
       expectedChallenge,
-      expectedOrigin: ORIGIN,
-      expectedRPID: RP_ID,
+      expectedOrigin,
+      expectedRPID,
     });
 
     if (!verification.verified) return res.status(400).json({ message: 'فشل التحقق' });
@@ -93,10 +105,11 @@ router.post('/register-verify', auth, async (req, res) => {
 // ─── Authentication ────────────────────────────────────────────────
 router.post('/login-options', async (req, res) => {
   try {
+    const { rpId, origin } = getRpConfig(req);
     const { phone } = req.body;
     let user = await User.findOne({ phone });
-    let userId, userRole;
-    if (user) { userId = user._id; userRole = 'doctor_or_patient'; }
+    let userId;
+    if (user) { userId = user._id; }
     else {
       const patient = await Patient.findOne({ phone });
       if (!patient) return res.status(404).json({ message: 'المستخدم غير موجود' });
@@ -109,7 +122,7 @@ router.post('/login-options', async (req, res) => {
     if (!creds.length) return res.status(404).json({ message: 'لا توجد بصمة مسجّلة لهذا الحساب' });
 
     const options = await generateAuthenticationOptions({
-      rpID: RP_ID,
+      rpID: rpId,
       allowCredentials: creds.map(c => ({
         id: c.credentialID,
         type: 'public-key',
@@ -118,7 +131,7 @@ router.post('/login-options', async (req, res) => {
       userVerification: 'preferred',
     });
 
-    challengeStore.set(userId.toString(), options.challenge);
+    challengeStore.set(userId.toString(), { challenge: options.challenge, rpId, origin });
     setTimeout(() => challengeStore.delete(userId.toString()), 5 * 60 * 1000);
 
     res.json({ options, userId: userId.toString() });
@@ -130,8 +143,9 @@ router.post('/login-options', async (req, res) => {
 router.post('/login-verify', async (req, res) => {
   try {
     const { userId, response } = req.body;
-    const expectedChallenge = challengeStore.get(userId);
-    if (!expectedChallenge) return res.status(400).json({ message: 'انتهى التحدي، حاول مجدداً' });
+    const stored = challengeStore.get(userId);
+    if (!stored) return res.status(400).json({ message: 'انتهى التحدي، حاول مجدداً' });
+    const { challenge: expectedChallenge, rpId: expectedRPID, origin: expectedOrigin } = stored;
 
     const credentialIDBase64 = response.id;
     const credDoc = await WebAuthnCredential.findOne({ userId, credentialID: credentialIDBase64 });
@@ -140,8 +154,8 @@ router.post('/login-verify', async (req, res) => {
     const verification = await verifyAuthenticationResponse({
       response,
       expectedChallenge,
-      expectedOrigin: ORIGIN,
-      expectedRPID: RP_ID,
+      expectedOrigin,
+      expectedRPID,
       credential: {
         id: credDoc.credentialID,
         publicKey: Buffer.from(credDoc.credentialPublicKey, 'base64'),

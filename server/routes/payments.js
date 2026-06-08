@@ -42,6 +42,30 @@ router.post('/', auth, doctorOnly, async (req, res) => {
   }
 });
 
+router.delete('/:id', auth, doctorOnly, async (req, res) => {
+  try {
+    const payment = await Payment.findById(req.params.id);
+    if (!payment) return res.status(404).json({ message: 'الدفعة غير موجودة' });
+
+    const patient = await Patient.findById(payment.patientId);
+    if (patient) {
+      patient.financials.totalPaid = Math.max(0, (patient.financials.totalPaid || 0) - payment.amount);
+      patient.financials.remaining = (patient.financials.totalCost || 0) - patient.financials.totalPaid;
+      if (patient.financials.totalPaid <= 0) {
+        patient.financials.status = 'pending';
+      } else if (patient.financials.totalPaid < patient.financials.totalCost) {
+        patient.financials.status = 'partial';
+      }
+      await patient.save();
+    }
+
+    await payment.deleteOne();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.get('/stats', auth, doctorOnly, async (req, res) => {
   try {
     const { period } = req.query;

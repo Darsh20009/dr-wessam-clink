@@ -240,7 +240,7 @@ export default function DoctorLayout() {
                   boxShadow: '0 4px 12px rgba(37,99,235,0.35)',
                 }}>
                   <img
-                    src="/dr-wessam.png"
+                    src="/doctor-photo.png"
                     alt="د. وسام يوسف"
                     style={{
                       width: '100%', height: '100%',
@@ -326,7 +326,7 @@ export default function DoctorLayout() {
                 boxShadow: '0 4px 14px rgba(37,99,235,0.35)',
               }}>
                 <img
-                  src="/dr-wessam.png"
+                  src="/doctor-photo.png"
                   alt="د. وسام يوسف"
                   style={{
                     width: '100%', height: '100%',

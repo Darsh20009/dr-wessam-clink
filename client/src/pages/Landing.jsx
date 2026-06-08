@@ -610,7 +610,7 @@ export default function Landing() {
                       boxShadow: '0 8px 28px rgba(37,99,235,0.35)',
                     }}>
                       <img
-                        src="/dr-wessam.png"
+                        src="/doctor-photo.png"
                         alt="د. وسام يوسف"
                         style={{
                           width: '100%', height: '100%',
@@ -791,7 +791,7 @@ export default function Landing() {
                       boxShadow: '0 16px 48px rgba(37,99,235,0.25)',
                     }}>
                       <img
-                        src="/dr-wessam.png"
+                        src="/doctor-photo.png"
                         alt="د. وسام يوسف"
                         style={{
                           width: '260px',

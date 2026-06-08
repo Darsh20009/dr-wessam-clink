@@ -170,7 +170,7 @@ export default function EmployeeCard() {
                         borderLeft: '1px solid rgba(255,255,255,0.12)',
                       }}>
                         <img
-                          src="/dr-wessam.png"
+                          src="/doctor-photo.png"
                           alt="د. وسام يوسف"
                           style={{
                             width: '100%', height: '100%',
