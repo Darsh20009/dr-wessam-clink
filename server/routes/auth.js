@@ -158,6 +158,32 @@ router.post('/register-patient', async (req, res) => {
   }
 });
 
+// ── QR Token Generate (doctor only) ──────────────────────────────
+router.post('/qr-generate', auth, async (req, res) => {
+  try {
+    const crypto = require('crypto');
+    const qrToken = crypto.randomBytes(32).toString('hex');
+    await require('../models/User').findByIdAndUpdate(req.user._id, { qrToken });
+    res.json({ qrToken });
+  } catch (err) {
+    res.status(500).json({ message: 'خطأ في إنشاء الباركود' });
+  }
+});
+
+// ── QR Login ─────────────────────────────────────────────────────
+router.post('/qr-login', async (req, res) => {
+  try {
+    const { qrToken } = req.body;
+    if (!qrToken) return res.status(400).json({ message: 'باركود مفقود' });
+    const user = await require('../models/User').findOne({ qrToken });
+    if (!user) return res.status(400).json({ message: 'باركود غير صالح أو منتهي' });
+    const token = generateToken(user._id);
+    res.json({ token, role: user.role, user: { id: user._id, name: user.name, phone: user.phone, role: user.role } });
+  } catch (err) {
+    res.status(500).json({ message: 'خطأ في تسجيل الدخول بالباركود' });
+  }
+});
+
 router.post('/seed-doctor', async (req, res) => {
   try {
     let doctor = await User.findOne({ role: 'doctor' });

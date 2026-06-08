@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import {
   FiHome, FiUsers, FiCalendar, FiDollarSign, FiBarChart2,
   FiMenu, FiLogOut, FiChevronLeft, FiBell, FiCreditCard,
-  FiGlobe, FiSettings, FiX, FiActivity
+  FiGlobe, FiSettings, FiX, FiActivity, FiAward
 } from 'react-icons/fi';
 import PushNotifBell from './PushNotifBell';
 import { usePushNotifications } from '../hooks/usePushNotifications';
@@ -20,6 +20,7 @@ const navItems = [
   { to: '/doctor/reports', icon: <FiBarChart2 size={17} />, label: 'التقارير' },
   { to: '/doctor/notifications', icon: <FiBell size={17} />, label: 'الإشعارات', notif: true },
   { to: '/doctor/site', icon: <FiGlobe size={17} />, label: 'إدارة الموقع' },
+  { to: '/doctor/id-card', icon: <FiAward size={17} />, label: 'بطاقة التوظيف' },
   { to: '/doctor/settings', icon: <FiSettings size={17} />, label: 'الإعدادات' },
 ];
 

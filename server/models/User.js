@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['doctor', 'patient'], default: 'patient' },
   isFirstLogin: { type: Boolean, default: true },
   patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
+  qrToken: { type: String },
 }, { timestamps: true });
 
 userSchema.pre('save', async function(next) {

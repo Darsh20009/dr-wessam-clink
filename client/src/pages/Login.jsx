@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 import toast from 'react-hot-toast';
-import { FiLock, FiEye, FiEyeOff, FiArrowRight, FiUser, FiPhone } from 'react-icons/fi';
+import { FiLock, FiEye, FiEyeOff, FiArrowRight, FiMaximize } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
-import { PasskeyLoginButton } from '../components/PasskeyButton';
+import QrScanner from '../components/QrScanner';
 
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
@@ -95,6 +96,7 @@ const STYLE = `
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login, setupPassword } = useAuth();
   const [mode, setMode] = useState('patient');
   const [phone, setPhone] = useState('');
@@ -102,6 +104,36 @@ export default function Login() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showQrScanner, setShowQrScanner] = useState(false);
+  const [qrLoading, setQrLoading] = useState(false);
+
+  useEffect(() => {
+    const qrToken = searchParams.get('qr');
+    if (qrToken) handleQrLogin(qrToken);
+  }, []);
+
+  const handleQrLogin = async (qrToken) => {
+    setQrLoading(true);
+    try {
+      const { data } = await axios.post('/api/auth/qr-login', { qrToken });
+      localStorage.setItem('token', data.token);
+      toast.success(`أهلاً ${data.user.name}`);
+      window.location.href = data.role === 'doctor' ? '/doctor' : '/portal';
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'باركود غير صالح');
+      setQrLoading(false);
+    }
+  };
+
+  const handleQrScan = async (text) => {
+    setShowQrScanner(false);
+    let qrToken = text;
+    try {
+      const url = new URL(text);
+      qrToken = url.searchParams.get('qr') || text;
+    } catch {}
+    await handleQrLogin(qrToken);
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -138,16 +170,13 @@ export default function Login() {
     setLoading(false);
   };
 
-  const handlePasskeySuccess = (result) => {
-    const { token, role, user, patient } = result;
-    localStorage.setItem('token', token);
-    if (patient) localStorage.setItem('patientData', JSON.stringify(patient));
-    window.location.href = role === 'doctor' ? '/doctor' : '/portal';
-  };
 
   return (
     <>
       <style>{STYLE}</style>
+      {showQrScanner && (
+        <QrScanner onScan={handleQrScan} onClose={() => setShowQrScanner(false)} />
+      )}
       <div className="login-root" style={{
         minHeight: '100vh', display: 'flex',
         background: 'linear-gradient(135deg, #f0f6ff 0%, #e8f2ff 50%, #f5f0ff 100%)',
@@ -351,7 +380,7 @@ export default function Login() {
               </button>
             </form>
 
-            {/* Passkey */}
+            {/* QR Login */}
             {mode !== 'setup' && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '18px 0' }}>
@@ -359,7 +388,34 @@ export default function Login() {
                   <span style={{ fontSize: '12px', color: '#94a3b8', whiteSpace: 'nowrap', fontWeight: 600 }}>أو</span>
                   <div style={{ flex: 1, height: '1px', background: '#f1f5f9' }} />
                 </div>
-                <PasskeyLoginButton phone={phone} onSuccess={handlePasskeySuccess} />
+                <button
+                  type="button"
+                  onClick={() => setShowQrScanner(true)}
+                  disabled={qrLoading}
+                  style={{
+                    width: '100%', padding: '12px',
+                    background: qrLoading ? '#e2e8f0' : '#f0fdf4',
+                    color: qrLoading ? '#94a3b8' : '#166534',
+                    border: '1.5px solid #bbf7d0', borderRadius: '10px',
+                    fontSize: '14px', fontWeight: 700,
+                    cursor: qrLoading ? 'not-allowed' : 'pointer',
+                    fontFamily: 'Cairo, sans-serif',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    transition: 'all 0.2s', marginTop: '10px',
+                  }}
+                >
+                  {qrLoading ? (
+                    <>
+                      <div style={{ width: '15px', height: '15px', border: '2px solid rgba(22,101,52,0.3)', borderTopColor: '#166534', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                      جاري التحقق من الباركود...
+                    </>
+                  ) : (
+                    <>
+                      <FiMaximize size={17} />
+                      دخول بالباركود
+                    </>
+                  )}
+                </button>
               </div>
             )}
 
