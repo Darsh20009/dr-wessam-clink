@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fi';
 import PushNotifBell from './PushNotifBell';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import OnboardingTour from './OnboardingTour';
 
 const navItems = [
   { to: '/doctor', icon: <FiHome size={17} />, label: 'لوحة التحكم', end: true },
@@ -77,6 +78,12 @@ export default function DoctorLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const done = localStorage.getItem('onboardingDone');
+    if (!done) setShowOnboarding(true);
+  }, []);
 
   const handleNotification = useCallback((data) => {
     toast(
@@ -111,6 +118,7 @@ export default function DoctorLayout() {
   return (
     <>
       <style>{STYLE}</style>
+      {showOnboarding && <OnboardingTour onFinish={() => setShowOnboarding(false)} />}
       <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: 'Cairo, sans-serif' }}>
 
         {/* ── SIDEBAR ── */}
@@ -283,6 +291,14 @@ export default function DoctorLayout() {
 
             {/* Actions */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={() => { localStorage.removeItem('onboardingDone'); setShowOnboarding(true); }}
+                title="جولة تعريفية"
+                className="dl-topbar-btn"
+                style={{ gap: 5, fontSize: 13, color: '#7c3aed', border: '1.5px solid #ede9fe', background: '#faf5ff' }}
+              >
+                🗺️ {sidebarOpen ? '' : ''} الجولة
+              </button>
               <PushNotifBell />
 
               <NavLink to="/doctor/notifications" style={{ position: 'relative', textDecoration: 'none' }} className="dl-topbar-btn">
