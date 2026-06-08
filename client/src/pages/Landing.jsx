@@ -94,24 +94,35 @@ const STYLE = `
 
   /* HERO */
   .l-hero {
-    background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 40%, #f5f0ff 100%);
+    background: #0a1628;
     padding: 90px 6% 80px;
     position: relative; overflow: hidden;
     min-height: 88vh; display: flex; align-items: center;
   }
-  .l-hero::before {
-    content: '';
-    position: absolute; inset:0;
-    background:
-      radial-gradient(ellipse 800px 600px at 80% 50%, rgba(37,99,235,0.07) 0%, transparent 70%),
-      radial-gradient(ellipse 500px 400px at 20% 80%, rgba(6,182,212,0.06) 0%, transparent 70%);
+
+  .l-hero-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.22;
     pointer-events: none;
+    z-index: 0;
+  }
+
+  .l-hero-overlay {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(135deg, rgba(10,22,40,0.82) 0%, rgba(10,22,40,0.55) 50%, rgba(10,22,40,0.75) 100%),
+      radial-gradient(ellipse 900px 700px at 80% 50%, rgba(37,99,235,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 600px 500px at 15% 80%, rgba(6,182,212,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
   }
 
   .l-hero-grid {
     max-width: 1200px; margin: 0 auto; width: 100%;
     display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 60px; align-items: center;
-    position: relative; z-index:1;
+    position: relative; z-index:2;
   }
 
   .l-hero-tag {
@@ -129,15 +140,16 @@ const STYLE = `
 
   .l-hero-title {
     font-size: clamp(32px, 4.5vw, 58px); font-weight: 900;
-    line-height: 1.18; color: #0f172a;
+    line-height: 1.18; color: #f1f5f9;
     margin-bottom: 20px; letter-spacing: -0.5px;
     animation: fadeUp 0.6s ease-out 0.1s both;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.3);
   }
-  .l-hero-title .blue { color: #2563eb; }
-  .l-hero-title .teal { color: #0891b2; }
+  .l-hero-title .blue { color: #60a5fa; }
+  .l-hero-title .teal { color: #22d3ee; }
 
   .l-hero-sub {
-    font-size: 17px; color: #475569; line-height: 1.8;
+    font-size: 17px; color: #cbd5e1; line-height: 1.8;
     margin-bottom: 28px; max-width: 480px;
     animation: fadeUp 0.6s ease-out 0.2s both;
   }
@@ -145,13 +157,14 @@ const STYLE = `
   .l-hero-checks { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; animation: fadeUp 0.6s ease-out 0.3s both; }
   .l-hero-check {
     display: flex; align-items: center; gap: 10px;
-    font-size: 14.5px; font-weight: 500; color: #334155;
+    font-size: 14.5px; font-weight: 500; color: #e2e8f0;
   }
   .l-hero-check-icon {
     width: 22px; height: 22px; border-radius: 50%;
-    background: #dbeafe; color: #2563eb;
+    background: rgba(37,99,235,0.35); color: #93c5fd;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; font-size: 12px;
+    border: 1px solid rgba(96,165,250,0.3);
   }
 
   .l-hero-btns { display: flex; gap: 12px; flex-wrap: wrap; animation: fadeUp 0.6s ease-out 0.4s both; }
@@ -360,6 +373,7 @@ export default function Landing() {
   const [openFaq, setOpenFaq] = useState(null);
   const [settings, setSettings] = useState(defaultSettings);
   const [scrolled, setScrolled] = useState(false);
+  const videoRef = React.useRef(null);
 
   useEffect(() => {
     axios.get('/api/site').then(r => {
@@ -368,6 +382,19 @@ export default function Landing() {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+    vid.playbackRate = 3;
+    const setSpeed = () => { vid.playbackRate = 3; };
+    vid.addEventListener('ratechange', setSpeed);
+    vid.addEventListener('play', setSpeed);
+    return () => {
+      vid.removeEventListener('ratechange', setSpeed);
+      vid.removeEventListener('play', setSpeed);
+    };
   }, []);
 
   const activeServices = (settings.services || []).filter(s => s.isActive !== false);
@@ -411,6 +438,18 @@ export default function Landing() {
 
         {/* ── HERO ── */}
         <section className="l-hero">
+          <video
+            ref={videoRef}
+            className="l-hero-video"
+            src="/bg-video.mov"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            onLoadedData={e => { e.target.playbackRate = 3; }}
+          />
+          <div className="l-hero-overlay" />
           <div className="l-hero-grid">
             {/* LEFT CONTENT */}
             <div>
