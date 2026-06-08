@@ -7,17 +7,18 @@ const router = express.Router();
 const defaultSettings = {
   key: 'main',
   doctorName: 'د. وسام يوسف',
-  doctorTitle: 'أخصائي تقويم الأسنان',
-  doctorBio: 'طبيب متخصص في تقويم الأسنان بخبرة أكثر من 10 سنوات في علاج حالات التقويم المختلفة للأطفال والبالغين، حاصل على عدة شهادات وزمالات في تخصص التقويم.',
+  doctorTitle: 'أخصائي تقويم الأسنان - بني مزار، المنيا',
+  doctorBio: 'دكتور وسام يوسف أخصائي تقويم الأسنان في بني مزار، محافظة المنيا، مصر. خبرة أكثر من 10 سنوات في علاج حالات التقويم المختلفة للأطفال والبالغين. أكثر من 1000 حالة ناجحة بأحدث تقنيات التقويم وأعلى معايير الجودة.',
   doctorExperience: '+10 سنوات خبرة',
   doctorPatients: '+1000 مريض سعيد',
   doctorSuccess: '98% نسبة نجاح',
   phone: '01156798324',
   whatsapp: '201156798324',
-  address: 'القاهرة، مصر',
+  address: 'المنيا، بني مزار، شرق المحطة، ميدان 25 يناير، فوق مكتبة الأهرام',
+  googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=بني+مزار+شرق+المحطة+ميدان+25+يناير+المنيا+مصر',
   workingHours: 'السبت - الخميس: 10 ص - 8 م',
-  heroTitle: 'ابتسامة أجمل تبدأ من د. وسام يوسف',
-  heroSubtitle: 'خبرة متخصصة في تقويم الأسنان بأحدث التقنيات وأعلى معايير الجودة',
+  heroTitle: 'ابتسامة أجمل تبدأ من هنا',
+  heroSubtitle: 'د. وسام يوسف أخصائي تقويم الأسنان في بني مزار، المنيا — خبرة +10 سنوات بأحدث التقنيات وأعلى معايير الجودة',
   doctorUniversity: 'جامعة القاهرة',
   doctorGraduationYear: '2010',
   doctorEmail: '',
@@ -49,9 +50,11 @@ const defaultSettings = {
     { name: 'محمد علي', rating: 5, text: 'الحمد لله انتهى التقويم والنتيجة فوق التوقعات. شكراً دكتور وسام.', isActive: true },
   ],
   faqs: [
+    { question: 'أين عيادة دكتور وسام يوسف؟', answer: 'عيادة د. وسام يوسف في بني مزار، المنيا، شرق المحطة، ميدان 25 يناير، فوق مكتبة الأهرام. للتواصل والحجز: 01156798324.', isActive: true },
     { question: 'كم مدة علاج التقويم؟', answer: 'تتراوح مدة علاج التقويم عادةً بين 12 و24 شهراً حسب الحالة.', isActive: true },
     { question: 'هل التقويم مؤلم؟', answer: 'قد يكون هناك إحساس خفيف في الأيام الأولى ثم يختفي تدريجياً.', isActive: true },
     { question: 'ما الفرق بين التقويم العادي والشفاف؟', answer: 'التقويم الشفاف غير مرئي ومريح أكثر، لكن كلاهما فعّال حسب الحالة.', isActive: true },
+    { question: 'كيف أحجز موعد مع دكتور وسام يوسف؟', answer: 'يمكنك الحجز عبر واتساب على الرقم 01156798324 أو من خلال نظام الحجز الإلكتروني على الموقع.', isActive: true },
     { question: 'هل أحتاج لحجز موعد مسبق؟', answer: 'نعم، يُفضّل حجز موعد مسبق لضمان الوقت المناسب.', isActive: true },
   ],
 };
@@ -61,6 +64,24 @@ router.get('/', async (req, res) => {
     let settings = await SiteSettings.findOne({ key: 'main' });
     if (!settings) {
       settings = await SiteSettings.create(defaultSettings);
+    } else {
+      const needsMigration =
+        settings.address === 'القاهرة، مصر' ||
+        settings.address === 'القاهرة' ||
+        !settings.address?.includes('بني مزار');
+      if (needsMigration) {
+        await SiteSettings.findOneAndUpdate(
+          { key: 'main' },
+          {
+            address: defaultSettings.address,
+            googleMapsUrl: defaultSettings.googleMapsUrl,
+            doctorTitle: settings.doctorTitle === 'أخصائي تقويم الأسنان' ? defaultSettings.doctorTitle : settings.doctorTitle,
+            heroSubtitle: settings.heroSubtitle === 'خبرة متخصصة في تقويم الأسنان بأحدث التقنيات وأعلى معايير الجودة' ? defaultSettings.heroSubtitle : settings.heroSubtitle,
+          },
+          { new: true }
+        );
+        settings = await SiteSettings.findOne({ key: 'main' });
+      }
     }
     res.json(settings);
   } catch (err) {

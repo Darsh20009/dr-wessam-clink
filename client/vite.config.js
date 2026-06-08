@@ -22,5 +22,20 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-core': ['react', 'react-dom', 'react-router-dom'],
+          'charts': ['recharts'],
+          'icons': ['react-icons'],
+          'date-utils': ['date-fns'],
+          'qrcode': ['qrcode.react'],
+          'webauthn': ['@simplewebauthn/browser'],
+        }
+      }
+    }
   }
 })

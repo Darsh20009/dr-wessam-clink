@@ -6,10 +6,10 @@ import { FiCalendar, FiUser, FiCheck, FiArrowLeft, FiHeart, FiZap, FiShield, FiS
 
 const defaultSettings = {
   heroTitle: 'ابتسامة أجمل تبدأ من هنا',
-  heroSubtitle: 'خبرة متخصصة في تقويم الأسنان بأحدث التقنيات وأعلى معايير الجودة',
+  heroSubtitle: 'د. وسام يوسف أخصائي تقويم الأسنان في بني مزار، المنيا — خبرة +10 سنوات بأحدث التقنيات وأعلى معايير الجودة',
   doctorName: 'د. وسام يوسف',
-  doctorTitle: 'أخصائي تقويم الأسنان',
-  doctorBio: 'طبيب متخصص في تقويم الأسنان بخبرة أكثر من 10 سنوات في علاج حالات التقويم المختلفة للأطفال والبالغين.',
+  doctorTitle: 'أخصائي تقويم الأسنان - بني مزار، المنيا',
+  doctorBio: 'دكتور وسام يوسف أخصائي تقويم الأسنان في بني مزار، محافظة المنيا. خبرة أكثر من 10 سنوات في علاج حالات التقويم المختلفة للأطفال والبالغين. أكثر من 1000 حالة ناجحة بأحدث تقنيات التقويم.',
   phone: '01156798324',
   whatsapp: '201156798324',
   address: 'المنيا، بني مزار، شرق المحطة، ميدان 25 يناير، فوق مكتبة الأهرام',
@@ -568,7 +568,7 @@ export default function Landing() {
             <div>
               <div className="l-hero-tag">
                 <span className="dot" />
-                عيادة تقويم الأسنان المتخصصة
+                عيادة د. وسام يوسف | بني مزار، المنيا
               </div>
 
               <h1 className="l-hero-title">
@@ -1316,8 +1316,8 @@ export default function Landing() {
           <div className="l-section-inner">
             <div className="l-section-header">
               <div className="l-section-tag"><FiMessageCircle size={13} /> تواصل معنا</div>
-              <h2 className="l-section-title">نحن هنا لخدمتك</h2>
-              <p className="l-section-sub">تواصل معنا لحجز موعدك أو الاستفسار عن أي شيء</p>
+              <h2 className="l-section-title">عيادة د. وسام يوسف — بني مزار، المنيا</h2>
+              <p className="l-section-sub">احجز موعدك في عيادة تقويم الأسنان — بني مزار، شرق المحطة، ميدان 25 يناير</p>
               <div className="l-underline" />
             </div>
 
@@ -1452,6 +1452,61 @@ export default function Landing() {
               <span style={{ color: 'rgba(255,255,255,0.2)' }}>|</span>
               <span>أخصائي تقويم الأسنان</span>
             </div>
+          </div>
+        </section>
+
+        {/* ── SEO RICH TEXT SECTION ── */}
+        <section style={{ background: '#f8fafc', borderTop: '1px solid #e2e8f0', padding: '48px 24px 32px', direction: 'rtl' }}>
+          <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '40px' }}>
+
+              <div>
+                <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#1e293b', marginBottom: '12px', borderBottom: '2px solid #2563eb', paddingBottom: '8px', display: 'inline-block' }}>
+                  عيادة د. وسام يوسف لتقويم الأسنان
+                </h2>
+                <p style={{ fontSize: '13.5px', color: '#475569', lineHeight: 2 }}>
+                  دكتور وسام يوسف أخصائي تقويم الأسنان في بني مزار، محافظة المنيا، مصر.
+                  خبرة أكثر من 10 سنوات في تقويم الأسنان للأطفال والبالغين.
+                  يقدم أفضل خدمات تقويم الأسنان في المنيا بأحدث التقنيات وأعلى معايير الجودة.
+                </p>
+              </div>
+
+              <div>
+                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#1e293b', marginBottom: '12px', borderBottom: '2px solid #0891b2', paddingBottom: '8px', display: 'inline-block' }}>
+                  خدمات تقويم الأسنان
+                </h3>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {['تقويم الأسنان التقليدي', 'التقويم الشفاف (Invisalign)', 'تصميم الابتسامة', 'تقويم أسنان الأطفال في المنيا', 'علاج مشاكل الفك', 'العلاج السريع للتقويم'].map((s, i) => (
+                    <li key={i} style={{ fontSize: '13px', color: '#64748b', padding: '4px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ color: '#2563eb', fontSize: '10px' }}>●</span> {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#1e293b', marginBottom: '12px', borderBottom: '2px solid #7c3aed', paddingBottom: '8px', display: 'inline-block' }}>
+                  معلومات العيادة
+                </h3>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {[
+                    { label: 'العنوان', val: 'بني مزار، المنيا، شرق المحطة، ميدان 25 يناير' },
+                    { label: 'الهاتف', val: '01156798324' },
+                    { label: 'المواعيد', val: 'السبت - الخميس: 10 ص - 8 م' },
+                    { label: 'التخصص', val: 'تقويم الأسنان — Orthodontics' },
+                  ].map((item, i) => (
+                    <li key={i} style={{ fontSize: '13px', color: '#64748b', padding: '5px 0', borderBottom: i < 3 ? '1px solid #f1f5f9' : 'none' }}>
+                      <span style={{ fontWeight: 700, color: '#374151' }}>{item.label}: </span>{item.val}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+            </div>
+
+            <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '28px', paddingTop: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+              عيادة د. وسام يوسف لتقويم الأسنان — بني مزار، المنيا، مصر | أخصائي تقويم الأسنان للأطفال والبالغين | Orthodontist Beni Mazar El Minya Egypt
+            </p>
           </div>
         </section>
 

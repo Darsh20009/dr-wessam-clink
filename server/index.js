@@ -76,8 +76,31 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Dr. Wess
 // ─── Serve React build in production ──────────────────────────────
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '..', 'client', 'dist');
-  app.use(express.static(clientDist));
+
+  app.use(express.static(clientDist, {
+    maxAge: '1y',
+    immutable: true,
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('X-Robots-Tag', 'index, follow');
+      } else if (filePath.endsWith('robots.txt') || filePath.endsWith('sitemap.xml')) {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.setHeader('Content-Type', filePath.endsWith('.xml') ? 'application/xml; charset=utf-8' : 'text/plain; charset=utf-8');
+      }
+    },
+  }));
+
+  app.get('/sitemap.xml', (req, res) => {
+    res.sendFile(path.join(clientDist, 'sitemap.xml'));
+  });
+
+  app.get('/robots.txt', (req, res) => {
+    res.sendFile(path.join(clientDist, 'robots.txt'));
+  });
+
   app.get('*', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(path.join(clientDist, 'index.html'));
   });
 }
