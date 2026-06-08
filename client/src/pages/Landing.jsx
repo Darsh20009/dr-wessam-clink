@@ -12,7 +12,7 @@ const defaultSettings = {
   doctorBio: 'طبيب متخصص في تقويم الأسنان بخبرة أكثر من 10 سنوات في علاج حالات التقويم المختلفة للأطفال والبالغين.',
   phone: '01156798324',
   whatsapp: '201156798324',
-  address: 'القاهرة، مصر',
+  address: 'المنيا، بني مزار، شرق المحطة، ميدان 25 يناير، فوق مكتبة الأهرام',
   workingHours: 'السبت - الخميس: 10 ص - 8 م',
   certificates: [
     { title: 'بكالوريوس طب الأسنان', year: '2010', institution: 'جامعة القاهرة' },
@@ -603,29 +603,40 @@ export default function Landing() {
 
                 {[
                   { icon: <FiClock size={15} />, label: 'مواعيد العمل', value: settings.workingHours, color: '#2563eb', bg: '#eff6ff' },
-                  { icon: <FiMapPin size={15} />, label: 'الموقع', value: settings.address, color: '#0891b2', bg: '#ecfeff' },
-                  { icon: <FiPhone size={15} />, label: 'الاتصال', value: settings.phone, color: '#16a34a', bg: '#f0fdf4' },
-                ].map((item, i) => (
-                  <div key={i} style={{
+                  { icon: <FiMapPin size={15} />, label: 'الموقع', value: settings.address, color: '#0891b2', bg: '#ecfeff', href: 'https://www.google.com/maps/search/?api=1&query=بني+مزار+شرق+المحطة+ميدان+25+يناير+المنيا+مصر' },
+                  { icon: <FiPhone size={15} />, label: 'الاتصال', value: settings.phone, color: '#16a34a', bg: '#f0fdf4', href: `tel:${settings.phone}` },
+                ].map((item, i) => {
+                  const inner = (
+                    <>
+                      <div style={{
+                        width: '34px', height: '34px', borderRadius: '9px',
+                        background: item.bg, color: item.color,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        {item.icon}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{item.label}</div>
+                        <div style={{ fontSize: '13.5px', color: '#334155', fontWeight: 600, marginTop: '1px' }}>{item.value}</div>
+                      </div>
+                    </>
+                  );
+                  const rowStyle = {
                     display: 'flex', alignItems: 'center', gap: '12px',
                     padding: '12px 14px', borderRadius: '10px',
                     background: '#f8fafc', border: '1px solid #f1f5f9',
-                    marginBottom: '10px',
-                  }}>
-                    <div style={{
-                      width: '34px', height: '34px', borderRadius: '9px',
-                      background: item.bg, color: item.color,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexShrink: 0,
-                    }}>
-                      {item.icon}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{item.label}</div>
-                      <div style={{ fontSize: '13.5px', color: '#334155', fontWeight: 600, marginTop: '1px' }}>{item.value}</div>
-                    </div>
-                  </div>
-                ))}
+                    marginBottom: '10px', textDecoration: 'none',
+                    cursor: item.href ? 'pointer' : 'default',
+                    transition: 'border-color 0.18s',
+                  };
+                  return item.href
+                    ? <a key={i} href={item.href} target="_blank" rel="noreferrer" style={rowStyle}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = '#bfdbfe'}
+                        onMouseLeave={e => e.currentTarget.style.borderColor = '#f1f5f9'}
+                      >{inner}</a>
+                    : <div key={i} style={rowStyle}>{inner}</div>;
+                })}
 
                 <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
@@ -1078,7 +1089,7 @@ export default function Landing() {
               {[
                 { icon: <FaWhatsapp size={24} />, label: 'واتساب', value: `+${settings.whatsapp}`, href: `https://wa.me/${settings.whatsapp}`, bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' },
                 { icon: <FaPhone size={22} />, label: 'اتصل بنا', value: settings.phone, href: `tel:${settings.phone}`, bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
-                { icon: <FiMapPin size={22} />, label: 'الموقع', value: settings.address, href: '#', bg: '#fdf4ff', color: '#9333ea', border: '#e9d5ff' },
+                { icon: <FiMapPin size={22} />, label: 'الموقع', value: settings.address, href: 'https://www.google.com/maps/search/?api=1&query=بني+مزار+شرق+المحطة+ميدان+25+يناير+المنيا+مصر', bg: '#fdf4ff', color: '#9333ea', border: '#e9d5ff' },
                 { icon: <FiClock size={22} />, label: 'ساعات العمل', value: settings.workingHours, href: '#', bg: '#fff7ed', color: '#ea580c', border: '#fed7aa' },
               ].map((c, i) => (
                 <a key={i} href={c.href} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer" className="l-contact-card">
