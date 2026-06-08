@@ -123,7 +123,7 @@ export function PasskeyLoginButton({ phone, onSuccess }) {
 
   return (
     <button onClick={loginWithPasskey} disabled={loading} style={{
-      width: '100%', padding: '12px',
+      flex: 1, padding: '12px',
       background: loading ? '#e2e8f0' : '#f0f9ff',
       color: loading ? '#94a3b8' : '#0369a1',
       border: '1.5px solid #bae6fd', borderRadius: '10px',
@@ -131,10 +131,9 @@ export function PasskeyLoginButton({ phone, onSuccess }) {
       fontFamily: 'Cairo, sans-serif',
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
       transition: 'all 0.2s',
-      marginTop: '10px',
     }}>
       <FiKey style={{ fontSize: '18px' }} />
-      {loading ? 'جاري التحقق...' : 'دخول بالبصمة'}
+      {loading ? 'جاري التحقق...' : 'بصمة'}
     </button>
   );
 }

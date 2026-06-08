@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { FiLock, FiEye, FiEyeOff, FiArrowRight, FiMaximize } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 import QrScanner from '../components/QrScanner';
+import { PasskeyLoginButton } from '../components/PasskeyButton';
 
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
@@ -427,7 +428,7 @@ export default function Login() {
               </button>
             </form>
 
-            {/* QR Login */}
+            {/* QR + Passkey Login */}
             {mode !== 'setup' && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '18px 0' }}>
@@ -435,34 +436,44 @@ export default function Login() {
                   <span style={{ fontSize: '12px', color: '#94a3b8', whiteSpace: 'nowrap', fontWeight: 600 }}>أو</span>
                   <div style={{ flex: 1, height: '1px', background: '#f1f5f9' }} />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowQrScanner(true)}
-                  disabled={qrLoading}
-                  style={{
-                    width: '100%', padding: '12px',
-                    background: qrLoading ? '#e2e8f0' : '#f0fdf4',
-                    color: qrLoading ? '#94a3b8' : '#166534',
-                    border: '1.5px solid #bbf7d0', borderRadius: '10px',
-                    fontSize: '14px', fontWeight: 700,
-                    cursor: qrLoading ? 'not-allowed' : 'pointer',
-                    fontFamily: 'Cairo, sans-serif',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    transition: 'all 0.2s', marginTop: '10px',
-                  }}
-                >
-                  {qrLoading ? (
-                    <>
-                      <div style={{ width: '15px', height: '15px', border: '2px solid rgba(22,101,52,0.3)', borderTopColor: '#166534', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                      جاري التحقق من الباركود...
-                    </>
-                  ) : (
-                    <>
-                      <FiMaximize size={17} />
-                      دخول بالباركود
-                    </>
-                  )}
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowQrScanner(true)}
+                    disabled={qrLoading}
+                    style={{
+                      flex: 1, padding: '12px',
+                      background: qrLoading ? '#e2e8f0' : '#f0fdf4',
+                      color: qrLoading ? '#94a3b8' : '#166534',
+                      border: '1.5px solid #bbf7d0', borderRadius: '10px',
+                      fontSize: '14px', fontWeight: 700,
+                      cursor: qrLoading ? 'not-allowed' : 'pointer',
+                      fontFamily: 'Cairo, sans-serif',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {qrLoading ? (
+                      <>
+                        <div style={{ width: '15px', height: '15px', border: '2px solid rgba(22,101,52,0.3)', borderTopColor: '#166534', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                        جاري التحقق...
+                      </>
+                    ) : (
+                      <>
+                        <FiMaximize size={17} />
+                        باركود
+                      </>
+                    )}
+                  </button>
+                  <PasskeyLoginButton
+                    phone={phone}
+                    onSuccess={(result) => {
+                      localStorage.setItem('token', result.token);
+                      toast.success(`أهلاً ${result.user?.name || ''}`);
+                      window.location.href = result.user?.role === 'doctor' ? '/doctor' : '/portal';
+                    }}
+                  />
+                </div>
               </div>
             )}
 
