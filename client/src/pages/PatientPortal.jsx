@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,7 @@ import { ar } from 'date-fns/locale';
 import {
   FiLogOut, FiCalendar, FiDollarSign, FiFileText, FiImage,
   FiUser, FiActivity, FiClock, FiCheck, FiAlertCircle, FiPhone,
-  FiMapPin, FiChevronLeft, FiAward, FiStar, FiZap
+  FiMapPin, FiChevronLeft, FiAward, FiStar, FiZap, FiUpload, FiEye, FiRefreshCw
 } from 'react-icons/fi';
 import { FaWhatsapp, FaTooth } from 'react-icons/fa';
 
@@ -56,6 +56,13 @@ const statusConfig = {
   pending: { cls: 'badge-gray', label: 'معلق', icon: <FiClock size={13}/>, color: '#64748b', bg: '#f8fafc' },
 };
 
+const PR_STATUS = {
+  pending:              { label: 'في الانتظار',          icon: '⏳', color: '#92400e', bg: '#fef3c7', border: '#fde68a' },
+  approved:             { label: 'تم التأكيد',            icon: '✅', color: '#065f46', bg: '#d1fae5', border: '#a7f3d0' },
+  rejected:             { label: 'مرفوض',                 icon: '❌', color: '#991b1b', bg: '#fee2e2', border: '#fecaca' },
+  'reupload-requested': { label: 'إعادة رفع مطلوبة',     icon: '🔄', color: '#5b21b6', bg: '#ede9fe', border: '#ddd6fe' },
+};
+
 export default function PatientPortal() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -63,9 +70,27 @@ export default function PatientPortal() {
   const [appointments, setAppointments] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [paymentRequests, setPaymentRequests] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [openSession, setOpenSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [siteInfo, setSiteInfo] = useState(null);
+
+  // Payment request form state
+  const [prForm, setPrForm] = useState({ paymentType: 'remaining', customAmount: '', notes: '' });
+  const [prReceipt, setPrReceipt] = useState(null);
+  const [prReceiptPreview, setPrReceiptPreview] = useState(null);
+  const [prSubmitting, setPrSubmitting] = useState(false);
+  const [prReuploadId, setPrReuploadId] = useState(null);
+  const [imgModal, setImgModal] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const loadPaymentRequests = async () => {
+    try {
+      const { data } = await axios.get('/payment-requests/my');
+      setPaymentRequests(data);
+    } catch {}
+  };
 
   useEffect(() => {
     if (!user?.patientId) return;
@@ -74,15 +99,61 @@ export default function PatientPortal() {
       axios.get('/appointments'),
       axios.get('/sessions'),
       axios.get('/payments').catch(() => ({ data: [] })),
-    ]).then(([pRes, aRes, sRes, payRes]) => {
+      axios.get('/payment-requests/my').catch(() => ({ data: [] })),
+      axios.get('/site').catch(() => ({ data: {} })),
+    ]).then(([pRes, aRes, sRes, payRes, prRes, siteRes]) => {
       setPatient(pRes.data);
       setAppointments((aRes.data || []).filter(a => a.status !== 'cancelled'));
       setSessions(sRes.data || []);
       const allPay = Array.isArray(payRes.data) ? payRes.data : payRes.data?.payments || [];
       setPayments(allPay.filter(p => p.patientId?._id === user.patientId || p.patientId === user.patientId));
+      setPaymentRequests(prRes.data || []);
+      setSiteInfo(siteRes.data);
     }).catch(console.error)
       .finally(() => setLoading(false));
   }, [user]);
+
+  const handleReceiptFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) { toast.error('حجم الصورة كبير جداً (الحد الأقصى 8 ميجا)'); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setPrReceipt(ev.target.result);
+      setPrReceiptPreview(ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmitPayment = async (e) => {
+    e.preventDefault();
+    if (!prReceipt) { toast.error('يرجى رفع صورة سند التحويل'); return; }
+    const fs = patient?.financials || {};
+    const remaining = fs.remaining || Math.max(0, (fs.totalCost || 0) - (fs.totalPaid || 0));
+    let amount = 0;
+    if (prForm.paymentType === 'remaining') amount = remaining;
+    else if (prForm.paymentType === 'next-session') amount = 300;
+    else amount = parseFloat(prForm.customAmount);
+    if (!amount || amount <= 0) { toast.error('يرجى إدخال مبلغ صحيح'); return; }
+
+    setPrSubmitting(true);
+    try {
+      if (prReuploadId) {
+        await axios.patch(`/payment-requests/${prReuploadId}/reupload`, { receiptImage: prReceipt, notes: prForm.notes });
+        toast.success('تم إعادة رفع السند بنجاح ✅');
+        setPrReuploadId(null);
+      } else {
+        await axios.post('/payment-requests', { amount, paymentType: prForm.paymentType, receiptImage: prReceipt, notes: prForm.notes });
+        toast.success('تم إرسال طلب الدفع! في انتظار تأكيد الدكتور ✅');
+      }
+      setPrReceipt(null); setPrReceiptPreview(null);
+      setPrForm({ paymentType: 'remaining', customAmount: '', notes: '' });
+      await loadPaymentRequests();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'حدث خطأ');
+    }
+    setPrSubmitting(false);
+  };
 
   const handleLogout = () => { logout(); navigate('/'); };
 
@@ -582,28 +653,163 @@ export default function PatientPortal() {
                 </div>
               </div>
 
-              {/* InstaPay payment option */}
-              <div className="pp-card" style={{ marginBottom: '16px', background: 'linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%)', border: '1.5px solid #fed7aa' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(249,115,22,0.35)' }}>
-                    <span style={{ fontSize: '22px' }}>⚡</span>
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 800, fontSize: '14.5px', color: '#9a3412' }}>الدفع عبر إنستا باي</div>
-                    <div style={{ fontSize: '12px', color: '#c2410c', marginTop: '2px', fontWeight: 600 }}>تحويل فوري — InstaPay</div>
+              {/* ── InstaPay payment system ───────────────────── */}
+              <div className="pp-card" style={{ marginBottom: '16px', padding: 0, overflow: 'hidden', border: '1.5px solid #fed7aa' }}>
+                {/* Header */}
+                <div style={{ background: 'linear-gradient(135deg, #fff7ed, #fffbeb)', padding: '16px 20px', borderBottom: '1px solid #fed7aa' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <img src="/instapay.png" alt="InstaPay" style={{ width: '48px', height: '48px', objectFit: 'contain', borderRadius: '12px', background: 'white', padding: '4px', border: '1px solid #fed7aa' }} />
+                    <div>
+                      <div style={{ fontWeight: 900, fontSize: '16px', color: '#9a3412' }}>ادفع عبر InstaPay</div>
+                      <div style={{ fontSize: '12px', color: '#c2410c', fontWeight: 600 }}>تحويل فوري — ارفع السند وانتظر التأكيد</div>
+                    </div>
                   </div>
                 </div>
-                <div style={{ background: 'white', borderRadius: '10px', padding: '14px 16px', border: '1px solid #fed7aa', marginBottom: '12px' }}>
-                  <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600, marginBottom: '5px' }}>رقم الهاتف للتحويل</div>
-                  <div style={{ fontFamily: 'Cairo, sans-serif', fontWeight: 900, fontSize: '18px', color: '#0f172a', letterSpacing: '1px', direction: 'ltr', textAlign: 'right' }}>01156798324</div>
-                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '4px', fontWeight: 600 }}>د. وسام يوسف — عيادة تقويم الأسنان</div>
-                </div>
-                <div style={{ fontSize: '12.5px', color: '#92400e', lineHeight: 1.8, fontWeight: 500, background: '#fef3c7', borderRadius: '8px', padding: '10px 12px', border: '1px solid #fde68a' }}>
-                  ⚠️ <strong>ملاحظة:</strong> بعد إتمام التحويل، يُرجى إرسال صورة الإيصال للدكتور عبر
-                  <a href="https://wa.me/201156798324?text=مرحباً دكتور، أرسلت دفعة عبر انستا باي" target="_blank" rel="noreferrer" style={{ color: '#25d366', fontWeight: 800, margin: '0 4px', textDecoration: 'none' }}>واتساب</a>
-                  لتأكيد الدفع.
+
+                <div style={{ padding: '18px 20px' }}>
+                  {/* Account number */}
+                  <div style={{ background: '#f8fafc', borderRadius: '10px', padding: '12px 16px', border: '1px solid #e2e8f0', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600, marginBottom: '3px' }}>رقم الهاتف للتحويل عبر InstaPay</div>
+                      <div style={{ fontWeight: 900, fontSize: '19px', color: '#0f172a', direction: 'ltr' }}>{siteInfo?.instapayNumber || '01156798324'}</div>
+                      <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px', fontWeight: 600 }}>د. وسام يوسف — عيادة تقويم الأسنان</div>
+                    </div>
+                    <button
+                      onClick={() => { navigator.clipboard?.writeText(siteInfo?.instapayNumber || '01156798324'); toast.success('تم نسخ الرقم'); }}
+                      style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '8px', padding: '7px 12px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'Cairo, sans-serif', color: '#475569', flexShrink: 0 }}>
+                      نسخ
+                    </button>
+                  </div>
+
+                  {/* Payment form */}
+                  <form onSubmit={handleSubmitPayment}>
+                    {/* Amount type */}
+                    <div style={{ marginBottom: '14px' }}>
+                      <div style={{ fontWeight: 700, fontSize: '13px', color: '#475569', marginBottom: '8px' }}>اختر نوع الدفعة</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {[
+                          { key: 'remaining',     label: 'دفع المبلغ المتبقي كاملاً', sub: `${remaining.toLocaleString()} ج.م`, show: remaining > 0 },
+                          { key: 'next-session',  label: 'قيمة الجلسة القادمة',       sub: '~ 300 ج.م',                       show: true },
+                          { key: 'custom',        label: 'مبلغ محدد أختاره',          sub: 'أدخل المبلغ بنفسك',               show: true },
+                        ].filter(o => o.show).map(opt => (
+                          <label key={opt.key} style={{
+                            display: 'flex', alignItems: 'center', gap: '10px', padding: '11px 14px', borderRadius: '10px', cursor: 'pointer',
+                            border: `1.5px solid ${prForm.paymentType === opt.key ? '#2563eb' : '#e2e8f0'}`,
+                            background: prForm.paymentType === opt.key ? '#eff6ff' : 'white',
+                            transition: 'all 0.15s',
+                          }}>
+                            <input type="radio" name="paymentType" value={opt.key} checked={prForm.paymentType === opt.key}
+                              onChange={() => setPrForm(f => ({ ...f, paymentType: opt.key }))}
+                              style={{ accentColor: '#2563eb', width: '16px', height: '16px', flexShrink: 0 }} />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, fontSize: '13.5px', color: '#0f172a' }}>{opt.label}</div>
+                              <div style={{ fontSize: '12px', color: '#64748b', marginTop: '1px' }}>{opt.sub}</div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {prForm.paymentType === 'custom' && (
+                      <div style={{ marginBottom: '14px' }}>
+                        <label style={{ fontWeight: 700, fontSize: '13px', color: '#475569', display: 'block', marginBottom: '6px' }}>المبلغ (ج.م)</label>
+                        <input
+                          type="number" min="1" placeholder="مثال: 500"
+                          value={prForm.customAmount}
+                          onChange={e => setPrForm(f => ({ ...f, customAmount: e.target.value }))}
+                          required={prForm.paymentType === 'custom'}
+                          style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e2e8f0', borderRadius: '9px', fontSize: '15px', fontFamily: 'Cairo, sans-serif', outline: 'none', boxSizing: 'border-box', direction: 'ltr', textAlign: 'right' }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Receipt upload */}
+                    <div style={{ marginBottom: '14px' }}>
+                      <div style={{ fontWeight: 700, fontSize: '13px', color: '#475569', marginBottom: '8px' }}>
+                        صورة سند التحويل <span style={{ color: '#ef4444' }}>*</span>
+                      </div>
+                      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleReceiptFile} style={{ display: 'none' }} />
+                      {prReceiptPreview ? (
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                          <img src={prReceiptPreview} alt="السند" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '10px', border: '1.5px solid #e2e8f0', background: '#f8fafc' }} />
+                          <button type="button" onClick={() => { setPrReceipt(null); setPrReceiptPreview(null); fileInputRef.current.value = ''; }}
+                            style={{ position: 'absolute', top: '6px', left: '6px', background: '#ef4444', border: 'none', color: 'white', width: '26px', height: '26px', borderRadius: '50%', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                        </div>
+                      ) : (
+                        <button type="button" onClick={() => fileInputRef.current.click()}
+                          style={{ width: '100%', padding: '18px', border: '2px dashed #cbd5e1', borderRadius: '10px', background: '#f8fafc', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', fontFamily: 'Cairo, sans-serif' }}>
+                          <FiUpload size={24} color="#94a3b8" />
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#475569' }}>اضغط لرفع صورة السند</span>
+                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>JPG أو PNG — حد أقصى 8 ميجا</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Notes */}
+                    <div style={{ marginBottom: '14px' }}>
+                      <label style={{ fontWeight: 700, fontSize: '13px', color: '#475569', display: 'block', marginBottom: '6px' }}>ملاحظة (اختياري)</label>
+                      <textarea value={prForm.notes} onChange={e => setPrForm(f => ({ ...f, notes: e.target.value }))}
+                        placeholder="أي ملاحظة للدكتور..."
+                        rows={2}
+                        style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e2e8f0', borderRadius: '9px', fontFamily: 'Cairo, sans-serif', fontSize: '13px', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }} />
+                    </div>
+
+                    <button type="submit" disabled={prSubmitting || !prReceipt}
+                      style={{ width: '100%', padding: '13px', borderRadius: '11px', border: 'none', background: prReceipt ? 'linear-gradient(135deg, #f97316, #ea580c)' : '#e2e8f0', color: prReceipt ? 'white' : '#94a3b8', fontWeight: 800, fontSize: '15px', fontFamily: 'Cairo, sans-serif', cursor: prReceipt ? 'pointer' : 'not-allowed', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                      {prSubmitting ? <><span style={{ width: '16px', height: '16px', border: '2.5px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /> جاري الإرسال...</> : <><FiUpload size={16} /> {prReuploadId ? 'إعادة رفع السند' : 'إرسال طلب الدفع'}</>}
+                    </button>
+                  </form>
                 </div>
               </div>
+
+              {/* Payment requests history */}
+              {paymentRequests.length > 0 && (
+                <div className="pp-card" style={{ marginBottom: '16px', padding: 0, overflow: 'hidden' }}>
+                  <div style={{ padding: '14px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 800, fontSize: '14px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src="/instapay.png" alt="InstaPay" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                    طلبات الدفع عبر InstaPay
+                    <button onClick={loadPaymentRequests} style={{ marginRight: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><FiRefreshCw size={14} /></button>
+                  </div>
+                  {paymentRequests.map((pr) => {
+                    const st = PR_STATUS[pr.status] || PR_STATUS.pending;
+                    const needsReupload = pr.status === 'reupload-requested';
+                    return (
+                      <div key={pr._id} style={{ padding: '14px 20px', borderBottom: '1px solid #f8fafc', transition: 'background 0.15s' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                              <span style={{ fontWeight: 900, fontSize: '16px', color: '#2563eb' }}>{pr.amount.toLocaleString()} ج.م</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 9px', borderRadius: '20px', fontSize: '11.5px', fontWeight: 700, background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>
+                                {st.icon} {st.label}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>
+                              {format(new Date(pr.createdAt), 'd MMM yyyy — HH:mm', { locale: ar })}
+                            </div>
+                            {pr.doctorNotes && (
+                              <div style={{ fontSize: '12.5px', color: '#5b21b6', background: '#f5f3ff', borderRadius: '8px', padding: '6px 10px', border: '1px solid #ddd6fe', marginTop: '6px' }}>
+                                💬 {pr.doctorNotes}
+                              </div>
+                            )}
+                            {needsReupload && (
+                              <button onClick={() => { setPrReuploadId(pr._id); setPrForm(f => ({ ...f, notes: '' })); setPrReceipt(null); setPrReceiptPreview(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                style={{ marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#8b5cf6', color: 'white', border: 'none', borderRadius: '8px', fontFamily: 'Cairo, sans-serif', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer' }}>
+                                <FiRefreshCw size={12} /> إعادة رفع السند
+                              </button>
+                            )}
+                          </div>
+                          {pr.receiptImage && (
+                            <button onClick={() => setImgModal(pr.receiptImage)}
+                              style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 700, color: '#475569', fontFamily: 'Cairo, sans-serif', flexShrink: 0 }}>
+                              <FiEye size={13} /> السند
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Payment history */}
               {payments.length > 0 && (
@@ -637,6 +843,18 @@ export default function PatientPortal() {
           )}
         </div>
       </div>
+
+      {/* Receipt image modal */}
+      {imgModal && (
+        <div onClick={() => setImgModal(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', cursor: 'zoom-out' }}>
+          <img src={imgModal} alt="سند التحويل"
+            style={{ maxWidth: '100%', maxHeight: '90vh', borderRadius: '16px', boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}
+            onClick={e => e.stopPropagation()} />
+          <button onClick={() => setImgModal(null)}
+            style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', width: '40px', height: '40px', borderRadius: '50%', fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>×</button>
+        </div>
+      )}
     </>
   );
 }

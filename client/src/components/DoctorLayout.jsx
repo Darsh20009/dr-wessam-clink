@@ -17,6 +17,7 @@ const navItems = [
   { to: '/doctor/patients', icon: <FiUsers size={17} />, label: 'المرضى' },
   { to: '/doctor/appointments', icon: <FiCalendar size={17} />, label: 'المواعيد' },
   { to: '/doctor/payments', icon: <FiDollarSign size={17} />, label: 'المدفوعات' },
+  { to: '/doctor/payment-requests', icon: <FiCreditCard size={17} />, label: 'طلبات InstaPay', notif: true },
   { to: '/doctor/wallet', icon: <FiCreditCard size={17} />, label: 'المحفظة' },
   { to: '/doctor/reports', icon: <FiBarChart2 size={17} />, label: 'التقارير' },
   { to: '/doctor/notifications', icon: <FiBell size={17} />, label: 'الإشعارات', notif: true },

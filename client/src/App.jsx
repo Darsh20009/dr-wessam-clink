@@ -21,6 +21,7 @@ import SiteManager from './pages/SiteManager';
 import Settings from './pages/Settings';
 import SelfRegister from './pages/SelfRegister';
 import EmployeeCard from './pages/EmployeeCard';
+import DoctorPaymentRequests from './pages/DoctorPaymentRequests';
 
 const ProtectedRoute = ({ children, role }) => {
   const { user, loading } = useAuth();
@@ -59,6 +60,7 @@ const AppRoutes = () => {
         <Route path="notifications" element={<Notifications />} />
         <Route path="wallet" element={<Wallet />} />
         <Route path="site" element={<SiteManager />} />
+        <Route path="payment-requests" element={<DoctorPaymentRequests />} />
         <Route path="id-card" element={<EmployeeCard />} />
         <Route path="settings" element={<Settings />} />
       </Route>

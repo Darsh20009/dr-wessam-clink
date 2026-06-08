@@ -39,6 +39,7 @@ const siteSettingsSchema = new mongoose.Schema({
     answer: String,
     isActive: { type: Boolean, default: true },
   }],
+  instapayNumber: { type: String, default: '01156798324' },
   seoTitle: String,
   seoDescription: String,
   seoKeywords: String,
