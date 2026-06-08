@@ -1,0 +1,126 @@
+
+Manage
+Environment
+Shell
+Scaling
+Previews
+Disk
+One-Off Jobs
+
+Changelog
+Invite a friend
+
+Contact support
+Render Status
+Web Service
+dr-wessam-clink
+Node
+Free
+Upgrade your instance
+
+Connect
+
+Manual Deploy
+Service ID:
+srv-d8i3bndckfvc73bd6o9g
+
+Darsh20009 / dr-wessam-clink
+main
+dr-wessam.online
+
+Your free instance will spin down with inactivity, which can delay requests by 50 seconds or more.
+Upgrade now
+June 8, 2026 at 11:15 PM
+failed
+8bbf872
+neww edit
+
+Rollback
+Exited with status 1 while running your code.
+Read our docs for common ways to troubleshoot your deploy.
+
+All logs
+Search
+Search
+
+Jun 8, 11:14 PM - 11:18 PM
+GMT+3
+
+
+
+==> Downloading cache...
+==> Cloning from https://github.com/Darsh20009/dr-wessam-clink
+==> Checking out commit 8bbf872f3a8d0afddb8e5f5831b9378711d85fdc in branch main
+==> Downloaded 40MB in 6s. Extraction took 0s.
+==> Requesting Node.js version >=18.0.0
+==> Using Node.js version 26.3.0 via /opt/render/project/src/package.json
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Installing Node.js version 26.3.0...
+==> Running build command 'npm install && npm run build'...
+up to date, audited 1 package in 265ms
+found 0 vulnerabilities
+> dr-wessam-clinic@1.0.0 build
+> cd client && npm install && npm run build
+added 135 packages, and audited 136 packages in 3s
+14 packages are looking for funding
+  run `npm fund` for details
+2 moderate severity vulnerabilities
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+Run `npm audit` for details.
+> dr-wessam-client@1.0.0 build
+> vite build
+vite v5.4.21 building for production...
+transforming...
+✓ 1754 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   5.15 kB │ gzip:   1.85 kB
+dist/assets/index-Drs6jR22.css   12.13 kB │ gzip:   3.22 kB
+dist/assets/index-CHC7E0_F.js   960.81 kB │ gzip: 262.01 kB
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.62s
+==> Uploading build...
+==> Uploaded in 4.2s. Compression took 2.2s
+==> Build successful 🎉
+==> Deploying...
+==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+==> Running 'node --enable-source-maps artifacts/api-server/dist/index.mjs'
+node:internal/modules/cjs/loader:1522
+  throw err;
+  ^
+Error: Cannot find module '/opt/render/project/src/artifacts/api-server/dist/index.mjs'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1519:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1073:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1097:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1124:12)
+    at Module._load (node:internal/modules/cjs/loader:1296:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+Node.js v26.3.0
+==> Exited with status 1
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Running 'node --enable-source-maps artifacts/api-server/dist/index.mjs'
+node:internal/modules/cjs/loader:1522
+  throw err;
+  ^
+Error: Cannot find module '/opt/render/project/src/artifacts/api-server/dist/index.mjs'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1519:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1073:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1097:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1124:12)
+    at Module._load (node:internal/modules/cjs/loader:1296:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+Node.js v26.3.0
