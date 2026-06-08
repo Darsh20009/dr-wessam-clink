@@ -338,18 +338,80 @@ const STYLE = `
     padding: 48px 6% 24px;
   }
 
-  /* WA FLOAT */
-  .l-wa-float {
-    position: fixed; bottom: 24px; left: 24px; z-index: 99;
-    width: 56px; height: 56px; border-radius: 50%;
-    background: #25d366; color: white;
+  /* TOOTH WA WIDGET */
+  @keyframes toothBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  @keyframes popIn { from{opacity:0;transform:scale(0.85) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+
+  .l-tooth-btn {
+    position: fixed; bottom: 28px; left: 0; z-index: 9999;
+    width: 46px; height: 52px;
+    background: linear-gradient(145deg, #25d366, #128c7e);
+    border: none; cursor: pointer;
+    border-radius: 0 22px 22px 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 26px;
-    box-shadow: 0 6px 20px rgba(37,211,102,0.45);
-    text-decoration: none; transition: all 0.25s;
-    animation: float 3s ease-in-out infinite;
+    box-shadow: 3px 4px 18px rgba(37,211,102,0.5);
+    animation: toothBounce 3.5s ease-in-out infinite;
+    transition: all 0.22s;
+    padding: 0;
+    outline: none;
   }
-  .l-wa-float:hover { transform: scale(1.1) translateY(-2px); box-shadow: 0 10px 30px rgba(37,211,102,0.55); }
+  .l-tooth-btn:hover {
+    width: 52px;
+    box-shadow: 4px 6px 24px rgba(37,211,102,0.65);
+    animation: none;
+  }
+
+  .l-wa-popup {
+    position: fixed; bottom: 90px; left: 16px; z-index: 9999;
+    width: 290px;
+    background: white; border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.18), 0 2px 8px rgba(37,211,102,0.15);
+    overflow: hidden;
+    animation: popIn 0.25s ease-out;
+    border: 1px solid #e2e8f0;
+    font-family: 'Cairo', sans-serif;
+    direction: rtl;
+  }
+  .l-wa-popup-head {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .l-wa-popup-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .l-wa-popup-name { font-size: 14px; font-weight: 800; color: white; }
+  .l-wa-popup-status { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 1px; display: flex; align-items: center; gap: 4px; }
+  .l-wa-popup-dot { width: 6px; height: 6px; border-radius: 50%; background: #a7f3d0; display: inline-block; animation: pulse-dot 1.5s infinite; }
+  .l-wa-popup-body { padding: 14px 14px 12px; }
+  .l-wa-popup-hint {
+    background: #f1f5f9; border-radius: 10px 10px 10px 2px;
+    padding: 9px 12px; font-size: 12.5px; color: #475569;
+    margin-bottom: 12px; line-height: 1.6;
+  }
+  .l-wa-popup-textarea {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px;
+    padding: 9px 12px; font-family: 'Cairo', sans-serif;
+    font-size: 13px; color: #0f172a; resize: none;
+    outline: none; transition: border 0.18s;
+    box-sizing: border-box; direction: rtl;
+  }
+  .l-wa-popup-textarea:focus { border-color: #25d366; }
+  .l-wa-popup-send {
+    width: 100%; margin-top: 10px;
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    color: white; border: none; border-radius: 10px;
+    padding: 10px; font-family: 'Cairo', sans-serif;
+    font-size: 14px; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(37,211,102,0.35);
+  }
+  .l-wa-popup-send:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .l-wa-popup-send:disabled { opacity: 0.55; cursor: default; transform: none; }
 
   @media (max-width: 900px) {
     .l-hero-grid { grid-template-columns: 1fr; }
@@ -374,6 +436,8 @@ export default function Landing() {
   const [settings, setSettings] = useState(defaultSettings);
   const [scrolled, setScrolled] = useState(false);
   const videoRef = React.useRef(null);
+  const [waOpen, setWaOpen] = React.useState(false);
+  const [waMsg, setWaMsg] = React.useState('');
 
   useEffect(() => {
     axios.get('/api/site').then(r => {
@@ -824,10 +888,58 @@ export default function Landing() {
           </div>
         </footer>
 
-        {/* WhatsApp Float */}
-        <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" className="l-wa-float">
-          <FaWhatsapp />
-        </a>
+        {/* Tooth WhatsApp Widget */}
+        {waOpen && (
+          <div className="l-wa-popup">
+            <div className="l-wa-popup-head">
+              <div className="l-wa-popup-avatar">🦷</div>
+              <div>
+                <div className="l-wa-popup-name">{settings.doctorName}</div>
+                <div className="l-wa-popup-status">
+                  <span className="l-wa-popup-dot" /> متاح الآن
+                </div>
+              </div>
+            </div>
+            <div className="l-wa-popup-body">
+              <div className="l-wa-popup-hint">
+                أهلاً! اكتب رسالتك وسنرد عليك في أقرب وقت 😊
+              </div>
+              <textarea
+                className="l-wa-popup-textarea"
+                rows={3}
+                placeholder="اكتب رسالتك هنا..."
+                value={waMsg}
+                onChange={e => setWaMsg(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey && waMsg.trim()) {
+                    e.preventDefault();
+                    window.open(`https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(waMsg.trim())}`, '_blank');
+                    setWaMsg(''); setWaOpen(false);
+                  }
+                }}
+                autoFocus
+              />
+              <button
+                className="l-wa-popup-send"
+                disabled={!waMsg.trim()}
+                onClick={() => {
+                  window.open(`https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(waMsg.trim())}`, '_blank');
+                  setWaMsg(''); setWaOpen(false);
+                }}
+              >
+                <FaWhatsapp size={16} /> إرسال عبر واتساب
+              </button>
+            </div>
+          </div>
+        )}
+
+        <button className="l-tooth-btn" onClick={() => setWaOpen(o => !o)} title="تواصل عبر واتساب">
+          <svg width="26" height="28" viewBox="0 0 26 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 2C10.5 2 8.5 3.5 7.5 5.5C6.8 4.8 5.8 4.5 4.8 4.8C3.2 5.3 2.2 7 2.5 8.8C1.5 9.8 1 11.2 1 12.5C1 15 2.5 17.2 4.5 18.3C5 20.5 5.8 22.5 7 24C8 25.3 9 26 10 25.8C10.8 25.6 11.5 24.8 12 23.5C12.3 22.7 12.7 22 13 22C13.3 22 13.7 22.7 14 23.5C14.5 24.8 15.2 25.6 16 25.8C17 26 18 25.3 19 24C20.2 22.5 21 20.5 21.5 18.3C23.5 17.2 25 15 25 12.5C25 11.2 24.5 9.8 23.5 8.8C23.8 7 22.8 5.3 21.2 4.8C20.2 4.5 19.2 4.8 18.5 5.5C17.5 3.5 15.5 2 13 2Z" fill="white" fillOpacity="0.92"/>
+            <path d="M9.5 10.5C9.5 9.4 10.2 8.5 11 8.5C11.8 8.5 12.5 9.4 12.5 10.5" stroke="rgba(37,211,102,0.7)" strokeWidth="1.2" strokeLinecap="round"/>
+            <path d="M13.5 10.5C13.5 9.4 14.2 8.5 15 8.5C15.8 8.5 16.5 9.4 16.5 10.5" stroke="rgba(37,211,102,0.7)" strokeWidth="1.2" strokeLinecap="round"/>
+          </svg>
+        </button>
       </div>
     </>
   );
