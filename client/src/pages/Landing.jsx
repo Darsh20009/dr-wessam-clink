@@ -956,27 +956,40 @@ export default function Landing() {
         )}
 
         {/* ── SPECIAL THANKS ── */}
-        <section className="l-section" style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0f2044 50%, #0a1628 100%)', overflow: 'hidden', position: 'relative' }}>
-          {/* Background decorative circles */}
-          <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '320px', height: '320px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: '-60px', left: '-60px', width: '280px', height: '280px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,182,212,0.14) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <section className="l-section" style={{ overflow: 'hidden', position: 'relative', background: '#fff' }}>
+          {/* Background video */}
+          <video
+            autoPlay muted loop playsInline
+            style={{
+              position: 'absolute', inset: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover',
+              opacity: 0.08,
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          >
+            <source src="/bg-video.mov" type="video/quicktime" />
+            <source src="/bg-video.mov" type="video/mp4" />
+          </video>
+          {/* Subtle white overlay so text stays crisp */}
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.88)', zIndex: 1, pointerEvents: 'none' }} />
 
-          <div className="l-section-inner" style={{ position: 'relative', zIndex: 1 }}>
+          <div className="l-section-inner" style={{ position: 'relative', zIndex: 2 }}>
             {/* Header */}
             <div className="l-section-header">
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: '8px',
-                background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.4)',
+                background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.35)',
                 borderRadius: '30px', padding: '6px 18px',
                 marginBottom: '16px',
               }}>
-                <span style={{ fontSize: '16px' }}>🌟</span>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: '#fbbf24' }}>شكر خاص وتقدير</span>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#d97706' }}>شكر خاص وتقدير</span>
               </div>
-              <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 900, color: '#f1f5f9', marginBottom: '12px', letterSpacing: '-0.3px' }}>
+              <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 900, color: '#0f172a', marginBottom: '12px', letterSpacing: '-0.3px' }}>
                 شرّفونا بزيارتهم الكريمة
               </h2>
-              <p style={{ fontSize: '16px', color: '#94a3b8', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
+              <p style={{ fontSize: '16px', color: '#475569', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
                 يسعدنا أن نُعبّر عن خالص شكرنا وامتناننا لهذه الزيارة الرائعة
               </p>
               <div style={{ width: '60px', height: '4px', borderRadius: '4px', background: 'linear-gradient(90deg, #f59e0b, #f97316)', margin: '16px auto 0' }} />
@@ -993,14 +1006,14 @@ export default function Landing() {
                   {/* Outer glow */}
                   <div style={{
                     position: 'absolute', inset: '-12px', borderRadius: '28px',
-                    background: 'linear-gradient(135deg, rgba(245,158,11,0.3), rgba(37,99,235,0.3))',
+                    background: 'linear-gradient(135deg, rgba(245,158,11,0.25), rgba(37,99,235,0.2))',
                     filter: 'blur(14px)',
                   }} />
                   {/* Gold gradient border */}
                   <div style={{
                     position: 'relative', padding: '4px', borderRadius: '24px',
                     background: 'linear-gradient(135deg, #f59e0b, #2563eb, #06b6d4)',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
                   }}>
                     <img
                       src="/dr-visit.png"
@@ -1016,27 +1029,17 @@ export default function Landing() {
                     <div style={{
                       position: 'absolute', bottom: '14px', left: '50%',
                       transform: 'translateX(-50%)',
-                      background: 'rgba(10,22,40,0.85)',
+                      background: 'rgba(255,255,255,0.92)',
                       backdropFilter: 'blur(8px)',
                       borderRadius: '30px', padding: '8px 20px',
-                      border: '1px solid rgba(245,158,11,0.4)',
+                      border: '1px solid rgba(245,158,11,0.35)',
                       whiteSpace: 'nowrap',
-                      display: 'flex', alignItems: 'center', gap: '8px',
                     }}>
-                      <span style={{ fontSize: '14px' }}>📸</span>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#fbbf24', fontFamily: 'Cairo, sans-serif' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#92400e', fontFamily: 'Cairo, sans-serif' }}>
                         زيارة كريمة للعيادة
                       </span>
                     </div>
                   </div>
-                  {/* Decorative badge top-left */}
-                  <div style={{
-                    position: 'absolute', top: '-14px', left: '-14px',
-                    width: '44px', height: '44px', borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #f59e0b, #f97316)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '20px', boxShadow: '0 6px 16px rgba(245,158,11,0.5)',
-                  }}>💛</div>
                 </div>
               </div>
 
@@ -1045,17 +1048,20 @@ export default function Landing() {
                 {/* Quote */}
                 <div style={{
                   padding: '20px 24px', borderRadius: '16px', marginBottom: '28px',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: '#f8fafc',
+                  borderTop: '1px solid #e2e8f0',
+                  borderBottom: '1px solid #e2e8f0',
+                  borderLeft: '1px solid #e2e8f0',
                   borderRight: '4px solid #f59e0b',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
                 }}>
                   <p style={{
-                    color: '#cbd5e1', fontSize: '15px', lineHeight: 1.9,
+                    color: '#334155', fontSize: '15px', lineHeight: 1.9,
                     fontStyle: 'italic', margin: 0,
                   }}>
                     "يشرّفنا تشريف زملائنا الأفاضل لعيادتنا، ونُعبّر عن خالص شكرنا وتقديرنا لكل لحظة أمضوها معنا."
                   </p>
-                  <div style={{ marginTop: '10px', fontSize: '13px', fontWeight: 700, color: '#fbbf24' }}>
+                  <div style={{ marginTop: '10px', fontSize: '13px', fontWeight: 700, color: '#d97706' }}>
                     — د. وسام يوسف
                   </div>
                 </div>
@@ -1064,23 +1070,25 @@ export default function Landing() {
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '16px',
                   padding: '18px 20px', borderRadius: '14px', marginBottom: '14px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  transition: 'all 0.2s',
+                  background: '#fff',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 2px 12px rgba(236,72,153,0.08)',
                 }}>
                   <div style={{
                     width: '52px', height: '52px', borderRadius: '50%',
                     background: 'linear-gradient(135deg, #ec4899, #f97316)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '22px', flexShrink: 0,
-                    boxShadow: '0 6px 18px rgba(236,72,153,0.35)',
-                  }}>👩‍⚕️</div>
+                    flexShrink: 0,
+                    boxShadow: '0 6px 18px rgba(236,72,153,0.3)',
+                  }}>
+                    <span style={{ color: 'white', fontWeight: 900, fontSize: '15px' }}>ب</span>
+                  </div>
                   <div>
-                    <div style={{ fontWeight: 900, fontSize: '17px', color: '#f1f5f9', marginBottom: '3px' }}>
-                      د. بسمة
+                    <div style={{ fontWeight: 900, fontSize: '17px', color: '#0f172a', marginBottom: '3px' }}>
+                      دكتورة بسمة نبيل
                     </div>
-                    <div style={{ fontSize: '13px', color: '#94a3b8' }}>
-                      ضيفة شرف كريمة — شكراً جزيلاً لتشريفك إيانا 💛
+                    <div style={{ fontSize: '13px', color: '#64748b' }}>
+                      ضيفة شرف كريمة — شكراً جزيلاً لتشريفك إيانا
                     </div>
                   </div>
                 </div>
@@ -1089,23 +1097,25 @@ export default function Landing() {
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '16px',
                   padding: '18px 20px', borderRadius: '14px', marginBottom: '14px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  transition: 'all 0.2s',
+                  background: '#fff',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 2px 12px rgba(37,99,235,0.08)',
                 }}>
                   <div style={{
                     width: '52px', height: '52px', borderRadius: '50%',
                     background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '22px', flexShrink: 0,
-                    boxShadow: '0 6px 18px rgba(37,99,235,0.4)',
-                  }}>👨‍⚕️</div>
+                    flexShrink: 0,
+                    boxShadow: '0 6px 18px rgba(37,99,235,0.3)',
+                  }}>
+                    <span style={{ color: 'white', fontWeight: 900, fontSize: '15px' }}>ف</span>
+                  </div>
                   <div>
-                    <div style={{ fontWeight: 900, fontSize: '17px', color: '#f1f5f9', marginBottom: '3px' }}>
-                      د. فادي
+                    <div style={{ fontWeight: 900, fontSize: '17px', color: '#0f172a', marginBottom: '3px' }}>
+                      البروفسير د. فادي حسين
                     </div>
-                    <div style={{ fontSize: '13px', color: '#94a3b8' }}>
-                      ضيف شرف كريم — شكراً جزيلاً لتشريفك إيانا 💙
+                    <div style={{ fontSize: '13px', color: '#64748b' }}>
+                      ضيف شرف كريم — شكراً جزيلاً لتشريفك إيانا
                     </div>
                   </div>
                 </div>
@@ -1114,12 +1124,11 @@ export default function Landing() {
                 <div style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
                   padding: '14px 20px', borderRadius: '12px',
-                  background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(249,115,22,0.1))',
-                  border: '1px solid rgba(245,158,11,0.3)',
+                  background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(249,115,22,0.06))',
+                  border: '1px solid rgba(245,158,11,0.25)',
                   marginTop: '4px',
                 }}>
-                  <span style={{ fontSize: '20px' }}>🤝</span>
-                  <span style={{ color: '#fbbf24', fontWeight: 800, fontSize: '14px' }}>
+                  <span style={{ color: '#d97706', fontWeight: 800, fontSize: '14px' }}>
                     دائماً يسعدنا استقبال زملائنا الكرام
                   </span>
                 </div>
