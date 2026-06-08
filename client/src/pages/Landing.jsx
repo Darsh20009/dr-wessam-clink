@@ -378,13 +378,13 @@ const STYLE = `
   @keyframes popIn { from{opacity:0;transform:scale(0.85) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
 
   .l-tooth-btn {
-    position: fixed; bottom: 28px; left: 0; z-index: 9999;
+    position: fixed; bottom: 28px; right: 0; z-index: 9999;
     width: 46px; height: 52px;
     background: linear-gradient(145deg, #25d366, #128c7e);
     border: none; cursor: pointer;
-    border-radius: 0 22px 22px 0;
+    border-radius: 22px 0 0 22px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 3px 4px 18px rgba(37,211,102,0.5);
+    box-shadow: -3px 4px 18px rgba(37,211,102,0.5);
     animation: toothBounce 3.5s ease-in-out infinite;
     transition: all 0.22s;
     padding: 0;
@@ -392,12 +392,12 @@ const STYLE = `
   }
   .l-tooth-btn:hover {
     width: 52px;
-    box-shadow: 4px 6px 24px rgba(37,211,102,0.65);
+    box-shadow: -4px 6px 24px rgba(37,211,102,0.65);
     animation: none;
   }
 
   .l-wa-popup {
-    position: fixed; bottom: 90px; left: 16px; z-index: 9999;
+    position: fixed; bottom: 90px; right: 16px; z-index: 9999;
     width: 290px;
     background: white; border-radius: 18px;
     box-shadow: 0 16px 48px rgba(0,0,0,0.18), 0 2px 8px rgba(37,211,102,0.15);

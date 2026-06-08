@@ -8,9 +8,18 @@ const router = express.Router();
 
 const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
+// Normalize Egyptian phone numbers — accept 01xxxxxxxx, 1xxxxxxxx, +201xxxxxxxx, 201xxxxxxxx
+const normalizePhone = (raw = '') => {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.startsWith('20')) return '0' + digits.slice(2);
+  if (!digits.startsWith('0') && digits.length === 10) return '0' + digits;
+  return digits;
+};
+
 router.post('/login', async (req, res) => {
   try {
-    const { phone, password } = req.body;
+    const { password } = req.body;
+    const phone = normalizePhone(req.body.phone);
     const user = await User.findOne({ phone });
     if (!user) return res.status(400).json({ message: 'رقم الجوال غير مسجل' });
     if (!user.password) return res.status(400).json({ message: 'يرجى تفعيل حسابك أولاً', needsSetup: true });
@@ -27,7 +36,8 @@ router.post('/login', async (req, res) => {
 
 router.post('/setup-password', async (req, res) => {
   try {
-    const { phone, password } = req.body;
+    const { password } = req.body;
+    const phone = normalizePhone(req.body.phone);
     const patient = await Patient.findOne({ phone });
     if (!patient) return res.status(400).json({ message: 'لا يوجد ملف طبي بهذا الرقم' });
 
@@ -51,7 +61,8 @@ router.post('/setup-password', async (req, res) => {
 // Patient verifies with patientId + phone, then sets new password
 router.post('/verify-identity', async (req, res) => {
   try {
-    const { patientId, phone } = req.body;
+    const { patientId } = req.body;
+    const phone = normalizePhone(req.body.phone);
     if (!patientId || !phone) return res.status(400).json({ message: 'يرجى إدخال رقم الملف ورقم الجوال' });
 
     const patient = await Patient.findOne({ _id: patientId, phone });
@@ -66,7 +77,8 @@ router.post('/verify-identity', async (req, res) => {
 
 router.post('/reset-password', async (req, res) => {
   try {
-    const { patientId, phone, newPassword } = req.body;
+    const { patientId, newPassword } = req.body;
+    const phone = normalizePhone(req.body.phone);
     if (!patientId || !phone || !newPassword) return res.status(400).json({ message: 'بيانات ناقصة' });
     if (newPassword.length < 6) return res.status(400).json({ message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
 
@@ -95,7 +107,8 @@ router.get('/me', auth, async (req, res) => {
 
 router.post('/doctor/login', async (req, res) => {
   try {
-    const { phone, password } = req.body;
+    const { password } = req.body;
+    const phone = normalizePhone(req.body.phone);
     const user = await User.findOne({ phone, role: 'doctor' });
     if (!user) return res.status(400).json({ message: 'بيانات الطبيب غير صحيحة' });
     
@@ -112,7 +125,8 @@ router.post('/doctor/login', async (req, res) => {
 // ── Public patient self-registration ─────────────────────────────
 router.post('/register-patient', async (req, res) => {
   try {
-    const { fullName, phone, password, age, address, consultationType } = req.body;
+    const { fullName, password, age, address, consultationType } = req.body;
+    const phone = normalizePhone(req.body.phone);
     if (!fullName || !phone || !password)
       return res.status(400).json({ message: 'الاسم ورقم الجوال وكلمة المرور مطلوبة' });
     if (password.length < 6)
