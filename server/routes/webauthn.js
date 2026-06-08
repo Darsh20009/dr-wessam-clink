@@ -85,14 +85,14 @@ router.post('/register-verify', auth, async (req, res) => {
     await WebAuthnCredential.create({
       userId: req.user._id,
       userRole: req.user.role,
-      credentialID: Buffer.from(credential.id).toString('base64url'),
+      credentialID: credential.id,
       credentialPublicKey: Buffer.from(credential.publicKey).toString('base64'),
       counter: credential.counter,
       transports: req.body.response?.transports || [],
       deviceName: req.body.deviceName || 'جهازي',
       credentialDeviceType,
       credentialBackedUp,
-      aaguid: aaguid?.toString(),
+      aaguid: aaguid ? String(aaguid) : undefined,
     });
 
     challengeStore.delete(userId);
