@@ -1315,18 +1315,6 @@ export default function Landing() {
                   </div>
                 </div>
 
-                {/* Thank you badge */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                  padding: '14px 20px', borderRadius: '12px',
-                  background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(249,115,22,0.06))',
-                  border: '1px solid rgba(245,158,11,0.25)',
-                  marginTop: '4px',
-                }}>
-                  <span style={{ color: '#d97706', fontWeight: 800, fontSize: '14px' }}>
-                    Proud of being a student of such great mentors 🌟
-                  </span>
-                </div>
               </div>
             </div>
           </div>
