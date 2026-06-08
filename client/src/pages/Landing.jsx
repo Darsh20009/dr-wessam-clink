@@ -832,10 +832,9 @@ export default function Landing() {
                         src="/doctor-photo.png"
                         alt="د. وسام يوسف"
                         style={{
-                          width: '260px',
-                          height: '300px',
-                          objectFit: 'cover',
-                          objectPosition: 'center top',
+                          width: '360px',
+                          height: 'auto',
+                          objectFit: 'contain',
                           borderRadius: '18px',
                           display: 'block',
                         }}
