@@ -373,6 +373,7 @@ const STYLE = `
   }
 
   /* TOOTH WA WIDGET */
+  @keyframes waveSlide { 0% { transform: translateX(0) } 100% { transform: translateX(-50%) } }
   @keyframes toothBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
   @keyframes popIn { from{opacity:0;transform:scale(0.85) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
 
@@ -475,6 +476,37 @@ const SERVICE_COLORS = [
   { bg: '#f0fdf4', border: '#bbf7d0', text: '#16a34a' },
   { bg: '#fff1f2', border: '#fecdd3', text: '#e11d48' },
 ];
+
+const WaveDivider = ({ from, to, variant = 'wave', flip = false, height = 70, animate = false }) => {
+  const paths = {
+    wave:     'M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,0 L0,0 Z',
+    tilt:     'M0,0 C480,72 960,12 1440,58 L1440,0 Z',
+    mountain: 'M0,58 L180,12 L360,52 L540,8 L720,48 L900,6 L1080,44 L1260,14 L1440,50 L1440,0 L0,0 Z',
+    arc:      'M0,0 Q720,82 1440,0 L1440,0 Z',
+    layered:  'M0,52 C300,8 600,80 900,38 C1100,12 1280,62 1440,28 L1440,0 L0,0 Z',
+    peaks:    'M0,62 C150,18 300,72 500,22 C650,2 800,68 1000,18 C1150,0 1300,58 1440,28 L1440,0 L0,0 Z',
+    gentle:   'M0,32 C400,82 800,0 1440,52 L1440,0 L0,0 Z',
+    bubble:   'M0,8 C200,72 500,0 720,62 C900,92 1100,18 1440,52 L1440,0 L0,0 Z',
+  };
+  if (animate) {
+    return (
+      <div style={{ lineHeight: 0, background: to, overflow: 'hidden', position: 'relative' }}>
+        <svg viewBox="0 0 2880 90" preserveAspectRatio="none"
+          style={{ display: 'block', width: '200%', height: `${height}px`, animation: 'waveSlide 8s linear infinite' }}>
+          <path d="M0,45 C240,88 480,4 720,45 C960,88 1200,4 1440,45 C1680,88 1920,4 2160,45 C2400,88 2640,4 2880,45 L2880,0 L0,0 Z" fill={from} />
+        </svg>
+      </div>
+    );
+  }
+  return (
+    <div style={{ lineHeight: 0, background: to }}>
+      <svg viewBox={`0 0 1440 ${height}`} preserveAspectRatio="none"
+        style={{ display: 'block', width: '100%', height: `${height}px`, transform: flip ? 'scaleX(-1)' : 'none' }}>
+        <path d={paths[variant] || paths.wave} fill={from} />
+      </svg>
+    </div>
+  );
+};
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -714,6 +746,9 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* Wave: Hero → Services */}
+        <WaveDivider from="#0a1628" to="#f8fafc" animate height={90} />
+
         {/* ── SERVICES ── */}
         <section id="services" className="l-section l-section-alt">
           <div className="l-section-inner">
@@ -740,6 +775,9 @@ export default function Landing() {
             </div>
           </div>
         </section>
+
+        {/* Wave: Services → About */}
+        <WaveDivider from="#f8fafc" to="#ffffff" variant="tilt" height={60} />
 
         {/* ── ABOUT ── */}
         <section id="about" className="l-section">
@@ -926,6 +964,9 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* Wave: About → Reviews */}
+        <WaveDivider from="#ffffff" to="#f8fafc" variant="mountain" flip height={65} />
+
         {/* ── REVIEWS ── */}
         {activeReviews.length > 0 && (
           <section id="reviews" className="l-section l-section-alt">
@@ -965,6 +1006,9 @@ export default function Landing() {
             </div>
           </section>
         )}
+
+        {/* Wave: Reviews → FAQ */}
+        <WaveDivider from="#f8fafc" to="#ffffff" variant="arc" height={60} />
 
         {/* ── FAQ ── */}
         {activeFaqs.length > 0 && (
@@ -1311,6 +1355,9 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* Wave: Special Thanks → Contact */}
+        <WaveDivider from="#ffffff" to="#f8fafc" variant="gentle" height={60} />
+
         {/* ── CONTACT ── */}
         <section id="contact" className="l-section l-section-alt">
           <div className="l-section-inner">
@@ -1362,6 +1409,9 @@ export default function Landing() {
             </div>
           </div>
         </section>
+
+        {/* Wave: Contact → Mentors */}
+        <WaveDivider from="#f8fafc" to="#0f172a" variant="peaks" height={80} />
 
         {/* ── MENTORS / ACKNOWLEDGMENT ── */}
         <section className="l-mentors-section">
@@ -1455,6 +1505,9 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* Wave: Mentors → SEO */}
+        <WaveDivider from="#0f172a" to="#f8fafc" variant="layered" flip height={85} />
+
         {/* ── SEO RICH TEXT SECTION ── */}
         <section style={{ background: '#f8fafc', borderTop: '1px solid #e2e8f0', padding: '48px 24px 32px', direction: 'rtl' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
@@ -1509,6 +1562,9 @@ export default function Landing() {
             </p>
           </div>
         </section>
+
+        {/* Wave: SEO → Footer */}
+        <WaveDivider from="#f8fafc" to="#0f172a" variant="bubble" height={75} />
 
         {/* ── FOOTER ── */}
         <footer className="l-footer">
