@@ -565,14 +565,31 @@ export default function Landing() {
             <div>
               <div className="l-hero-card">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid #f1f5f9' }}>
-                  <div style={{
-                    width: '64px', height: '64px', borderRadius: '16px',
-                    background: 'white', flexShrink: 0,
-                    boxShadow: '0 8px 24px rgba(37,99,235,0.15)',
-                    border: '2px solid #e2e8f0', overflow: 'hidden',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <img src="/icon-512.png" alt="شعار العيادة" style={{ width: '58px', height: '58px', objectFit: 'cover' }} />
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <div style={{
+                      width: '76px', height: '76px', borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+                      padding: '3px',
+                      boxShadow: '0 8px 28px rgba(37,99,235,0.35)',
+                    }}>
+                      <img
+                        src="/dr-wessam.png"
+                        alt="د. وسام يوسف"
+                        style={{
+                          width: '100%', height: '100%',
+                          borderRadius: '50%', objectFit: 'cover',
+                          objectPosition: 'center top',
+                          border: '2px solid white',
+                          display: 'block',
+                        }}
+                      />
+                    </div>
+                    <div style={{
+                      position: 'absolute', bottom: '2px', left: '2px',
+                      width: '16px', height: '16px', borderRadius: '50%',
+                      background: '#10b981', border: '2px solid white',
+                      boxShadow: '0 0 0 2px rgba(16,185,129,0.3)',
+                    }} />
                   </div>
                   <div>
                     <div style={{ fontWeight: 900, fontSize: '18px', color: '#0f172a' }}>{settings.doctorName}</div>
@@ -707,6 +724,63 @@ export default function Landing() {
               </div>
 
               <div>
+                {/* Doctor Photo — creative frame */}
+                <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    {/* Outer glow ring */}
+                    <div style={{
+                      position: 'absolute', inset: '-8px',
+                      borderRadius: '24px',
+                      background: 'linear-gradient(135deg, rgba(37,99,235,0.15), rgba(6,182,212,0.15))',
+                      filter: 'blur(8px)',
+                    }} />
+                    {/* Gradient border frame */}
+                    <div style={{
+                      position: 'relative',
+                      padding: '4px',
+                      borderRadius: '22px',
+                      background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
+                      boxShadow: '0 16px 48px rgba(37,99,235,0.25)',
+                    }}>
+                      <img
+                        src="/dr-wessam.png"
+                        alt="د. وسام يوسف"
+                        style={{
+                          width: '260px',
+                          height: '300px',
+                          objectFit: 'cover',
+                          objectPosition: 'center top',
+                          borderRadius: '18px',
+                          display: 'block',
+                        }}
+                      />
+                      {/* Badge overlay */}
+                      <div style={{
+                        position: 'absolute', bottom: '14px', left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: 'white',
+                        borderRadius: '30px',
+                        padding: '6px 16px',
+                        display: 'flex', alignItems: 'center', gap: '7px',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', fontFamily: 'Cairo, sans-serif' }}>أخصائي تقويم الأسنان</span>
+                      </div>
+                    </div>
+                    {/* Corner decoration */}
+                    <div style={{
+                      position: 'absolute', top: '-10px', right: '-10px',
+                      width: '36px', height: '36px', borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 4px 12px rgba(245,158,11,0.4)',
+                      fontSize: '16px',
+                    }}>⭐</div>
+                  </div>
+                </div>
+
                 {settings.certificates?.length > 0 && (
                   <div style={{ marginBottom: '28px' }}>
                     <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}>

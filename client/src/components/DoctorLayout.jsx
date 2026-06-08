@@ -224,12 +224,22 @@ export default function DoctorLayout() {
                 display: 'flex', alignItems: 'center', gap: '10px',
               }}>
                 <div style={{
-                  width: '34px', height: '34px', borderRadius: '50%',
+                  width: '36px', height: '36px', borderRadius: '50%',
+                  padding: '2px',
                   background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontWeight: 900, fontSize: '14px', flexShrink: 0,
+                  flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(37,99,235,0.35)',
                 }}>
-                  {user?.name?.[0] || 'د'}
+                  <img
+                    src="/dr-wessam.png"
+                    alt="د. وسام يوسف"
+                    style={{
+                      width: '100%', height: '100%',
+                      borderRadius: '50%', objectFit: 'cover',
+                      objectPosition: 'center top',
+                      border: '1.5px solid white', display: 'block',
+                    }}
+                  />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ color: '#1e293b', fontWeight: 700, fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
@@ -292,14 +302,22 @@ export default function DoctorLayout() {
               </NavLink>
 
               <div style={{
-                width: '36px', height: '36px', borderRadius: '10px',
+                width: '38px', height: '38px', borderRadius: '50%',
+                padding: '2px',
                 background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 900, fontSize: '15px',
                 flexShrink: 0, cursor: 'default',
-                boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
+                boxShadow: '0 4px 14px rgba(37,99,235,0.35)',
               }}>
-                {user?.name?.[0] || 'د'}
+                <img
+                  src="/dr-wessam.png"
+                  alt="د. وسام يوسف"
+                  style={{
+                    width: '100%', height: '100%',
+                    borderRadius: '50%', objectFit: 'cover',
+                    objectPosition: 'center top',
+                    border: '1.5px solid white', display: 'block',
+                  }}
+                />
               </div>
             </div>
           </div>
