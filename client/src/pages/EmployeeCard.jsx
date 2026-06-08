@@ -161,36 +161,41 @@ export default function EmployeeCard() {
                     </div>
 
                     <div style={{
-                      flex: 1, display: 'flex', alignItems: 'center',
-                      padding: '4px 18px 14px', gap: '16px',
+                      flex: 1, display: 'flex', alignItems: 'stretch',
+                      padding: '0 0 0 0', gap: '0', overflow: 'hidden',
                     }}>
                       <div style={{
-                        width: '72px', height: '72px', borderRadius: '50%',
-                        border: '3px solid rgba(255,255,255,0.5)',
-                        overflow: 'hidden', flexShrink: 0,
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                        width: '110px', flexShrink: 0,
+                        overflow: 'hidden',
+                        borderLeft: '1px solid rgba(255,255,255,0.12)',
                       }}>
                         <img
                           src="/dr-wessam.png"
                           alt="د. وسام يوسف"
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
+                          style={{
+                            width: '100%', height: '100%',
+                            objectFit: 'cover',
+                            objectPosition: '60% top',
+                            display: 'block',
+                          }}
                         />
                       </div>
 
-                      <div style={{ flex: 1 }}>
+                      <div style={{ flex: 1, padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <div style={{ color: 'white', fontWeight: 900, fontSize: '16px', marginBottom: '3px', lineHeight: 1.2 }}>
                           د. وسام يوسف
                         </div>
                         <div style={{
                           color: '#93c5fd', fontSize: '11px', fontWeight: 700,
-                          marginBottom: '10px', letterSpacing: '0.3px',
+                          marginBottom: '12px', letterSpacing: '0.3px',
                         }}>
                           أخصائي تقويم الأسنان
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                           {[
                             { label: 'التخصص', val: 'Orthodontist' },
                             { label: 'الجوال', val: '01156798324' },
+                            { label: 'العيادة', val: 'المنيا، بني مزار' },
                           ].map((item, i) => (
                             <div key={i} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                               <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: '9px', minWidth: '42px' }}>
