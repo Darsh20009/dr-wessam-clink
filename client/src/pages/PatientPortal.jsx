@@ -329,9 +329,8 @@ export default function PatientPortal() {
 
         {/* ── HERO with video background ── */}
         <div className="pp-hero">
-          <video className="pp-hero-video" autoPlay muted loop playsInline preload="auto">
+          <video className="pp-hero-video" autoPlay muted loop playsInline preload="metadata">
             <source src="/bg-video.mp4" type="video/mp4" />
-            <source src="/bg-video.mov" type="video/quicktime" />
           </video>
           <div className="pp-hero-overlay" />
 

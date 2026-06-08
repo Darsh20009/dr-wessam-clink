@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const compression = require('compression');
 const path = require('path');
 const http = require('http');
 const { WebSocketServer } = require('ws');
@@ -46,6 +47,7 @@ wss.on('connection', (ws, req) => {
 });
 
 // ─── Middleware ───────────────────────────────────────────────────
+app.use(compression({ level: 6, threshold: 1024 }));
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));

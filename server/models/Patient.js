@@ -67,4 +67,9 @@ patientSchema.pre('save', function(next) {
   next();
 });
 
+patientSchema.index({ isActive: 1, createdAt: -1 });
+patientSchema.index({ isActive: 1, 'financials.status': 1 });
+patientSchema.index({ phone: 1 });
+patientSchema.index({ fullName: 'text' });
+
 module.exports = mongoose.model('Patient', patientSchema);

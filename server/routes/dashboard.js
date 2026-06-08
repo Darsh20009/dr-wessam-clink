@@ -6,30 +6,40 @@ const { auth, doctorOnly } = require('../middleware/auth');
 
 const router = express.Router();
 
+const statsCache = { data: null, ts: 0 };
+const CACHE_TTL = 60 * 1000;
+
 router.get('/stats', auth, doctorOnly, async (req, res) => {
   try {
+    if (statsCache.data && Date.now() - statsCache.ts < CACHE_TTL) {
+      return res.json(statsCache.data);
+    }
+
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const tomorrow = new Date(startOfDay); tomorrow.setDate(tomorrow.getDate() + 1);
     const nextWeek = new Date(startOfDay); nextWeek.setDate(nextWeek.getDate() + 7);
 
-    const [totalPatients, newThisMonth, todayAppointments, upcomingAppointments, payments, overduePatients] = await Promise.all([
+    const [totalPatients, newThisMonth, todayAppointments, upcomingAppointments, payments, overduePatients, totalOutstanding] = await Promise.all([
       Patient.countDocuments({ isActive: true }),
       Patient.countDocuments({ isActive: true, createdAt: { $gte: startOfMonth } }),
       Appointment.countDocuments({ date: { $gte: startOfDay, $lt: tomorrow }, status: 'scheduled' }),
-      Appointment.find({ date: { $gte: startOfDay, $lte: nextWeek }, status: 'scheduled' }).sort({ date: 1 }).limit(5).populate('patientId', 'fullName'),
-      Payment.find({ date: { $gte: startOfMonth } }),
+      Appointment.find({ date: { $gte: startOfDay, $lte: nextWeek }, status: 'scheduled' })
+        .sort({ date: 1 }).limit(5)
+        .populate('patientId', 'fullName')
+        .lean(),
+      Payment.find({ date: { $gte: startOfMonth } }).select('amount').lean(),
       Patient.countDocuments({ isActive: true, 'financials.status': 'overdue' }),
+      Patient.aggregate([
+        { $match: { isActive: true, 'financials.remaining': { $gt: 0 } } },
+        { $group: { _id: null, total: { $sum: '$financials.remaining' } } }
+      ]),
     ]);
 
     const monthlyRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
-    const totalOutstanding = await Patient.aggregate([
-      { $match: { isActive: true, 'financials.remaining': { $gt: 0 } } },
-      { $group: { _id: null, total: { $sum: '$financials.remaining' } } }
-    ]);
 
-    res.json({
+    const result = {
       totalPatients,
       newThisMonth,
       todayAppointments,
@@ -37,7 +47,12 @@ router.get('/stats', auth, doctorOnly, async (req, res) => {
       monthlyRevenue,
       totalOutstanding: totalOutstanding[0]?.total || 0,
       overduePatients,
-    });
+    };
+
+    statsCache.data = result;
+    statsCache.ts = Date.now();
+
+    res.json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -54,9 +69,9 @@ router.get('/reports', auth, doctorOnly, async (req, res) => {
     else if (period === 'year') startDate = new Date(now.getFullYear(), 0, 1);
 
     const [payments, appointments, newPatients] = await Promise.all([
-      Payment.find({ date: { $gte: startDate } }),
-      Appointment.find({ date: { $gte: startDate } }),
-      Patient.find({ createdAt: { $gte: startDate }, isActive: true }),
+      Payment.find({ date: { $gte: startDate } }).select('amount date').lean(),
+      Appointment.find({ date: { $gte: startDate } }).select('status').lean(),
+      Patient.countDocuments({ createdAt: { $gte: startDate }, isActive: true }),
     ]);
 
     const revenueByDay = {};
@@ -69,7 +84,7 @@ router.get('/reports', auth, doctorOnly, async (req, res) => {
       totalRevenue: payments.reduce((s, p) => s + p.amount, 0),
       totalAppointments: appointments.length,
       completedAppointments: appointments.filter(a => a.status === 'completed').length,
-      newPatients: newPatients.length,
+      newPatients,
       revenueByDay: Object.entries(revenueByDay).map(([date, amount]) => ({ date, amount })),
     });
   } catch (err) {

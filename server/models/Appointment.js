@@ -13,4 +13,7 @@ const appointmentSchema = new mongoose.Schema({
   reminderSent: { type: Boolean, default: false },
 }, { timestamps: true });
 
+appointmentSchema.index({ date: 1, status: 1 });
+appointmentSchema.index({ patientId: 1 });
+
 module.exports = mongoose.model('Appointment', appointmentSchema);

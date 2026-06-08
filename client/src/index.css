@@ -1,10 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 html, body {
@@ -17,6 +21,9 @@ html, body {
 
 body {
   overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 :root {
@@ -448,6 +455,40 @@ tbody tr:hover { background: var(--gray-50); }
   .stat-value { font-size: 20px !important; }
   .modal { padding: 16px 14px !important; }
 }
+
+/* ── PAGE ENTER ANIMATION ── */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.page-enter { animation: pageIn 0.22s cubic-bezier(0.4,0,0.2,1) both; }
+.fade-up    { animation: fadeUp 0.25s cubic-bezier(0.4,0,0.2,1) both; }
+.scale-in   { animation: scaleIn 0.2s cubic-bezier(0.4,0,0.2,1) both; }
+
+/* ── SKELETON LOADER ── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+
+/* ── GPU HINTS ── */
+.stat-card, .card, .btn, .modal { will-change: transform; }
+.modal-overlay { will-change: opacity; }
 
 /* ── SCROLLBAR ── */
 .scrollbar-hide::-webkit-scrollbar { display: none; }

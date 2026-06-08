@@ -34,7 +34,6 @@ const bottomTabs = [
 ];
 
 const STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
   .dl-sidebar-link {
     display: flex; align-items: center; gap: 10px;
@@ -110,30 +109,37 @@ const STYLE = `
   .dl-bottom-tabs {
     display: none;
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-    background: white; border-top: 1.5px solid #e2e8f0;
+    background: rgba(255,255,255,0.97);
+    border-top: 1px solid #e2e8f0;
     height: 64px;
-    box-shadow: 0 -2px 16px rgba(0,0,0,0.08);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   .dl-bottom-tab {
     flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 3px; height: 100%; border: none;
     background: transparent; cursor: pointer;
-    color: #94a3b8; font-size: 10.5px; font-weight: 600;
+    color: #94a3b8; font-size: 10px; font-weight: 600;
     font-family: 'Cairo', sans-serif;
-    transition: color 0.15s; text-decoration: none;
-    padding: 8px 2px;
+    transition: all 0.15s; text-decoration: none;
+    padding: 8px 2px; position: relative;
   }
   .dl-bottom-tab.active { color: #2563eb; }
+  .dl-bottom-tab.active::after {
+    content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+    height: 2.5px; background: #2563eb; border-radius: 0 0 3px 3px;
+  }
   .dl-bottom-tab-more {
     flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 3px; height: 100%; border: none;
     background: transparent; cursor: pointer;
-    color: #94a3b8; font-size: 10.5px; font-weight: 600;
+    color: #94a3b8; font-size: 10px; font-weight: 600;
     font-family: 'Cairo', sans-serif; padding: 8px 2px;
-    transition: color 0.15s;
+    transition: all 0.15s;
   }
   .dl-bottom-tab-more.menuopen { color: #2563eb; }
 

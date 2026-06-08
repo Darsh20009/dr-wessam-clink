@@ -10,8 +10,10 @@ router.get('/', auth, doctorOnly, async (req, res) => {
     const { search, page = 1, limit = 20 } = req.query;
     let query = { isActive: true };
     if (search) query.$or = [{ fullName: { $regex: search, $options: 'i' } }, { phone: { $regex: search } }];
-    const patients = await Patient.find(query).sort({ createdAt: -1 }).limit(limit * 1).skip((page - 1) * limit);
-    const total = await Patient.countDocuments(query);
+    const [patients, total] = await Promise.all([
+      Patient.find(query).sort({ createdAt: -1 }).limit(limit * 1).skip((page - 1) * limit).select('-faceImages -intraOralImages -xrays').lean(),
+      Patient.countDocuments(query),
+    ]);
     res.json({ patients, total, pages: Math.ceil(total / limit) });
   } catch (err) {
     res.status(500).json({ message: err.message });

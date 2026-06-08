@@ -714,11 +714,10 @@ export default function Landing() {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
             onLoadedData={e => { e.target.playbackRate = 3; }}
           >
             <source src="/bg-video.mp4" type="video/mp4" />
-            <source src="/bg-video.mov" type="video/quicktime" />
           </video>
           <div className="l-hero-overlay" />
           <div className="l-hero-grid">
@@ -1164,7 +1163,7 @@ export default function Landing() {
         <section className="l-section" style={{ overflow: 'hidden', position: 'relative', background: '#fff' }}>
           {/* Background video */}
           <video
-            autoPlay muted loop playsInline
+            autoPlay muted loop playsInline preload="none"
             style={{
               position: 'absolute', inset: 0,
               width: '100%', height: '100%',
@@ -1175,7 +1174,6 @@ export default function Landing() {
             }}
           >
             <source src="/bg-video.mp4" type="video/mp4" />
-            <source src="/bg-video.mov" type="video/quicktime" />
           </video>
           {/* Subtle white overlay so text stays crisp */}
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.88)', zIndex: 1, pointerEvents: 'none' }} />
