@@ -518,14 +518,16 @@ export default function Landing() {
           <video
             ref={videoRef}
             className="l-hero-video"
-            src="/bg-video.mov"
             autoPlay
             muted
             loop
             playsInline
             preload="auto"
             onLoadedData={e => { e.target.playbackRate = 3; }}
-          />
+          >
+            <source src="/bg-video.mp4" type="video/mp4" />
+            <source src="/bg-video.mov" type="video/quicktime" />
+          </video>
           <div className="l-hero-overlay" />
           <div className="l-hero-grid">
             {/* LEFT CONTENT */}
@@ -969,8 +971,8 @@ export default function Landing() {
               zIndex: 0,
             }}
           >
+            <source src="/bg-video.mp4" type="video/mp4" />
             <source src="/bg-video.mov" type="video/quicktime" />
-            <source src="/bg-video.mov" type="video/mp4" />
           </video>
           {/* Subtle white overlay so text stays crisp */}
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.88)', zIndex: 1, pointerEvents: 'none' }} />

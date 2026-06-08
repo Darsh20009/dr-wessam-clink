@@ -21,7 +21,7 @@ export function usePushNotifications({ onNotification } = {}) {
 
   const checkSubscription = async () => {
     try {
-      const res = await axios.get('/push/subscriptions');
+      const res = await axios.get('/api/push/subscriptions');
       setIsSubscribed(res.data.subscribed);
     } catch { /* not authenticated yet */ }
   };
@@ -40,13 +40,13 @@ export function usePushNotifications({ onNotification } = {}) {
       if (permission !== 'granted') { setLoading(false); return false; }
 
       const reg = await registerServiceWorker();
-      const { data } = await axios.get('/push/vapid-key');
+      const { data } = await axios.get('/api/push/vapid-key');
       const applicationServerKey = urlBase64ToUint8Array(data.publicKey);
 
       const subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey });
       const sub = subscription.toJSON();
 
-      await axios.post('/push/subscribe', {
+      await axios.post('/api/push/subscribe', {
         endpoint: sub.endpoint,
         keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth },
       });
@@ -67,7 +67,7 @@ export function usePushNotifications({ onNotification } = {}) {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
       if (sub) {
-        await axios.post('/push/unsubscribe', { endpoint: sub.endpoint });
+        await axios.post('/api/push/unsubscribe', { endpoint: sub.endpoint });
         await sub.unsubscribe();
       }
       setIsSubscribed(false);
@@ -77,11 +77,10 @@ export function usePushNotifications({ onNotification } = {}) {
     setLoading(false);
   }, []);
 
-  // WebSocket connection for real-time in-app notifications
   const connectWs = useCallback((token) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${proto}//${window.location.hostname}:3001/ws?token=${token}`);
+    const ws = new WebSocket(`${proto}//${window.location.host}/ws?token=${token}`);
     wsRef.current = ws;
 
     ws.onmessage = (e) => {
