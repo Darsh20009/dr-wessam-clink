@@ -339,24 +339,31 @@ export default function PatientPortal() {
 
             {/* ── Patient info row ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '28px 0 10px', flexWrap: 'wrap' }}>
-              {/* Avatar with upload */}
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
-                <div className="pp-avatar" style={{ cursor: 'pointer', overflow: 'hidden' }} onClick={() => avatarInputRef.current.click()}>
-                  {avatarUploading ? (
-                    <div style={{ width: '28px', height: '28px', border: '3px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                  ) : user?.avatar ? (
+              {/* Avatar — اضغط لتغيير الصورة */}
+              <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
+              <div
+                className="pp-avatar"
+                title="اضغط لتغيير الصورة الشخصية"
+                onClick={() => avatarInputRef.current.click()}
+                style={{ cursor: 'pointer', overflow: 'hidden', position: 'relative', flexShrink: 0 }}
+              >
+                {avatarUploading ? (
+                  <div style={{ width: '28px', height: '28px', border: '3px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                ) : user?.avatar ? (
+                  <>
                     <img src={user.avatar} alt="صورتك" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-                  ) : (
-                    patient.fullName?.[0]
-                  )}
-                </div>
-                <button
-                  onClick={() => avatarInputRef.current.click()}
-                  title="تغيير الصورة"
-                  style={{ position: 'absolute', bottom: '0', left: '0', width: '24px', height: '24px', borderRadius: '50%', background: '#2563eb', border: '2px solid rgba(255,255,255,0.8)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '11px', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-                  <FiUpload size={11} />
-                </button>
+                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.35)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0)'}
+                    >
+                      <FiUpload size={18} color="white" style={{ opacity: 0, transition: 'opacity 0.2s' }}
+                        onMouseEnter={e => e.style.opacity = '1'}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  patient.fullName?.[0]
+                )}
               </div>
 
               {/* Name & meta */}
