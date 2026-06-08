@@ -19,6 +19,7 @@ import Notifications from './pages/Notifications';
 import Wallet from './pages/Wallet';
 import SiteManager from './pages/SiteManager';
 import Settings from './pages/Settings';
+import SelfRegister from './pages/SelfRegister';
 
 const ProtectedRoute = ({ children, role }) => {
   const { user, loading } = useAuth();
@@ -40,6 +41,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={user ? <Navigate to={user.role === 'doctor' ? '/doctor' : '/portal'} /> : <Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/register" element={user ? <Navigate to="/portal" /> : <SelfRegister />} />
       <Route path="/presentation" element={<Presentation />} />
       <Route path="/guide" element={<Presentation />} />
 

@@ -1075,6 +1075,83 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* ── PATIENT PORTAL CTA ── */}
+        <section style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0c2340 100%)', padding: '80px 24px', overflow: 'hidden', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(37,99,235,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(6,182,212,0.12) 0%, transparent 50%)', pointerEvents: 'none' }} />
+          <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+            {/* Heading */}
+            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(37,99,235,0.2)', border: '1px solid rgba(37,99,235,0.35)', borderRadius: '30px', padding: '6px 18px', marginBottom: '18px' }}>
+                <span style={{ fontSize: '14px' }}>🎉</span>
+                <span style={{ color: '#93c5fd', fontSize: '13px', fontWeight: 700 }}>بوابة المرضى الإلكترونية</span>
+              </div>
+              <h2 style={{ color: 'white', fontSize: 'clamp(26px, 4vw, 38px)', fontWeight: 900, lineHeight: 1.3, marginBottom: '14px' }}>
+                عندك ملف طبي؟<br />
+                <span style={{ background: 'linear-gradient(90deg, #60a5fa, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  تابع رحلتك العلاجية الآن
+                </span>
+              </h2>
+              <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '15.5px', lineHeight: 1.8, maxWidth: '580px', margin: '0 auto' }}>
+                من لوحة تحكمك الخاصة تابع جلساتك وخطة علاجك ومواعيدك وحسابك المالي في أي وقت ومن أي مكان
+              </p>
+            </div>
+
+            {/* Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+              {/* Login card */}
+              <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '28px', backdropFilter: 'blur(10px)', transition: 'all 0.2s', cursor: 'pointer' }}
+                onClick={() => navigate('/login')}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(37,99,235,0.15)'; e.currentTarget.style.borderColor = 'rgba(37,99,235,0.5)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginBottom: '16px', boxShadow: '0 6px 20px rgba(37,99,235,0.4)' }}>🔑</div>
+                <h3 style={{ color: 'white', fontWeight: 800, fontSize: '17px', marginBottom: '8px' }}>تسجيل الدخول</h3>
+                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13.5px', lineHeight: 1.7, marginBottom: '18px' }}>عندك ملف بالفعل؟ سجّل دخولك بجوالك وكلمة مرورك وتابع كل شيء</p>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(37,99,235,0.3)', color: '#93c5fd', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 700 }}>
+                  دخول البوابة →
+                </div>
+              </div>
+
+              {/* Register card */}
+              <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '28px', backdropFilter: 'blur(10px)', transition: 'all 0.2s', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+                onClick={() => navigate('/register')}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(16,185,129,0.12)'; e.currentTarget.style.borderColor = 'rgba(16,185,129,0.4)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                <div style={{ position: 'absolute', top: '14px', left: '14px', background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '20px' }}>جديد ✨</div>
+                <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginBottom: '16px', boxShadow: '0 6px 20px rgba(16,185,129,0.4)' }}>📋</div>
+                <h3 style={{ color: 'white', fontWeight: 800, fontSize: '17px', marginBottom: '8px' }}>افتح ملفك الآن</h3>
+                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13.5px', lineHeight: 1.7, marginBottom: '18px' }}>سجّل بياناتك وافتح ملفك الطبي بنفسك في ثوانٍ — كشف بالعيادة أو استشارة هاتفية</p>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16,185,129,0.25)', color: '#6ee7b7', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 700 }}>
+                  إنشاء ملف جديد →
+                </div>
+              </div>
+
+              {/* Forgot Password card */}
+              <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '28px', backdropFilter: 'blur(10px)', transition: 'all 0.2s', cursor: 'pointer' }}
+                onClick={() => navigate('/forgot-password')}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.12)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.4)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginBottom: '16px', boxShadow: '0 6px 20px rgba(139,92,246,0.4)' }}>🔓</div>
+                <h3 style={{ color: 'white', fontWeight: 800, fontSize: '17px', marginBottom: '8px' }}>اعمل باسورد جديد</h3>
+                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13.5px', lineHeight: 1.7, marginBottom: '18px' }}>نسيت كلمة مرورك؟ استعدها بسهولة باستخدام رقم ملفك الطبي ورقم جوالك</p>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(139,92,246,0.25)', color: '#c4b5fd', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 700 }}>
+                  استعادة كلمة المرور →
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom stats */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
+              {[['🛡️', 'بيانات محمية', '100%'], ['📱', 'يعمل على الجوال', 'كاملاً'], ['⚡', 'تحديث فوري', 'للبيانات']].map(([icon, label, val]) => (
+                <div key={label} style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', marginBottom: '4px' }}>{icon}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 800, fontSize: '16px' }}>{val}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '12px' }}>{label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ── CONTACT ── */}
         <section id="contact" className="l-section l-section-alt">
           <div className="l-section-inner">
@@ -1085,14 +1162,15 @@ export default function Landing() {
               <div className="l-underline" />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', maxWidth: '860px', margin: '0 auto' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', maxWidth: '1060px', margin: '0 auto' }}>
               {[
                 { icon: <FaWhatsapp size={24} />, label: 'واتساب', value: `+${settings.whatsapp}`, href: `https://wa.me/${settings.whatsapp}`, bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' },
                 { icon: <FaPhone size={22} />, label: 'اتصل بنا', value: settings.phone, href: `tel:${settings.phone}`, bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
                 { icon: <FiMapPin size={22} />, label: 'الموقع', value: settings.address, href: 'https://www.google.com/maps/search/?api=1&query=بني+مزار+شرق+المحطة+ميدان+25+يناير+المنيا+مصر', bg: '#fdf4ff', color: '#9333ea', border: '#e9d5ff' },
                 { icon: <FiClock size={22} />, label: 'ساعات العمل', value: settings.workingHours, href: '#', bg: '#fff7ed', color: '#ea580c', border: '#fed7aa' },
+                { icon: <span style={{ fontSize: '22px', lineHeight: 1 }}>⚡</span>, label: 'إنستا باي', value: '01156798324', href: '#', bg: '#fffbeb', color: '#d97706', border: '#fde68a' },
               ].map((c, i) => (
-                <a key={i} href={c.href} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer" className="l-contact-card">
+                <a key={i} href={c.href} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer" className="l-contact-card" onClick={c.href === '#' ? e => e.preventDefault() : undefined}>
                   <div className="l-contact-icon" style={{ background: c.bg, border: `1.5px solid ${c.border}`, color: c.color }}>
                     {c.icon}
                   </div>

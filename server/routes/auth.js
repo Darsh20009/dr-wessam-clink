@@ -109,6 +109,55 @@ router.post('/doctor/login', async (req, res) => {
   }
 });
 
+// ── Public patient self-registration ─────────────────────────────
+router.post('/register-patient', async (req, res) => {
+  try {
+    const { fullName, phone, password, age, address, consultationType } = req.body;
+    if (!fullName || !phone || !password)
+      return res.status(400).json({ message: 'الاسم ورقم الجوال وكلمة المرور مطلوبة' });
+    if (password.length < 6)
+      return res.status(400).json({ message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
+
+    const existingPatient = await Patient.findOne({ phone });
+    if (existingPatient)
+      return res.status(400).json({ message: 'رقم الجوال مسجل بالفعل، يمكنك تسجيل الدخول مباشرة', alreadyExists: true });
+
+    const notes = consultationType === 'phone'
+      ? 'طلب المريض استشارة هاتفية عبر الموقع'
+      : 'فتح ملف من الموقع — في انتظار الكشف في العيادة';
+
+    const patient = new Patient({
+      fullName,
+      phone,
+      age: age ? parseInt(age) : undefined,
+      address: address || undefined,
+      diagnosis: consultationType === 'phone' ? 'طلب استشارة هاتفية' : 'في انتظار الكشف',
+      treatmentNotes: notes,
+    });
+    await patient.save();
+
+    const user = new User({
+      name: fullName,
+      phone,
+      password,
+      role: 'patient',
+      patientId: patient._id,
+    });
+    await user.save();
+
+    const token = generateToken(user._id);
+    res.json({
+      token,
+      patientId: patient._id,
+      user: { id: user._id, name: user.name, phone: user.phone, role: user.role, patientId: patient._id },
+    });
+  } catch (err) {
+    if (err.code === 11000)
+      return res.status(400).json({ message: 'رقم الجوال مسجل بالفعل، يمكنك تسجيل الدخول' });
+    res.status(500).json({ message: 'خطأ في الخادم' });
+  }
+});
+
 router.post('/seed-doctor', async (req, res) => {
   try {
     let doctor = await User.findOne({ role: 'doctor' });

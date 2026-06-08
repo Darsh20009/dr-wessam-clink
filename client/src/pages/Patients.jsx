@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { FiSearch, FiUserPlus, FiEye, FiTrash2, FiPhone, FiUser } from 'react-icons/fi';
+import { FiSearch, FiUserPlus, FiEye, FiTrash2, FiPhone, FiUser, FiCopy } from 'react-icons/fi';
 
 export default function Patients() {
   const navigate = useNavigate();
@@ -85,6 +85,7 @@ export default function Patients() {
               <tr>
                 <th>الاسم</th>
                 <th>رقم الجوال</th>
+                <th style={{ fontSize: '12px' }}>رقم الملف (ID)</th>
                 <th>تكلفة العلاج</th>
                 <th>المدفوع</th>
                 <th>المتبقي</th>
@@ -103,6 +104,20 @@ export default function Patients() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <FiPhone style={{ color: '#64748b' }} />
                       {p.phone}
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#475569', background: '#f1f5f9', padding: '2px 6px', borderRadius: '5px', letterSpacing: '0.3px' }}>
+                        ...{String(p._id).slice(-8)}
+                      </span>
+                      <button
+                        title="نسخ رقم الملف كاملاً"
+                        onClick={() => { navigator.clipboard?.writeText(String(p._id)); toast.success('تم نسخ رقم الملف'); }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '2px', display: 'flex', alignItems: 'center' }}
+                      >
+                        <FiCopy size={13} />
+                      </button>
                     </div>
                   </td>
                   <td>{(p.financials?.totalCost || 0).toLocaleString()} ج.م</td>

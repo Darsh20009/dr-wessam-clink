@@ -582,6 +582,29 @@ export default function PatientPortal() {
                 </div>
               </div>
 
+              {/* InstaPay payment option */}
+              <div className="pp-card" style={{ marginBottom: '16px', background: 'linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%)', border: '1.5px solid #fed7aa' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(249,115,22,0.35)' }}>
+                    <span style={{ fontSize: '22px' }}>⚡</span>
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '14.5px', color: '#9a3412' }}>الدفع عبر إنستا باي</div>
+                    <div style={{ fontSize: '12px', color: '#c2410c', marginTop: '2px', fontWeight: 600 }}>تحويل فوري — InstaPay</div>
+                  </div>
+                </div>
+                <div style={{ background: 'white', borderRadius: '10px', padding: '14px 16px', border: '1px solid #fed7aa', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600, marginBottom: '5px' }}>رقم الهاتف للتحويل</div>
+                  <div style={{ fontFamily: 'Cairo, sans-serif', fontWeight: 900, fontSize: '18px', color: '#0f172a', letterSpacing: '1px', direction: 'ltr', textAlign: 'right' }}>01156798324</div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '4px', fontWeight: 600 }}>د. وسام يوسف — عيادة تقويم الأسنان</div>
+                </div>
+                <div style={{ fontSize: '12.5px', color: '#92400e', lineHeight: 1.8, fontWeight: 500, background: '#fef3c7', borderRadius: '8px', padding: '10px 12px', border: '1px solid #fde68a' }}>
+                  ⚠️ <strong>ملاحظة:</strong> بعد إتمام التحويل، يُرجى إرسال صورة الإيصال للدكتور عبر
+                  <a href="https://wa.me/201156798324?text=مرحباً دكتور، أرسلت دفعة عبر انستا باي" target="_blank" rel="noreferrer" style={{ color: '#25d366', fontWeight: 800, margin: '0 4px', textDecoration: 'none' }}>واتساب</a>
+                  لتأكيد الدفع.
+                </div>
+              </div>
+
               {/* Payment history */}
               {payments.length > 0 && (
                 <div className="pp-card" style={{ padding: '0', overflow: 'hidden' }}>
