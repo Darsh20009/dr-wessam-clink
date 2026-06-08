@@ -46,7 +46,8 @@ const defaultSettings = {
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
-  .landing-root { font-family: 'Cairo', sans-serif; direction: rtl; color: #0f172a; background: #fff; -webkit-font-smoothing: antialiased; }
+  html, body { overflow-x: hidden !important; max-width: 100vw !important; }
+  .landing-root { font-family: 'Cairo', sans-serif; direction: rtl; color: #0f172a; background: #fff; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
   @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
@@ -550,6 +551,15 @@ const STYLE = `
     .l-tooth-btn { bottom: 16px; }
 
     .l-mobile-menu { top: 60px; }
+
+    /* Fix inline grids on mobile */
+    .l-portal-split { grid-template-columns: 1fr !important; }
+    .l-portal-divider { display: none !important; }
+    .l-portal-col { padding-right: 0 !important; padding-left: 0 !important; }
+    .l-thanks-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+    .l-cta-banner { flex-direction: column !important; padding: 24px 20px !important; text-align: center; }
+    .l-cta-banner h3 { font-size: 18px !important; }
+    .l-cta-banner a { width: 100% !important; justify-content: center !important; }
   }
 `;
 
@@ -1191,7 +1201,7 @@ export default function Landing() {
             </div>
 
             {/* Main content — photo + names */}
-            <div style={{
+            <div className="l-thanks-grid" style={{
               display: 'grid', gridTemplateColumns: '1.1fr 0.9fr',
               gap: '56px', alignItems: 'center', marginTop: '8px',
             }}>
@@ -1343,10 +1353,10 @@ export default function Landing() {
             </div>
 
             {/* Split layout: checklist | divider | action cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', gap: '0', alignItems: 'stretch', marginTop: '8px' }}>
+            <div className="l-portal-split" style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', gap: '0', alignItems: 'stretch', marginTop: '8px' }}>
 
               {/* ── LEFT: checklist features ── */}
-              <div style={{ paddingLeft: '8px', paddingRight: '48px' }}>
+              <div className="l-portal-col" style={{ paddingLeft: '8px', paddingRight: '48px' }}>
                 <h3 style={{ fontWeight: 800, fontSize: '17px', color: '#0f172a', marginBottom: '28px' }}>
                   كل ما تحتاجه في مكان واحد
                 </h3>
@@ -1377,10 +1387,10 @@ export default function Landing() {
               </div>
 
               {/* ── VERTICAL DIVIDER ── */}
-              <div style={{ background: 'linear-gradient(to bottom, transparent 5%, #e2e8f0 25%, #e2e8f0 75%, transparent 95%)', width: '1px' }} />
+              <div className="l-portal-divider" style={{ background: 'linear-gradient(to bottom, transparent 5%, #e2e8f0 25%, #e2e8f0 75%, transparent 95%)', width: '1px' }} />
 
               {/* ── RIGHT: action cards ── */}
-              <div style={{ paddingRight: '8px', paddingLeft: '48px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="l-portal-col" style={{ paddingRight: '8px', paddingLeft: '48px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Login card */}
                 <div
                   style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '16px', padding: '22px', cursor: 'pointer', transition: 'all 0.2s' }}
@@ -1490,7 +1500,7 @@ export default function Landing() {
             </div>
 
             {/* CTA Banner */}
-            <div style={{
+            <div className="l-cta-banner" style={{
               marginTop: '48px', background: 'linear-gradient(135deg, #2563eb 0%, #0891b2 100%)',
               borderRadius: '20px', padding: '40px 48px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',

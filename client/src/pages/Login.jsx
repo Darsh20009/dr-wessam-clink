@@ -10,7 +10,8 @@ import QrScanner from '../components/QrScanner';
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
-  body { background: #f0f6ff !important; }
+  html, body { overflow-x: hidden !important; max-width: 100vw !important; }
+  body { background: #0a1628 !important; }
   .login-root { font-family: 'Cairo', sans-serif; direction: rtl; -webkit-font-smoothing: antialiased; }
 
   @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
@@ -98,14 +99,34 @@ const STYLE = `
   /* ═══ MOBILE ═══ */
   @media (max-width: 768px) {
     .login-left-panel { display: none !important; }
+    .login-root { min-height: 100dvh; }
     .login-right-panel {
-      width: 100% !important; padding: 24px 16px !important;
-      align-items: flex-start !important; justify-content: flex-start !important;
-      min-height: 100vh;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100vw !important;
+      padding: 20px 16px !important;
+      align-items: flex-start !important;
+      justify-content: flex-start !important;
+      min-height: 100dvh;
+      box-sizing: border-box !important;
     }
     .login-right-panel > div {
-      padding: 24px 20px !important; border-radius: 16px !important;
+      padding: 22px 18px !important;
+      border-radius: 16px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
     }
+    .l-input { font-size: 16px !important; padding: 12px 12px !important; }
+    .l-phone-input { font-size: 16px !important; }
+    .l-btn-submit { font-size: 15px !important; padding: 13px !important; }
+    .l-tab-btn { font-size: 13px !important; padding: 9px 6px !important; }
+    .l-phone-prefix { padding: 12px 10px !important; }
+    .l-feature-item { padding: 10px 12px !important; }
+  }
+
+  @media (max-width: 400px) {
+    .login-right-panel { padding: 16px 12px !important; }
+    .login-right-panel > div { padding: 18px 14px !important; }
   }
 `;
 
