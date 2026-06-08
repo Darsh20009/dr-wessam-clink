@@ -94,7 +94,7 @@ export default function Settings() {
                 <div>
                   <div style={{ fontWeight: 600, fontSize: '14px' }}>إشعارات النظام</div>
                   <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                    {isSubscribed ? '✅ مفعّل — تصلك إشعارات حتى لو التطبيق مغلق' : 'غير مفعّل'}
+                    {isSubscribed ? 'مفعّل — تصلك إشعارات حتى لو التطبيق مغلق' : 'غير مفعّل'}
                   </div>
                 </div>
                 <button onClick={togglePush} disabled={loading} style={{
@@ -127,12 +127,12 @@ export default function Settings() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[
-              { icon: '🔐', title: 'البصمة (Passkey)', desc: 'المفتاح الخاص لا يغادر جهازك أبداً — أعلى مستويات الأمان' },
-              { icon: '🔔', title: 'Web Push (VAPID)', desc: 'الإشعارات مشفّرة من الطرف إلى الطرف' },
-              { icon: '⚡', title: 'الإشعارات الفورية', desc: 'WebSocket مشفّر — يصلك الإشعار في الثانية ذاتها' },
+              { icon: <FiKey size={16} color="#2563eb"/>, title: 'البصمة (Passkey)', desc: 'المفتاح الخاص لا يغادر جهازك أبداً — أعلى مستويات الأمان' },
+              { icon: <FiBell size={16} color="#2563eb"/>, title: 'Web Push (VAPID)', desc: 'الإشعارات مشفّرة من الطرف إلى الطرف' },
+              { icon: <FiShield size={16} color="#2563eb"/>, title: 'الإشعارات الفورية', desc: 'WebSocket مشفّر — يصلك الإشعار في الثانية ذاتها' },
             ].map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: '12px', padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
-                <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                <span style={{ marginTop: '2px' }}>{item.icon}</span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: '13px' }}>{item.title}</div>
                   <div style={{ fontSize: '12px', color: '#64748b' }}>{item.desc}</div>

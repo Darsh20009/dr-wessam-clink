@@ -14,7 +14,7 @@ export default function PushNotifBell() {
           <div style={{ fontWeight: 700 }}>{data.title}</div>
           <div style={{ fontSize: '13px', color: '#64748b' }}>{data.body}</div>
         </div>,
-        { icon: '🔔', duration: 5000 }
+        { duration: 5000 }
       );
     }
   });
@@ -27,7 +27,7 @@ export default function PushNotifBell() {
       toast.success('تم إيقاف الإشعارات');
     } else {
       const success = await subscribe();
-      if (success) toast.success('✅ تم تفعيل الإشعارات!');
+      if (success) toast.success('تم تفعيل الإشعارات');
       else toast.error('تعذّر تفعيل الإشعارات');
     }
   };

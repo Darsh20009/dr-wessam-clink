@@ -29,7 +29,7 @@ export function PasskeyManager() {
       const response = await startRegistration({ optionsJSON: options });
       const deviceName = navigator.platform || 'جهازي';
       await axios.post('/webauthn/register-verify', { ...response, deviceName });
-      toast.success('✅ تم إضافة البصمة بنجاح!');
+      toast.success('تم إضافة البصمة بنجاح');
       fetchCreds();
     } catch (err) {
       if (err.name === 'NotAllowedError') toast.error('تم إلغاء التسجيل');

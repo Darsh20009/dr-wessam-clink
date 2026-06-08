@@ -168,8 +168,8 @@ export default function PatientFile() {
           <div>
             <h1 className="page-title">{patient.fullName}</h1>
             <div style={{ display: 'flex', gap: '12px', marginTop: '6px', flexWrap: 'wrap' }}>
-              <span style={{ color: '#64748b', fontSize: '14px' }}>📱 {patient.phone}</span>
-              {patient.age && <span style={{ color: '#64748b', fontSize: '14px' }}>🎂 {patient.age} سنة</span>}
+              <span style={{ color: '#64748b', fontSize: '14px', display:'flex', alignItems:'center', gap:'4px' }}><FiActivity size={13}/> {patient.phone}</span>
+              {patient.age && <span style={{ color: '#64748b', fontSize: '14px', display:'flex', alignItems:'center', gap:'4px' }}><FiCalendar size={13}/> {patient.age} سنة</span>}
               <span className={`badge ${statusMap[patient.financials?.status]}`}>{statusLabel[patient.financials?.status]}</span>
               {remaining > 0 && <span className="badge badge-danger">متبقي: {remaining.toLocaleString()} ج.م</span>}
             </div>

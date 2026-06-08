@@ -232,17 +232,17 @@ export default function DoctorDashboard() {
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px' }}>
           {[
-            { label: 'إجمالي الإيرادات', value: `${(reportData?.totalRevenue || 0).toLocaleString()} ج.م`, color: '#2563eb', bg: '#eff6ff', icon: '💰' },
-            { label: 'إجمالي المواعيد', value: reportData?.totalAppointments || 0, color: '#0891b2', bg: '#ecfeff', icon: '📅' },
-            { label: 'مواعيد مكتملة', value: reportData?.completedAppointments || 0, color: '#16a34a', bg: '#f0fdf4', icon: '✅' },
-            { label: 'مرضى جدد', value: reportData?.newPatients || 0, color: '#9333ea', bg: '#fdf4ff', icon: '👤' },
+            { label: 'إجمالي الإيرادات', value: `${(reportData?.totalRevenue || 0).toLocaleString()} ج.م`, color: '#2563eb', bg: '#eff6ff', icon: <FiDollarSign size={20}/> },
+            { label: 'إجمالي المواعيد', value: reportData?.totalAppointments || 0, color: '#0891b2', bg: '#ecfeff', icon: <FiCalendar size={20}/> },
+            { label: 'مواعيد مكتملة', value: reportData?.completedAppointments || 0, color: '#16a34a', bg: '#f0fdf4', icon: <FiActivity size={20}/> },
+            { label: 'مرضى جدد', value: reportData?.newPatients || 0, color: '#9333ea', bg: '#fdf4ff', icon: <FiUserPlus size={20}/> },
           ].map((item, i) => (
             <div key={i} style={{
               padding: '16px 18px', background: item.bg,
               borderRadius: '12px', border: `1.5px solid ${item.bg === '#eff6ff' ? '#bfdbfe' : item.bg === '#ecfeff' ? '#a5f3fc' : item.bg === '#f0fdf4' ? '#bbf7d0' : '#e9d5ff'}`,
               display: 'flex', alignItems: 'center', gap: '12px',
             }}>
-              <span style={{ fontSize: '24px' }}>{item.icon}</span>
+              <span style={{ color: item.color }}>{item.icon}</span>
               <div>
                 <div style={{ fontSize: '22px', fontWeight: 900, color: item.color, lineHeight: 1.1 }}>{item.value}</div>
                 <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', fontWeight: 500 }}>{item.label}</div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaWhatsapp, FaStar, FaGraduationCap, FaPhone } from 'react-icons/fa';
-import { FiCalendar, FiUser, FiCheck, FiArrowLeft, FiHeart, FiZap, FiShield, FiStar, FiMessageCircle, FiAward, FiGrid, FiMapPin, FiClock, FiChevronDown, FiPhone } from 'react-icons/fi';
+import { FiCalendar, FiUser, FiCheck, FiArrowLeft, FiHeart, FiZap, FiShield, FiStar, FiMessageCircle, FiAward, FiGrid, FiMapPin, FiClock, FiChevronDown, FiPhone, FiUsers, FiTrendingUp } from 'react-icons/fi';
 
 const defaultSettings = {
   heroTitle: 'ابتسامة أجمل تبدأ من هنا',
@@ -23,12 +23,12 @@ const defaultSettings = {
     { title: 'عضو جمعية التقويم', description: 'عضو فعّال في الجمعية العلمية المصرية' },
   ],
   services: [
-    { icon: '🦷', title: 'تقويم الأسنان', description: 'تقويم احترافي بأحدث التقنيات وأفضل المواد العالمية', isActive: true },
-    { icon: '💎', title: 'التقويم الشفاف', description: 'تقويم غير مرئي مريح وفعّال لنتائج مثالية', isActive: true },
-    { icon: '🦴', title: 'علاج مشاكل الفك', description: 'تشخيص وعلاج شامل لاضطرابات المفصل الفكي', isActive: true },
-    { icon: '👶', title: 'تقويم الأطفال', description: 'رعاية متخصصة لتقويم أسنان الأطفال', isActive: true },
-    { icon: '😁', title: 'تصميم الابتسامة', description: 'إعادة تصميم ابتسامتك لتكون أكثر جمالاً', isActive: true },
-    { icon: '⚡', title: 'العلاج السريع', description: 'بروتوكولات حديثة لتقليل مدة العلاج', isActive: true },
+    { icon: 'braces', title: 'تقويم الأسنان', description: 'تقويم احترافي بأحدث التقنيات وأفضل المواد العالمية', isActive: true },
+    { icon: 'clear', title: 'التقويم الشفاف', description: 'تقويم غير مرئي مريح وفعّال لنتائج مثالية', isActive: true },
+    { icon: 'jaw', title: 'علاج مشاكل الفك', description: 'تشخيص وعلاج شامل لاضطرابات المفصل الفكي', isActive: true },
+    { icon: 'child', title: 'تقويم الأطفال', description: 'رعاية متخصصة لتقويم أسنان الأطفال', isActive: true },
+    { icon: 'smile', title: 'تصميم الابتسامة', description: 'إعادة تصميم ابتسامتك لتكون أكثر جمالاً', isActive: true },
+    { icon: 'fast', title: 'العلاج السريع', description: 'بروتوكولات حديثة لتقليل مدة العلاج', isActive: true },
   ],
   reviews: [
     { name: 'أحمد محمد', rating: 5, text: 'دكتور ممتاز، نتائج رائعة في وقت قياسي. أنصح الجميع بالتقويم عنده.', isActive: true },
@@ -421,6 +421,18 @@ const STYLE = `
   }
 `;
 
+const getServiceIcon = (key) => {
+  const map = {
+    braces: <FiAward size={22} />,
+    clear:  <FiStar size={22} />,
+    jaw:    <FiShield size={22} />,
+    child:  <FiHeart size={22} />,
+    smile:  <FiUser size={22} />,
+    fast:   <FiZap size={22} />,
+  };
+  return map[key] || <FiAward size={22} />;
+};
+
 const SERVICE_COLORS = [
   { bg: '#eff6ff', border: '#bfdbfe', text: '#2563eb' },
   { bg: '#f0fdfa', border: '#99f6e4', text: '#0d9488' },
@@ -613,17 +625,17 @@ export default function Landing() {
               {/* Stats under card */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
                 {[
-                  { num: '+1000', label: 'مريض سعيد', icon: '😊', bg: '#eff6ff', color: '#2563eb' },
-                  { num: '98%', label: 'نسبة النجاح', icon: '⭐', bg: '#fff7ed', color: '#ea580c' },
-                  { num: '+10', label: 'سنوات خبرة', icon: '🏆', bg: '#f0fdf4', color: '#16a34a' },
-                  { num: '5★', label: 'تقييم المرضى', icon: '💯', bg: '#fdf4ff', color: '#9333ea' },
+                  { num: '+1000', label: 'مريض سعيد', icon: <FiUsers size={16}/>, bg: '#eff6ff', color: '#2563eb' },
+                  { num: '98%', label: 'نسبة النجاح', icon: <FiTrendingUp size={16}/>, bg: '#fff7ed', color: '#ea580c' },
+                  { num: '+10', label: 'سنوات خبرة', icon: <FiAward size={16}/>, bg: '#f0fdf4', color: '#16a34a' },
+                  { num: '5★', label: 'تقييم المرضى', icon: <FiStar size={16}/>, bg: '#fdf4ff', color: '#9333ea' },
                 ].map((s, i) => (
                   <div key={i} style={{
                     background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '12px',
                     padding: '14px', display: 'flex', alignItems: 'center', gap: '10px',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                   }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: s.bg, color: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       {s.icon}
                     </div>
                     <div>
@@ -653,7 +665,7 @@ export default function Landing() {
                 return (
                   <div key={i} className="l-service-card">
                     <div className="l-service-icon" style={{ background: c.bg, border: `1.5px solid ${c.border}` }}>
-                      <span style={{ fontSize: '28px' }}>{s.icon}</span>
+                      <span style={{ color: c.text, display:'flex', alignItems:'center', justifyContent:'center' }}>{getServiceIcon(s.icon)}</span>
                     </div>
                     <h3 style={{ fontWeight: 800, fontSize: '16px', color: '#0f172a', marginBottom: '8px' }}>{s.title}</h3>
                     <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.7 }}>{s.description}</p>
@@ -892,7 +904,7 @@ export default function Landing() {
         {waOpen && (
           <div className="l-wa-popup">
             <div className="l-wa-popup-head">
-              <div className="l-wa-popup-avatar">🦷</div>
+              <div className="l-wa-popup-avatar"><FiUser size={18} color="white" /></div>
               <div>
                 <div className="l-wa-popup-name">{settings.doctorName}</div>
                 <div className="l-wa-popup-status">
@@ -902,7 +914,7 @@ export default function Landing() {
             </div>
             <div className="l-wa-popup-body">
               <div className="l-wa-popup-hint">
-                أهلاً! اكتب رسالتك وسنرد عليك في أقرب وقت 😊
+                أهلاً، اكتب رسالتك وسنرد عليك في أقرب وقت.
               </div>
               <textarea
                 className="l-wa-popup-textarea"

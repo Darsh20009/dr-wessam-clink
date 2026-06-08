@@ -147,7 +147,7 @@ export default function ForgotPassword() {
             {step === 1 && (
               <div className="fp-step">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px', padding: '12px 16px', background: '#f0f9ff', borderRadius: '10px', border: '1px solid #bae6fd' }}>
-                  <span style={{ fontSize: '20px' }}>💡</span>
+                  <FiHash size={18} color="#0369a1" />
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '13px', color: '#0369a1' }}>كيف أعرف رقم ملفي؟</div>
                     <div style={{ fontSize: '12px', color: '#0284c7', marginTop: '2px', lineHeight: 1.5 }}>

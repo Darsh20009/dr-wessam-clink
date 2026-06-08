@@ -50,10 +50,10 @@ const STYLE = `
 `;
 
 const statusConfig = {
-  paid: { cls: 'badge-success', label: 'مدفوع بالكامل', icon: '✅', color: '#16a34a', bg: '#f0fdf4' },
-  partial: { cls: 'badge-warning', label: 'مدفوع جزئياً', icon: '⚡', color: '#d97706', bg: '#fffbeb' },
-  overdue: { cls: 'badge-danger', label: 'متأخر', icon: '⚠️', color: '#dc2626', bg: '#fff5f5' },
-  pending: { cls: 'badge-gray', label: 'معلق', icon: '⏳', color: '#64748b', bg: '#f8fafc' },
+  paid: { cls: 'badge-success', label: 'مدفوع بالكامل', icon: <FiCheck size={13}/>, color: '#16a34a', bg: '#f0fdf4' },
+  partial: { cls: 'badge-warning', label: 'مدفوع جزئياً', icon: <FiZap size={13}/>, color: '#d97706', bg: '#fffbeb' },
+  overdue: { cls: 'badge-danger', label: 'متأخر', icon: <FiAlertCircle size={13}/>, color: '#dc2626', bg: '#fff5f5' },
+  pending: { cls: 'badge-gray', label: 'معلق', icon: <FiClock size={13}/>, color: '#64748b', bg: '#f8fafc' },
 };
 
 export default function PatientPortal() {
@@ -227,13 +227,13 @@ export default function PatientPortal() {
               {/* Stats row */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '24px' }}>
                 {[
-                  { val: `${totalPaid.toLocaleString()} ج.م`, label: 'إجمالي المدفوع', icon: '💳', color: '#16a34a', style: '--stat-color: #16a34a' },
-                  { val: `${remaining.toLocaleString()} ج.م`, label: 'المتبقي', icon: remaining > 0 ? '⚠️' : '✅', color: remaining > 0 ? '#dc2626' : '#16a34a', style: `--stat-color: ${remaining > 0 ? '#dc2626' : '#16a34a'}` },
-                  { val: upcomingApts.length, label: 'مواعيد قادمة', icon: '📅', color: '#2563eb', style: '--stat-color: #2563eb' },
-                  { val: sessions.length, label: 'جلسات مكتملة', icon: '🏥', color: '#7c3aed', style: '--stat-color: #7c3aed' },
+                  { val: `${totalPaid.toLocaleString()} ج.م`, label: 'إجمالي المدفوع', icon: <FiDollarSign size={20}/>, color: '#16a34a', style: '--stat-color: #16a34a' },
+                  { val: `${remaining.toLocaleString()} ج.م`, label: 'المتبقي', icon: remaining > 0 ? <FiAlertCircle size={20}/> : <FiCheck size={20}/>, color: remaining > 0 ? '#dc2626' : '#16a34a', style: `--stat-color: ${remaining > 0 ? '#dc2626' : '#16a34a'}` },
+                  { val: upcomingApts.length, label: 'مواعيد قادمة', icon: <FiCalendar size={20}/>, color: '#2563eb', style: '--stat-color: #2563eb' },
+                  { val: sessions.length, label: 'جلسات مكتملة', icon: <FiActivity size={20}/>, color: '#7c3aed', style: '--stat-color: #7c3aed' },
                 ].map((s, i) => (
                   <div key={i} className="pp-stat" style={{ style: s.style, '--stat-color': s.color.replace('#', '') }}>
-                    <div style={{ fontSize: '26px' }}>{s.icon}</div>
+                    <div style={{ color: s.color }}>{s.icon}</div>
                     <div style={{ fontWeight: 900, fontSize: '22px', color: s.color, lineHeight: 1 }}>{s.val}</div>
                     <div style={{ fontSize: '13px', color: '#64748b' }}>{s.label}</div>
                   </div>
@@ -394,7 +394,7 @@ export default function PatientPortal() {
                           background: isUpcoming ? '#eff6ff' : apt.status === 'completed' ? '#f0fdf4' : '#f8fafc',
                           color: isUpcoming ? '#2563eb' : apt.status === 'completed' ? '#16a34a' : '#94a3b8',
                         }}>
-                          {isUpcoming ? '🔔 قادم' : apt.status === 'completed' ? '✅ مكتمل' : apt.status === 'cancelled' ? '❌ ملغي' : '⏳ مجدول'}
+                          {isUpcoming ? 'قادم' : apt.status === 'completed' ? 'مكتمل' : apt.status === 'cancelled' ? 'ملغي' : 'مجدول'}
                         </span>
                       </div>
                     );
@@ -528,7 +528,7 @@ export default function PatientPortal() {
                         <img src={x.url} alt={x.type} style={{ width: '100%', height: '140px', objectFit: 'cover', background: '#1e293b', display: 'block' }} />
                         <div style={{ padding: '10px' }}>
                           <div style={{ fontWeight: 700, fontSize: '13px', color: '#1e293b' }}>
-                            {x.type === 'panorama' ? '🦷 بانوراما' : x.type === 'lateral' ? '🦴 جانبية' : '📡 CBCT'}
+                            {x.type === 'panorama' ? 'بانوراما' : x.type === 'lateral' ? 'جانبية' : 'CBCT'}
                           </div>
                           {x.description && <div style={{ fontSize: '12px', color: '#64748b', marginTop: '3px' }}>{x.description}</div>}
                         </div>
@@ -554,12 +554,12 @@ export default function PatientPortal() {
               {/* Summary cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '20px' }}>
                 {[
-                  { icon: '💰', label: 'إجمالي التكلفة', val: `${totalCost.toLocaleString()} ج.م`, color: '#334155', bg: '#f8fafc', border: '#e2e8f0' },
-                  { icon: '✅', label: 'المدفوع', val: `${totalPaid.toLocaleString()} ج.م`, color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
-                  { icon: remaining > 0 ? '⚠️' : '🎉', label: 'المتبقي', val: remaining > 0 ? `${remaining.toLocaleString()} ج.م` : 'مكتمل ✓', color: remaining > 0 ? '#dc2626' : '#16a34a', bg: remaining > 0 ? '#fff5f5' : '#f0fdf4', border: remaining > 0 ? '#fecaca' : '#bbf7d0' },
+                  { icon: <FiDollarSign size={22}/>, iconColor: '#334155', label: 'إجمالي التكلفة', val: `${totalCost.toLocaleString()} ج.م`, color: '#334155', bg: '#f8fafc', border: '#e2e8f0' },
+                  { icon: <FiCheck size={22}/>, iconColor: '#16a34a', label: 'المدفوع', val: `${totalPaid.toLocaleString()} ج.م`, color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
+                  { icon: remaining > 0 ? <FiAlertCircle size={22}/> : <FiAward size={22}/>, iconColor: remaining > 0 ? '#dc2626' : '#16a34a', label: 'المتبقي', val: remaining > 0 ? `${remaining.toLocaleString()} ج.م` : 'مكتمل', color: remaining > 0 ? '#dc2626' : '#16a34a', bg: remaining > 0 ? '#fff5f5' : '#f0fdf4', border: remaining > 0 ? '#fecaca' : '#bbf7d0' },
                 ].map((s, i) => (
                   <div key={i} style={{ background: s.bg, border: `2px solid ${s.border}`, borderRadius: '14px', padding: '18px 16px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '28px', marginBottom: '8px' }}>{s.icon}</div>
+                    <div style={{ color: s.iconColor, display:'flex', alignItems:'center', justifyContent:'center', marginBottom: '8px' }}>{s.icon}</div>
                     <div style={{ fontWeight: 900, fontSize: '20px', color: s.color, lineHeight: 1 }}>{s.val}</div>
                     <div style={{ fontSize: '12px', color: '#64748b', marginTop: '5px' }}>{s.label}</div>
                   </div>
