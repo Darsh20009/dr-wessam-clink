@@ -35,21 +35,23 @@ const STYLE = `
   .l-input::placeholder { color: #94a3b8; }
 
   .l-phone-wrap {
-    display: flex; align-items: center;
+    display: flex; align-items: center; direction: rtl;
     border: 1.5px solid #e2e8f0; border-radius: 10px;
     background: white; overflow: hidden; transition: all 0.2s;
   }
   .l-phone-wrap:focus-within { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
   .l-phone-prefix {
     display: flex; align-items: center; gap: 6px;
-    padding: 12px 12px; border-left: 1.5px solid #f1f5f9;
+    padding: 12px 12px; border-right: 1.5px solid #f1f5f9;
     background: #f8fafc; white-space: nowrap; flex-shrink: 0;
+    order: 1;
   }
   .l-phone-input {
     flex: 1; border: none; outline: none;
     padding: 12px 12px; font-size: 14.5px;
     font-family: 'Cairo', sans-serif; color: #1e293b;
     background: transparent; direction: ltr; text-align: left;
+    order: 2;
   }
   .l-phone-input::placeholder { color: #94a3b8; direction: rtl; text-align: right; }
 
