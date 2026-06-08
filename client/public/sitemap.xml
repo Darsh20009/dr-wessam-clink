@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- الصفحة الرئيسية - Landing Page -->
+  <url>
+    <loc>https://dr-wessam-clinic.onrender.com/</loc>
+    <lastmod>2026-06-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://dr-wessam-clinic.onrender.com/"/>
+    <image:image>
+      <image:loc>https://dr-wessam-clinic.onrender.com/doctor-photo.png</image:loc>
+      <image:title>د. وسام يوسف أخصائي تقويم الأسنان بني مزار المنيا</image:title>
+      <image:caption>الدكتور وسام يوسف أخصائي تقويم الأسنان في بني مزار، المنيا، مصر</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://dr-wessam-clinic.onrender.com/logo.png</image:loc>
+      <image:title>شعار عيادة د. وسام يوسف لتقويم الأسنان</image:title>
+    </image:image>
+  </url>
+
+</urlset>

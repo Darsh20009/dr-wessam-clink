@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Block system/admin pages from indexing
+Disallow: /doctor/
+Disallow: /portal/
+Disallow: /login
+Disallow: /api/
+
+# Allow landing and public pages
+Allow: /$
+
+# Sitemap
+Sitemap: https://dr-wessam-clinic.onrender.com/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 5
