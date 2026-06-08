@@ -1179,13 +1179,13 @@ export default function Landing() {
                 borderRadius: '30px', padding: '6px 18px',
                 marginBottom: '16px',
               }}>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: '#d97706' }}>شكر خاص وتقدير</span>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#d97706' }}>فخر واعتزاز</span>
               </div>
               <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 900, color: '#0f172a', marginBottom: '12px', letterSpacing: '-0.3px' }}>
-                شرّفونا بزيارتهم الكريمة
+                فخور بأساتذتي الكرام
               </h2>
-              <p style={{ fontSize: '16px', color: '#475569', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
-                يسعدنا أن نُعبّر عن خالص شكرنا وامتناننا لهذه الزيارة الرائعة
+              <p style={{ fontSize: '16px', color: '#475569', maxWidth: '560px', margin: '0 auto', lineHeight: 1.7 }}>
+                فخور بكوني تعلّمت التقويم على يد أشطر دكاترة التقويم في مصر والعالم العربي
               </p>
               <div style={{ width: '60px', height: '4px', borderRadius: '4px', background: 'linear-gradient(90deg, #f59e0b, #f97316)', margin: '16px auto 0' }} />
             </div>
@@ -1254,7 +1254,7 @@ export default function Landing() {
                     color: '#334155', fontSize: '15px', lineHeight: 1.9,
                     fontStyle: 'italic', margin: 0,
                   }}>
-                    "يشرّفنا تشريف زملائنا الأفاضل لعيادتنا، ونُعبّر عن خالص شكرنا وتقديرنا لكل لحظة أمضوها معنا."
+                    "Proud of being a student of such great mentors — فخور بكوني تعلّمت على يد هؤلاء العظماء."
                   </p>
                   <div style={{ marginTop: '10px', fontSize: '13px', fontWeight: 700, color: '#d97706' }}>
                     — د. وسام يوسف
@@ -1283,7 +1283,7 @@ export default function Landing() {
                       دكتورة بسمة نبيل
                     </div>
                     <div style={{ fontSize: '13px', color: '#64748b' }}>
-                      ضيفة شرف كريمة — شكراً جزيلاً لتشريفك إيانا
+                      أستاذتي في تقويم الأسنان — شكراً على كل ما علّمتِني
                     </div>
                   </div>
                 </div>
@@ -1307,10 +1307,10 @@ export default function Landing() {
                   </div>
                   <div>
                     <div style={{ fontWeight: 900, fontSize: '17px', color: '#0f172a', marginBottom: '3px' }}>
-                      البروفسير د. فادي حسين
+                      البروفيسور د. فادي حسين
                     </div>
                     <div style={{ fontSize: '13px', color: '#64748b' }}>
-                      ضيف شرف كريم — شكراً جزيلاً لتشريفك إيانا
+                      أستاذي في تقويم الأسنان — شكراً على كل ما علّمتني
                     </div>
                   </div>
                 </div>
@@ -1324,7 +1324,7 @@ export default function Landing() {
                   marginTop: '4px',
                 }}>
                   <span style={{ color: '#d97706', fontWeight: 800, fontSize: '14px' }}>
-                    دائماً يسعدنا استقبال زملائنا الكرام
+                    Proud of being a student of such great mentors 🌟
                   </span>
                 </div>
               </div>
