@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
   isFirstLogin: { type: Boolean, default: true },
   patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
   qrToken: { type: String },
+  avatar: { type: String },
 }, { timestamps: true });
 
 userSchema.pre('save', async function(next) {

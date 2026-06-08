@@ -105,6 +105,17 @@ router.get('/me', auth, async (req, res) => {
   res.json(req.user);
 });
 
+router.patch('/avatar', auth, async (req, res) => {
+  try {
+    const { avatar } = req.body;
+    if (!avatar) return res.status(400).json({ message: 'لم يتم إرسال صورة' });
+    const user = await User.findByIdAndUpdate(req.user._id, { avatar }, { new: true });
+    res.json({ avatar: user.avatar });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.post('/doctor/login', async (req, res) => {
   try {
     const { password } = req.body;

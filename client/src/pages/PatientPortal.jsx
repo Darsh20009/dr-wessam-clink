@@ -149,7 +149,7 @@ const PR_STATUS = {
 };
 
 export default function PatientPortal() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [patient, setPatient] = useState(null);
   const [appointments, setAppointments] = useState([]);
@@ -169,6 +169,27 @@ export default function PatientPortal() {
   const [prReuploadId, setPrReuploadId] = useState(null);
   const [imgModal, setImgModal] = useState(null);
   const fileInputRef = useRef(null);
+  const avatarInputRef = useRef(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error('حجم الصورة كبير جداً (الحد الأقصى 5 ميجا)'); return; }
+    setAvatarUploading(true);
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const { data } = await axios.patch('/auth/avatar', { avatar: ev.target.result });
+        updateUser({ avatar: data.avatar });
+        toast.success('تم تحديث الصورة الشخصية ✅');
+      } catch {
+        toast.error('حدث خطأ أثناء رفع الصورة');
+      }
+      setAvatarUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const loadPaymentRequests = async () => {
     try {
@@ -318,8 +339,25 @@ export default function PatientPortal() {
 
             {/* ── Patient info row ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '28px 0 10px', flexWrap: 'wrap' }}>
-              {/* Avatar */}
-              <div className="pp-avatar">{patient.fullName?.[0]}</div>
+              {/* Avatar with upload */}
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
+                <div className="pp-avatar" style={{ cursor: 'pointer', overflow: 'hidden' }} onClick={() => avatarInputRef.current.click()}>
+                  {avatarUploading ? (
+                    <div style={{ width: '28px', height: '28px', border: '3px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  ) : user?.avatar ? (
+                    <img src={user.avatar} alt="صورتك" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                  ) : (
+                    patient.fullName?.[0]
+                  )}
+                </div>
+                <button
+                  onClick={() => avatarInputRef.current.click()}
+                  title="تغيير الصورة"
+                  style={{ position: 'absolute', bottom: '0', left: '0', width: '24px', height: '24px', borderRadius: '50%', background: '#2563eb', border: '2px solid rgba(255,255,255,0.8)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '11px', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                  <FiUpload size={11} />
+                </button>
+              </div>
 
               {/* Name & meta */}
               <div style={{ flex: 1, minWidth: '180px' }}>
