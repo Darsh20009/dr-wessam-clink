@@ -115,7 +115,7 @@ export default function Login() {
   const handleQrLogin = async (qrToken) => {
     setQrLoading(true);
     try {
-      const { data } = await axios.post('/api/auth/qr-login', { qrToken });
+      const { data } = await axios.post('/auth/qr-login', { qrToken });
       localStorage.setItem('token', data.token);
       toast.success(`أهلاً ${data.user.name}`);
       window.location.href = data.role === 'doctor' ? '/doctor' : '/portal';

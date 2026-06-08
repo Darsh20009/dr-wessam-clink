@@ -42,7 +42,7 @@ export default function SiteManager() {
     try {
       const form = new FormData();
       form.append('file', file);
-      const res = await axios.post('/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await axios.post('/uploads', form, { headers: { 'Content-Type': 'multipart/form-data' } });
       setArr('certificates', idx, 'imageUrl', res.data.url);
       toast.success('تم رفع الصورة');
     } catch { toast.error('فشل رفع الصورة'); }

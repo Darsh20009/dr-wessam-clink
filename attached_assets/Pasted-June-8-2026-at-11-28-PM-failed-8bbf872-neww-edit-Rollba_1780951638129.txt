@@ -1,0 +1,102 @@
+June 8, 2026 at 11:28 PM
+failed
+8bbf872
+neww edit
+
+Rollback
+Exited with status 1 while running your code.
+Read our docs for common ways to troubleshoot your deploy.
+
+All logs
+Search
+Search
+
+Jun 8, 11:27 PM - 11:30 PM
+GMT+3
+
+
+
+==> Downloading cache...
+==> Cloning from https://github.com/Darsh20009/dr-wessam-clink
+==> Checking out commit 8bbf872f3a8d0afddb8e5f5831b9378711d85fdc in branch main
+==> Downloaded 40MB in 1s. Extraction took 0s.
+==> Requesting Node.js version >=18.0.0
+==> Using Node.js version 26.3.0 via /opt/render/project/src/package.json
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Installing Node.js version 26.3.0...
+==> Running build command 'npm install && npm run build'...
+up to date, audited 1 package in 269ms
+found 0 vulnerabilities
+> dr-wessam-clinic@1.0.0 build
+> cd client && npm install && npm run build
+added 135 packages, and audited 136 packages in 3s
+14 packages are looking for funding
+  run `npm fund` for details
+2 moderate severity vulnerabilities
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+Run `npm audit` for details.
+> dr-wessam-client@1.0.0 build
+> vite build
+vite v5.4.21 building for production...
+transforming...
+✓ 1754 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   5.15 kB │ gzip:   1.85 kB
+dist/assets/index-Drs6jR22.css   12.13 kB │ gzip:   3.22 kB
+dist/assets/index-CHC7E0_F.js   960.81 kB │ gzip: 262.01 kB
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.73s
+==> Uploading build...
+==> Uploaded in 3.6s. Compression took 1.9s
+==> Build successful 🎉
+==> Deploying...
+==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+==> Running 'cd server && NODE_ENV=production node index.js'
+node:internal/modules/cjs/loader:1522
+  throw err;
+  ^
+Error: Cannot find module 'express'
+Require stack:
+- /opt/render/project/src/server/index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1519:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1073:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1097:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1124:12)
+    at Module._load (node:internal/modules/cjs/loader:1296:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.require (node:internal/modules/cjs/loader:1619:12)
+    at require (node:internal/modules/helpers:191:16)
+    at Object.<anonymous> (/opt/render/project/src/server/index.js:1:17)
+    at Module._compile (node:internal/modules/cjs/loader:1873:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ '/opt/render/project/src/server/index.js' ]
+}
+Node.js v26.3.0
+==> Exited with status 1
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Running 'cd server && NODE_ENV=production node index.js'
+node:internal/modules/cjs/loader:1522
+  throw err;
+  ^
+Error: Cannot find module 'express'
+Require stack:
+- /opt/render/project/src/server/index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1519:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1073:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1097:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1124:12)
+    at Module._load (node:internal/modules/cjs/loader:1296:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.require (node:internal/modules/cjs/loader:1619:12)
+    at require (node:internal/modules/helpers:191:16)
+    at Object.<anonymous> (/opt/render/project/src/server/index.js:1:17)
+    at Module._compile (node:internal/modules/cjs/loader:1873:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ '/opt/render/project/src/server/index.js' ]
+}
+Node.js v26.3.0

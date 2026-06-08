@@ -63,7 +63,7 @@ export default function EmployeeCard() {
   const fetchQrToken = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get('/api/auth/me');
+      const { data } = await axios.get('/auth/me');
       if (data.qrToken) {
         setQrToken(data.qrToken);
       }
@@ -74,7 +74,7 @@ export default function EmployeeCard() {
   const generateQr = async () => {
     setGenerating(true);
     try {
-      const { data } = await axios.post('/api/auth/qr-generate');
+      const { data } = await axios.post('/auth/qr-generate');
       setQrToken(data.qrToken);
       toast.success('تم إنشاء الباركود بنجاح');
     } catch {
