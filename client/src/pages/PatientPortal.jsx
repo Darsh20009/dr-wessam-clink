@@ -16,21 +16,92 @@ const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
   .pp-root { font-family: 'Cairo', sans-serif; direction: rtl; background: #f0f6ff; min-height: 100vh; -webkit-font-smoothing: antialiased; }
 
-  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes slideIn { from{opacity:0;transform:translateX(12px)} to{opacity:1;transform:translateX(0)} }
-  @keyframes spin { to{transform:rotate(360deg)} }
-  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-  @keyframes shimmer { 0%{background-position:-200px 0} 100%{background-position:calc(200px + 100%) 0} }
+  @keyframes fadeUp    { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn    { from{opacity:0} to{opacity:1} }
+  @keyframes slideIn   { from{opacity:0;transform:translateX(12px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes spin      { to{transform:rotate(360deg)} }
+  @keyframes pulse     { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+  @keyframes shimmer   { 0%{background-position:-200px 0} 100%{background-position:calc(200px + 100%) 0} }
+  @keyframes float     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  @keyframes glowPulse { 0%,100%{box-shadow:0 0 20px rgba(37,99,235,0.3)} 50%{box-shadow:0 0 40px rgba(37,99,235,0.6)} }
 
-  .pp-tab { padding: 10px 16px; border: none; border-radius: 9px; background: transparent; font-weight: 700; font-size: 13.5px; cursor: pointer; font-family: 'Cairo', sans-serif; color: #64748b; transition: all 0.2s; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
-  .pp-tab.active { background: white; color: #2563eb; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .pp-tab:hover:not(.active) { background: rgba(255,255,255,0.6); color: #334155; }
+  /* ── Video Hero ── */
+  .pp-hero {
+    position: relative; overflow: hidden;
+    min-height: 340px;
+  }
+  .pp-hero-video {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 30%;
+    pointer-events: none;
+  }
+  .pp-hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      160deg,
+      rgba(3,7,18,0.82) 0%,
+      rgba(15,23,42,0.72) 40%,
+      rgba(30,58,138,0.65) 70%,
+      rgba(8,145,178,0.55) 100%
+    );
+  }
+  .pp-hero-content {
+    position: relative; z-index: 2;
+    padding: 0 6%;
+  }
 
-  .pp-card { background: white; border-radius: 14px; padding: 20px; border: 1.5px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  /* ── Glassmorphism stat pills ── */
+  .pp-glass-pill {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 14px;
+    padding: 14px 18px;
+    text-align: center;
+    transition: all 0.25s;
+  }
+  .pp-glass-pill:hover {
+    background: rgba(255,255,255,0.17);
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  /* ── Avatar ── */
+  .pp-avatar {
+    width: 76px; height: 76px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08));
+    border: 3px solid rgba(255,255,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 900; color: white;
+    backdrop-filter: blur(8px);
+    flex-shrink: 0;
+    animation: glowPulse 3s ease-in-out infinite;
+  }
+
+  /* ── Tabs ── */
+  .pp-tab {
+    padding: 11px 18px; border: none; border-radius: 0;
+    background: transparent; font-weight: 700; font-size: 13.5px;
+    cursor: pointer; font-family: 'Cairo', sans-serif;
+    color: rgba(255,255,255,0.65); transition: all 0.2s;
+    display: flex; align-items: center; gap: 7px;
+    white-space: nowrap; position: relative;
+    border-bottom: 3px solid transparent;
+  }
+  .pp-tab.active {
+    color: white;
+    border-bottom: 3px solid #60a5fa;
+    background: rgba(255,255,255,0.06);
+  }
+  .pp-tab:hover:not(.active) { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.06); }
+
+  /* ── Cards ── */
+  .pp-card { background: white; border-radius: 16px; padding: 20px; border: 1.5px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
   .pp-card-hover { transition: all 0.2s; }
-  .pp-card-hover:hover { border-color: #bfdbfe; box-shadow: 0 6px 20px rgba(37,99,235,0.08); }
+  .pp-card-hover:hover { border-color: #bfdbfe; box-shadow: 0 8px 24px rgba(37,99,235,0.09); transform: translateY(-2px); }
 
-  .pp-session-card { background: white; border-radius: 14px; border: 1.5px solid #e2e8f0; overflow: hidden; margin-bottom: 12px; transition: all 0.2s; }
+  .pp-session-card { background: white; border-radius: 16px; border: 1.5px solid #e2e8f0; overflow: hidden; margin-bottom: 12px; transition: all 0.2s; }
   .pp-session-card:hover { border-color: #bfdbfe; box-shadow: 0 6px 20px rgba(37,99,235,0.08); }
   .pp-session-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #f1f5f9; cursor: pointer; background: #fafbff; }
 
@@ -38,15 +109,29 @@ const STYLE = `
   .pp-payment-row:last-child { border-bottom: none; }
   .pp-payment-row:hover { background: #fafbff; }
 
-  .pp-stat { background: white; border-radius: 14px; padding: 18px 16px; border: 1.5px solid #e2e8f0; display: flex; flex-direction: column; gap: 8px; transition: all 0.2s; position: relative; overflow: hidden; }
-  .pp-stat::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--stat-color, #2563eb); }
-  .pp-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.07); }
+  .pp-stat {
+    background: white; border-radius: 16px; padding: 20px 16px;
+    border: 1.5px solid #e2e8f0; display: flex; flex-direction: column;
+    gap: 8px; transition: all 0.25s; position: relative; overflow: hidden;
+  }
+  .pp-stat::before {
+    content: ''; position: absolute; top: 0; right: 0; left: 0; height: 3px;
+    background: var(--stat-color, #2563eb);
+    border-radius: 3px 3px 0 0;
+  }
+  .pp-stat:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.09); }
 
-  .pp-progress { height: 8px; background: #e2e8f0; border-radius: 100px; overflow: hidden; margin-top: 8px; }
-  .pp-progress-bar { height: 100%; border-radius: 100px; transition: width 1s ease; }
+  .pp-progress { height: 10px; background: #e2e8f0; border-radius: 100px; overflow: hidden; margin-top: 8px; }
+  .pp-progress-bar { height: 100%; border-radius: 100px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
 
   .pp-wa-btn { display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #25d366, #128c7e); color: white; padding: 11px 20px; border-radius: 10px; font-weight: 800; font-size: 14px; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 14px rgba(37,211,102,0.3); }
-  .pp-wa-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,211,102,0.4); }
+  .pp-wa-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(37,211,102,0.45); }
+
+  /* wave separator between hero and content */
+  .pp-wave {
+    display: block; width: 100%;
+    margin-bottom: -2px; line-height: 0;
+  }
 `;
 
 const statusConfig = {
@@ -199,94 +284,102 @@ export default function PatientPortal() {
       <style>{STYLE}</style>
       <div className="pp-root">
 
-        {/* ── HEADER ── */}
-        <div style={{
-          background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #0891b2 100%)',
-          padding: '0 6% 0',
-          position: 'relative', overflow: 'hidden',
-        }}>
-          {/* BG shapes */}
-          <div style={{ position: 'absolute', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', top: '-100px', left: '10%', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.04)', bottom: '-60px', right: '15%', pointerEvents: 'none' }} />
+        {/* ── HERO with video background ── */}
+        <div className="pp-hero">
+          <video className="pp-hero-video" autoPlay muted loop playsInline preload="auto">
+            <source src="/bg-video.mp4" type="video/mp4" />
+            <source src="/bg-video.mov" type="video/quicktime" />
+          </video>
+          <div className="pp-hero-overlay" />
 
-          {/* Top bar */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                <img src="/logo-transparent.png" alt="شعار العيادة" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
+          <div className="pp-hero-content">
+            {/* ── Top bar ── */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                  <img src="/logo-transparent.png" alt="شعار العيادة" style={{ width: '34px', height: '34px', objectFit: 'contain' }} />
+                </div>
+                <div>
+                  <div style={{ color: 'white', fontWeight: 800, fontSize: '14px', letterSpacing: '0.2px' }}>بوابة المريض</div>
+                  <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '11px' }}>عيادة د. وسام يوسف</div>
+                </div>
               </div>
-              <div>
-                <div style={{ color: 'white', fontWeight: 800, fontSize: '14px' }}>بوابة المريض</div>
-                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px' }}>عيادة د. وسام يوسف</div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <a href="https://wa.me/201156798324" target="_blank" rel="noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(37,211,102,0.18)', border: '1px solid rgba(37,211,102,0.35)', color: '#4ade80', padding: '7px 14px', borderRadius: '9px', fontSize: '13px', fontWeight: 700, textDecoration: 'none', backdropFilter: 'blur(8px)' }}>
+                  <FaWhatsapp size={14} /> تواصل
+                </a>
+                <button onClick={handleLogout}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.8)', padding: '7px 14px', borderRadius: '9px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Cairo, sans-serif', backdropFilter: 'blur(8px)' }}>
+                  <FiLogOut size={13} /> خروج
+                </button>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <a href="https://wa.me/201156798324" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(37,211,102,0.2)', border: '1px solid rgba(37,211,102,0.4)', color: '#4ade80', padding: '7px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 700, textDecoration: 'none', transition: 'all 0.2s' }}>
-                <FaWhatsapp size={14} /> تواصل
-              </a>
-              <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)', padding: '7px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Cairo, sans-serif', transition: 'all 0.2s' }}>
-                <FiLogOut size={13} /> خروج
-              </button>
-            </div>
-          </div>
 
-          {/* Patient info */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '24px 0 28px' }}>
-            <div style={{
-              width: '72px', height: '72px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1))',
-              border: '3px solid rgba(255,255,255,0.3)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: 900, fontSize: '26px', flexShrink: 0,
-              backdropFilter: 'blur(8px)',
-            }}>
-              {patient.fullName?.[0]}
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>مرحباً بك،</div>
-              <h1 style={{ color: 'white', fontSize: '24px', fontWeight: 900, marginBottom: '6px', letterSpacing: '-0.3px' }}>{patient.fullName}</h1>
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                {patient.phone && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>
-                    <FiPhone size={12} /> {patient.phone}
-                  </div>
-                )}
-                {patient.age && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>
-                    <FiUser size={12} /> {patient.age} سنة
-                  </div>
-                )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <span style={{ background: status.bg, color: status.color, padding: '2px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 700 }}>
+            {/* ── Patient info row ── */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '28px 0 10px', flexWrap: 'wrap' }}>
+              {/* Avatar */}
+              <div className="pp-avatar">{patient.fullName?.[0]}</div>
+
+              {/* Name & meta */}
+              <div style={{ flex: 1, minWidth: '180px' }}>
+                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12.5px', fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '20px', height: '1px', background: 'rgba(255,255,255,0.4)', display: 'inline-block' }} />
+                  مرحباً بك
+                </div>
+                <h1 style={{ color: 'white', fontSize: '26px', fontWeight: 900, margin: '0 0 10px', letterSpacing: '-0.5px', textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
+                  {patient.fullName}
+                </h1>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {patient.phone && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.65)', fontSize: '13px', background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <FiPhone size={11} /> {patient.phone}
+                    </div>
+                  )}
+                  {patient.age && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.65)', fontSize: '13px', background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <FiUser size={11} /> {patient.age} سنة
+                    </div>
+                  )}
+                  <span style={{ background: status.bg, color: status.color, padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
                     {status.icon} {status.label}
                   </span>
                 </div>
               </div>
+
+              {/* Glass stat pills */}
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {[
+                  { val: upcomingApts.length, label: 'موعد قادم', icon: '📅' },
+                  { val: sessions.length,     label: 'جلسة علاج', icon: '🦷' },
+                  { val: `${payPercent}%`,    label: 'نسبة السداد', icon: '💰' },
+                  { val: remaining > 0 ? `${remaining.toLocaleString()}` : '✓', label: remaining > 0 ? 'متبقي (ج.م)' : 'مكتمل', icon: remaining > 0 ? '⚠️' : '🎉' },
+                ].map((s, i) => (
+                  <div key={i} className="pp-glass-pill" style={{ minWidth: '80px', animationDelay: `${i * 0.1}s` }}>
+                    <div style={{ fontSize: '22px', marginBottom: '6px', lineHeight: 1 }}>{s.icon}</div>
+                    <div style={{ color: 'white', fontWeight: 900, fontSize: '18px', lineHeight: 1 }}>{s.val}</div>
+                    <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px', marginTop: '4px', fontWeight: 600 }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-            {/* Quick stats */}
-            <div style={{ display: 'flex', gap: '12px', flexShrink: 0 }}>
-              {[
-                { val: upcomingApts.length, label: 'موعد قادم', icon: '📅', c: '#dbeafe', t: '#1d4ed8' },
-                { val: sessions.length, label: 'جلسة علاج', icon: '💉', c: '#d1fae5', t: '#065f46' },
-                { val: `${payPercent}%`, label: 'نسبة السداد', icon: '💰', c: '#fef3c7', t: '#92400e' },
-              ].map((s, i) => (
-                <div key={i} style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', borderRadius: '12px', padding: '12px 16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.18)', minWidth: '76px' }}>
-                  <div style={{ fontSize: '20px', marginBottom: '4px' }}>{s.icon}</div>
-                  <div style={{ color: 'white', fontWeight: 900, fontSize: '18px', lineHeight: 1 }}>{s.val}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '11px', marginTop: '3px' }}>{s.label}</div>
-                </div>
+
+            {/* ── Tabs ── */}
+            <div style={{ display: 'flex', gap: '0', overflowX: 'auto', marginTop: '8px', scrollbarWidth: 'none' }}>
+              {tabs.map(t => (
+                <button key={t.id} onClick={() => setActiveTab(t.id)} className={`pp-tab${activeTab === t.id ? ' active' : ''}`}>
+                  {t.icon} {t.label}
+                </button>
               ))}
             </div>
           </div>
+        </div>
 
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', paddingBottom: '1px' }}>
-            {tabs.map(t => (
-              <button key={t.id} onClick={() => setActiveTab(t.id)} className={`pp-tab${activeTab === t.id ? ' active' : ''}`} style={{ color: activeTab === t.id ? '#2563eb' : 'rgba(255,255,255,0.7)' }}>
-                {t.icon} {t.label}
-              </button>
-            ))}
-          </div>
+        {/* Wave separator */}
+        <div className="pp-wave">
+          <svg viewBox="0 0 1440 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', width: '100%', height: '40px' }}>
+            <path d="M0,20 C360,40 1080,0 1440,20 L1440,40 L0,40 Z" fill="#f0f6ff" />
+          </svg>
         </div>
 
         {/* ── CONTENT ── */}
