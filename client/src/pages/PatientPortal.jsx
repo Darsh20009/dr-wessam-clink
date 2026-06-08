@@ -14,7 +14,8 @@ import { FaWhatsapp, FaTooth } from 'react-icons/fa';
 
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
-  .pp-root { font-family: 'Cairo', sans-serif; direction: rtl; background: #f0f6ff; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  html, body { overflow-x: hidden !important; max-width: 100vw !important; }
+  .pp-root { font-family: 'Cairo', sans-serif; direction: rtl; background: #f0f6ff; min-height: 100vh; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
   @keyframes fadeUp    { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeIn    { from{opacity:0} to{opacity:1} }
@@ -150,6 +151,8 @@ const STYLE = `
     .pp-card { padding: 16px !important; }
     .pp-session-header { padding: 12px 14px !important; }
     .pp-wa-btn { padding: 10px 14px !important; font-size: 13px !important; }
+
+    .pp-grid-2 { grid-template-columns: 1fr !important; gap: 12px !important; }
   }
 `;
 
@@ -468,7 +471,7 @@ export default function PatientPortal() {
                 ))}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+              <div className="pp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
                 {/* Payment progress */}
                 <div className="pp-card">
                   <h3 style={{ fontWeight: 800, fontSize: '15px', color: '#0f172a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -693,7 +696,7 @@ export default function PatientPortal() {
               <h2 style={{ fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>الملف الطبي</h2>
               <div className="pp-card">
                 <h3 style={{ fontWeight: 800, fontSize: '15px', color: '#0f172a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}><span>👤</span> البيانات الشخصية</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div className="pp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                   {[
                     ['الاسم الكامل', patient.fullName, '#eff6ff', '#2563eb'],
                     ['رقم الجوال', patient.phone, '#f0fdf4', '#16a34a'],
