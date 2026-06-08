@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaWhatsapp, FaStar, FaGraduationCap, FaPhone } from 'react-icons/fa';
-import { FiCalendar, FiUser, FiCheck, FiArrowLeft, FiHeart, FiZap, FiShield, FiStar, FiMessageCircle, FiAward, FiGrid, FiMapPin, FiClock, FiChevronDown, FiPhone, FiUsers, FiTrendingUp } from 'react-icons/fi';
+import { FiCalendar, FiUser, FiCheck, FiArrowLeft, FiHeart, FiZap, FiShield, FiStar, FiMessageCircle, FiAward, FiGrid, FiMapPin, FiClock, FiChevronDown, FiPhone, FiUsers, FiTrendingUp, FiX, FiBookOpen, FiMail, FiGlobe } from 'react-icons/fi';
 
 const defaultSettings = {
   heroTitle: 'ابتسامة أجمل تبدأ من هنا',
@@ -447,6 +447,7 @@ export default function Landing() {
   const [openFaq, setOpenFaq] = useState(null);
   const [settings, setSettings] = useState(defaultSettings);
   const [scrolled, setScrolled] = useState(false);
+  const [certLightbox, setCertLightbox] = useState(null);
   const videoRef = React.useRef(null);
   const [waOpen, setWaOpen] = React.useState(false);
   const [waMsg, setWaMsg] = React.useState('');
@@ -792,19 +793,71 @@ export default function Landing() {
                   </div>
                 </div>
 
+                {/* Personal info tags */}
+                {(settings.doctorUniversity || settings.doctorGraduationYear || settings.doctorLanguages || settings.doctorEmail) && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+                      <FiUser style={{ color: '#2563eb' }} /> البيانات الشخصية
+                    </h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {settings.doctorUniversity && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '20px', padding: '5px 12px' }}>
+                          <FaGraduationCap size={13} style={{ color: '#2563eb' }} />
+                          <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#1e40af' }}>{settings.doctorUniversity}{settings.doctorGraduationYear ? ` — ${settings.doctorGraduationYear}` : ''}</span>
+                        </div>
+                      )}
+                      {settings.doctorLanguages && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '20px', padding: '5px 12px' }}>
+                          <FiGlobe size={13} style={{ color: '#16a34a' }} />
+                          <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#15803d' }}>{settings.doctorLanguages}</span>
+                        </div>
+                      )}
+                      {settings.doctorEmail && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fdf4ff', border: '1px solid #e9d5ff', borderRadius: '20px', padding: '5px 12px' }}>
+                          <FiMail size={13} style={{ color: '#9333ea' }} />
+                          <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#7e22ce' }}>{settings.doctorEmail}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {settings.certificates?.length > 0 && (
-                  <div style={{ marginBottom: '28px' }}>
-                    <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}>
+                  <div style={{ marginBottom: '24px' }}>
+                    <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
                       <FaGraduationCap style={{ color: '#2563eb' }} /> المؤهلات والشهادات
                     </h4>
                     {settings.certificates.map((c, i) => (
-                      <div key={i} className="l-cert-item">
-                        <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb', flexShrink: 0 }}>
-                          <FiAward size={17} />
+                      <div key={i} className="l-cert-item" style={{ cursor: c.imageUrl ? 'pointer' : 'default' }}
+                        onClick={() => c.imageUrl && setCertLightbox(c)}>
+                        <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: c.imageUrl ? '#eff6ff' : '#f8fafc', border: `1.5px solid ${c.imageUrl ? '#bfdbfe' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.imageUrl ? '#2563eb' : '#94a3b8', flexShrink: 0, overflow: 'hidden' }}>
+                          {c.imageUrl
+                            ? <img src={c.imageUrl} alt="شهادة" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                            : <FiAward size={17} />}
                         </div>
-                        <div>
+                        <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>{c.title}</div>
                           <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{c.institution}{c.year && ` — ${c.year}`}</div>
+                        </div>
+                        {c.imageUrl && (
+                          <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: 700, background: '#eff6ff', padding: '3px 8px', borderRadius: '6px', flexShrink: 0 }}>عرض</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {settings.doctorTraining?.length > 0 && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+                      <FiBookOpen style={{ color: '#0891b2' }} /> الدورات التدريبية
+                    </h4>
+                    {settings.doctorTraining.map((t, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '12px 14px', borderRadius: '10px', background: '#ecfeff', border: '1.5px solid #a5f3fc', marginBottom: '8px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0891b2', marginTop: '7px', flexShrink: 0 }} />
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '14px', color: '#164e63' }}>{t.title}</div>
+                          <div style={{ fontSize: '12px', color: '#0e7490', marginTop: '2px' }}>{t.institution}{t.year && ` — ${t.year}`}</div>
                         </div>
                       </div>
                     ))}
@@ -813,7 +866,7 @@ export default function Landing() {
 
                 {settings.achievements?.length > 0 && (
                   <div>
-                    <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}>
+                    <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
                       <FiAward style={{ color: '#2563eb' }} /> الإنجازات
                     </h4>
                     {settings.achievements.map((a, i) => (
@@ -1277,6 +1330,39 @@ export default function Landing() {
               >
                 <FaWhatsapp size={16} /> إرسال عبر واتساب
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Certificate Lightbox */}
+        {certLightbox && (
+          <div
+            onClick={() => setCertLightbox(null)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', backdropFilter: 'blur(6px)' }}
+          >
+            <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '20px', overflow: 'hidden', maxWidth: '680px', width: '100%', boxShadow: '0 32px 80px rgba(0,0,0,0.5)', animation: 'fadeUp 0.3s ease-out' }}>
+              <div style={{ background: 'linear-gradient(135deg, #1e3a8a, #2563eb)', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ color: 'white', fontWeight: 800, fontSize: '16px' }}>{certLightbox.title}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', marginTop: '2px' }}>{certLightbox.institution}{certLightbox.year ? ` — ${certLightbox.year}` : ''}</div>
+                </div>
+                <button onClick={() => setCertLightbox(null)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: '8px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <FiX size={18} />
+                </button>
+              </div>
+              <div style={{ padding: '16px', background: '#f8fafc' }}>
+                {certLightbox.imageUrl?.match(/\.(pdf)$/i) ? (
+                  <div style={{ textAlign: 'center', padding: '40px' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '12px' }}>📄</div>
+                    <div style={{ fontWeight: 700, color: '#334155', marginBottom: '12px' }}>ملف PDF</div>
+                    <a href={certLightbox.imageUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#2563eb', color: 'white', padding: '10px 20px', borderRadius: '10px', fontFamily: 'Cairo, sans-serif', fontWeight: 700, textDecoration: 'none', fontSize: '14px' }}>
+                      فتح الشهادة
+                    </a>
+                  </div>
+                ) : (
+                  <img src={certLightbox.imageUrl} alt={certLightbox.title} style={{ width: '100%', maxHeight: '500px', objectFit: 'contain', borderRadius: '10px', display: 'block' }} />
+                )}
+              </div>
             </div>
           </div>
         )}

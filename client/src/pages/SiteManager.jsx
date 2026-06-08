@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { FiSave, FiGlobe, FiUser, FiPhone, FiStar, FiHelpCircle, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiSave, FiGlobe, FiUser, FiPhone, FiStar, FiHelpCircle, FiPlus, FiTrash2, FiUpload, FiImage, FiX, FiBookOpen } from 'react-icons/fi';
 
 const tabs = [
   { id: 'hero', label: 'الرئيسية', icon: <FiGlobe /> },
   { id: 'doctor', label: 'الطبيب', icon: <FiUser /> },
+  { id: 'certificates', label: 'الشهادات', icon: <FiBookOpen /> },
   { id: 'services', label: 'الخدمات', icon: <FiStar /> },
   { id: 'reviews', label: 'آراء المرضى', icon: <FiStar /> },
   { id: 'faqs', label: 'الأسئلة الشائعة', icon: <FiHelpCircle /> },
@@ -17,6 +18,8 @@ export default function SiteManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('hero');
+  const [uploadingIdx, setUploadingIdx] = useState(null);
+  const fileRefs = useRef({});
 
   useEffect(() => {
     axios.get('/site').then(r => { setSettings(r.data); setLoading(false); }).catch(() => { toast.error('خطأ في التحميل'); setLoading(false); });
@@ -32,6 +35,19 @@ export default function SiteManager() {
 
   const addItem = (key, template) => setSettings(s => ({ ...s, [key]: [...(s[key] || []), template] }));
   const removeItem = (key, idx) => setSettings(s => ({ ...s, [key]: (s[key] || []).filter((_, i) => i !== idx) }));
+
+  const uploadCertImage = async (idx, file) => {
+    if (!file) return;
+    setUploadingIdx(idx);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await axios.post('/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setArr('certificates', idx, 'imageUrl', res.data.url);
+      toast.success('تم رفع الصورة');
+    } catch { toast.error('فشل رفع الصورة'); }
+    setUploadingIdx(null);
+  };
 
   const save = async () => {
     setSaving(true);
@@ -117,42 +133,43 @@ export default function SiteManager() {
         {/* Doctor Tab */}
         {activeTab === 'doctor' && (
           <div>
-            <h3 className="section-title">بيانات الطبيب</h3>
+            <h3 className="section-title">البيانات الأساسية</h3>
             <div className="grid-2">
               <div className="form-group">
                 <label>اسم الطبيب</label>
                 <input className="form-control" value={settings.doctorName || ''} onChange={e => set('doctorName', e.target.value)} />
               </div>
               <div className="form-group">
-                <label>التخصص</label>
+                <label>التخصص / اللقب</label>
                 <input className="form-control" value={settings.doctorTitle || ''} onChange={e => set('doctorTitle', e.target.value)} />
               </div>
             </div>
             <div className="form-group">
-              <label>نبذة مختصرة</label>
+              <label>نبذة مختصرة (تظهر في الموقع)</label>
               <textarea className="form-control" value={settings.doctorBio || ''} onChange={e => set('doctorBio', e.target.value)} rows={4} />
             </div>
-            <h4 style={{ marginTop: '24px', marginBottom: '12px', fontWeight: 700, color: '#1e3a8a' }}>الشهادات والمؤهلات</h4>
-            {(settings.certificates || []).map((c, i) => (
-              <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', marginBottom: '10px', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
-                <div className="form-group" style={{ flex: 2, margin: 0 }}>
-                  <label>الشهادة</label>
-                  <input className="form-control" value={c.title || ''} onChange={e => setArr('certificates', i, 'title', e.target.value)} />
-                </div>
-                <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                  <label>السنة</label>
-                  <input className="form-control" value={c.year || ''} onChange={e => setArr('certificates', i, 'year', e.target.value)} />
-                </div>
-                <div className="form-group" style={{ flex: 2, margin: 0 }}>
-                  <label>الجهة</label>
-                  <input className="form-control" value={c.institution || ''} onChange={e => setArr('certificates', i, 'institution', e.target.value)} />
-                </div>
-                <button className="btn btn-danger btn-sm" onClick={() => removeItem('certificates', i)}><FiTrash2 /></button>
-              </div>
-            ))}
-            <button className="btn btn-secondary" onClick={() => addItem('certificates', { title: '', year: '', institution: '' })}><FiPlus /> إضافة شهادة</button>
 
-            <h4 style={{ marginTop: '24px', marginBottom: '12px', fontWeight: 700, color: '#1e3a8a' }}>الإنجازات</h4>
+            <h3 className="section-title" style={{ marginTop: '28px' }}>البيانات الشخصية والأكاديمية</h3>
+            <div className="grid-2">
+              <div className="form-group">
+                <label>الجامعة</label>
+                <input className="form-control" placeholder="مثال: جامعة القاهرة" value={settings.doctorUniversity || ''} onChange={e => set('doctorUniversity', e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>سنة التخرج</label>
+                <input className="form-control" placeholder="مثال: 2010" value={settings.doctorGraduationYear || ''} onChange={e => set('doctorGraduationYear', e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>البريد الإلكتروني (اختياري)</label>
+                <input className="form-control" placeholder="example@mail.com" value={settings.doctorEmail || ''} onChange={e => set('doctorEmail', e.target.value)} type="email" />
+              </div>
+              <div className="form-group">
+                <label>اللغات</label>
+                <input className="form-control" placeholder="مثال: العربية، الإنجليزية" value={settings.doctorLanguages || ''} onChange={e => set('doctorLanguages', e.target.value)} />
+              </div>
+            </div>
+
+            <h3 className="section-title" style={{ marginTop: '28px' }}>الإنجازات</h3>
             {(settings.achievements || []).map((a, i) => (
               <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', marginBottom: '10px', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
                 <div className="form-group" style={{ flex: 1, margin: 0 }}>
@@ -167,6 +184,104 @@ export default function SiteManager() {
               </div>
             ))}
             <button className="btn btn-secondary" onClick={() => addItem('achievements', { title: '', description: '' })}><FiPlus /> إضافة إنجاز</button>
+          </div>
+        )}
+
+        {/* Certificates Tab */}
+        {activeTab === 'certificates' && (
+          <div>
+            <h3 className="section-title">الشهادات والمؤهلات العلمية</h3>
+            <p style={{ color: '#64748b', fontSize: '13.5px', marginBottom: '20px', lineHeight: 1.7 }}>
+              أضف شهاداتك العلمية مع إمكانية رفع صورة لكل شهادة — ستظهر بشكل احترافي في صفحة الموقع.
+            </p>
+            {(settings.certificates || []).map((c, i) => (
+              <div key={i} style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '16px', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', marginBottom: '12px', flexWrap: 'wrap' }}>
+                  <div className="form-group" style={{ flex: '2 1 180px', margin: 0 }}>
+                    <label>اسم الشهادة</label>
+                    <input className="form-control" placeholder="مثال: بكالوريوس طب الأسنان" value={c.title || ''} onChange={e => setArr('certificates', i, 'title', e.target.value)} />
+                  </div>
+                  <div className="form-group" style={{ flex: '1 1 100px', margin: 0 }}>
+                    <label>السنة</label>
+                    <input className="form-control" placeholder="2010" value={c.year || ''} onChange={e => setArr('certificates', i, 'year', e.target.value)} />
+                  </div>
+                  <div className="form-group" style={{ flex: '2 1 180px', margin: 0 }}>
+                    <label>الجهة المانحة</label>
+                    <input className="form-control" placeholder="مثال: جامعة القاهرة" value={c.institution || ''} onChange={e => setArr('certificates', i, 'institution', e.target.value)} />
+                  </div>
+                  <button className="btn btn-danger btn-sm" onClick={() => removeItem('certificates', i)}><FiTrash2 /></button>
+                </div>
+
+                {/* Image upload area */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                  {c.imageUrl ? (
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                      <img
+                        src={c.imageUrl}
+                        alt="شهادة"
+                        style={{ width: '120px', height: '85px', objectFit: 'cover', borderRadius: '8px', border: '2px solid #bfdbfe', cursor: 'pointer' }}
+                        onClick={() => window.open(c.imageUrl, '_blank')}
+                      />
+                      <button
+                        onClick={() => setArr('certificates', i, 'imageUrl', '')}
+                        style={{ position: 'absolute', top: '-6px', left: '-6px', width: '20px', height: '20px', borderRadius: '50%', background: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}
+                      >
+                        <FiX size={11} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ width: '120px', height: '85px', border: '2px dashed #cbd5e1', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', color: '#94a3b8' }}>
+                      <FiImage size={20} />
+                      <span style={{ fontSize: '11px' }}>لا توجد صورة</span>
+                    </div>
+                  )}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      style={{ display: 'none' }}
+                      ref={el => fileRefs.current[i] = el}
+                      onChange={e => uploadCertImage(i, e.target.files[0])}
+                    />
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => fileRefs.current[i]?.click()}
+                      disabled={uploadingIdx === i}
+                      style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      {uploadingIdx === i ? (
+                        <><div style={{ width: '14px', height: '14px', border: '2px solid #94a3b8', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> جاري الرفع...</>
+                      ) : (
+                        <><FiUpload size={14} /> {c.imageUrl ? 'تغيير الصورة' : 'رفع صورة الشهادة'}</>
+                      )}
+                    </button>
+                    <div style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: '5px' }}>JPG, PNG, PDF — بحد أقصى 10MB</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <button className="btn btn-secondary" onClick={() => addItem('certificates', { title: '', year: '', institution: '', imageUrl: '' })}><FiPlus /> إضافة شهادة</button>
+
+            <h3 className="section-title" style={{ marginTop: '32px' }}>الدورات التدريبية</h3>
+            <p style={{ color: '#64748b', fontSize: '13.5px', marginBottom: '16px' }}>الدورات والتدريبات المهنية التي حصل عليها الطبيب.</p>
+            {(settings.doctorTraining || []).map((t, i) => (
+              <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', marginBottom: '10px', background: '#f8fafc', padding: '12px', borderRadius: '8px', flexWrap: 'wrap' }}>
+                <div className="form-group" style={{ flex: '2 1 180px', margin: 0 }}>
+                  <label>اسم الدورة</label>
+                  <input className="form-control" placeholder="مثال: دورة التقويم المتقدم" value={t.title || ''} onChange={e => setArr('doctorTraining', i, 'title', e.target.value)} />
+                </div>
+                <div className="form-group" style={{ flex: '2 1 160px', margin: 0 }}>
+                  <label>الجهة المنظِّمة</label>
+                  <input className="form-control" placeholder="مثال: الجمعية المصرية" value={t.institution || ''} onChange={e => setArr('doctorTraining', i, 'institution', e.target.value)} />
+                </div>
+                <div className="form-group" style={{ flex: '1 1 90px', margin: 0 }}>
+                  <label>السنة</label>
+                  <input className="form-control" placeholder="2020" value={t.year || ''} onChange={e => setArr('doctorTraining', i, 'year', e.target.value)} />
+                </div>
+                <button className="btn btn-danger btn-sm" onClick={() => removeItem('doctorTraining', i)}><FiTrash2 /></button>
+              </div>
+            ))}
+            <button className="btn btn-secondary" onClick={() => addItem('doctorTraining', { title: '', institution: '', year: '' })}><FiPlus /> إضافة دورة تدريبية</button>
           </div>
         )}
 

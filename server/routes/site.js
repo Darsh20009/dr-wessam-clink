@@ -18,10 +18,18 @@ const defaultSettings = {
   workingHours: 'السبت - الخميس: 10 ص - 8 م',
   heroTitle: 'ابتسامة أجمل تبدأ من د. وسام يوسف',
   heroSubtitle: 'خبرة متخصصة في تقويم الأسنان بأحدث التقنيات وأعلى معايير الجودة',
+  doctorUniversity: 'جامعة القاهرة',
+  doctorGraduationYear: '2010',
+  doctorEmail: '',
+  doctorLanguages: 'العربية، الإنجليزية',
   certificates: [
-    { title: 'بكالوريوس طب الأسنان', year: '2010', institution: 'جامعة القاهرة' },
-    { title: 'ماجستير تقويم الأسنان', year: '2014', institution: 'جامعة القاهرة' },
-    { title: 'زمالة التقويم', year: '2016', institution: 'الجمعية المصرية لتقويم الأسنان' },
+    { title: 'بكالوريوس طب الأسنان', year: '2010', institution: 'جامعة القاهرة', imageUrl: '' },
+    { title: 'ماجستير تقويم الأسنان', year: '2014', institution: 'جامعة القاهرة', imageUrl: '' },
+    { title: 'زمالة التقويم', year: '2016', institution: 'الجمعية المصرية لتقويم الأسنان', imageUrl: '' },
+  ],
+  doctorTraining: [
+    { title: 'دورة تقويم الأسنان المتقدم', institution: 'الجمعية المصرية لطب الأسنان', year: '2015' },
+    { title: 'دورة التقويم الشفاف', institution: 'مركز التدريب الدولي', year: '2018' },
   ],
   achievements: [
     { title: '+1000 حالة تقويم ناجحة', description: 'علاج حالات متنوعة بنتائج متميزة' },
