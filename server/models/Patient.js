@@ -7,6 +7,7 @@ const medicalImageSchema = new mongoose.Schema({
   description2: String,
   description3: String,
   notes: String,
+  isVisibleToPatient: { type: Boolean, default: true },
   uploadedAt: { type: Date, default: Date.now }
 });
 
@@ -14,6 +15,7 @@ const xraySchema = new mongoose.Schema({
   type: { type: String, enum: ['panorama', 'lateral', 'cbct'] },
   url: String,
   description: String,
+  isVisibleToPatient: { type: Boolean, default: true },
   uploadedAt: { type: Date, default: Date.now }
 });
 
@@ -37,6 +39,17 @@ const patientSchema = new mongoose.Schema({
     totalPaid: { type: Number, default: 0 },
     remaining: { type: Number, default: 0 },
     status: { type: String, enum: ['paid', 'partial', 'overdue', 'pending'], default: 'pending' }
+  },
+  visibility: {
+    diagnosis: { type: Boolean, default: true },
+    treatmentPlan: { type: Boolean, default: true },
+    treatmentStages: { type: Boolean, default: true },
+    instructions: { type: Boolean, default: true },
+    faceImages: { type: Boolean, default: true },
+    intraOralImages: { type: Boolean, default: true },
+    xrays: { type: Boolean, default: true },
+    sessions: { type: Boolean, default: true },
+    financials: { type: Boolean, default: true },
   },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   isActive: { type: Boolean, default: true },

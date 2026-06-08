@@ -2,3 +2,4 @@
 - [Dr Wessam Features v2](dr-wessam-features-v2.md) — Models/routes: Notification, Wallet, SiteSettings. Pages: Notifications, Wallet, SiteManager. Landing loads from /api/site.
 - [Dr Wessam Push+Passkey](dr-wessam-push-passkey.md) — Web Push (VAPID), WebSocket real-time, WebAuthn passkey. FiFingerprint does NOT exist in react-icons/fi — use FiKey instead.
 - [Dr Wessam Auth Routes](dr-wessam-auth.md) — Forgot password flow: POST /auth/verify-identity (patientId+phone), then POST /auth/reset-password. Pages /forgot-password + /presentation exist in App.jsx.
+- [Dr Wessam Photo System](dr-wessam-photos.md) — Typed photo slots (face: 3, intraoral: 5, session: 5), per-image visibility toggle, section-level visibility, inner components must be defined OUTSIDE PatientFile to avoid invalid hook call warning.

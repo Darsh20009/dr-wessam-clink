@@ -414,7 +414,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: 8,
-    '@media(max-width:600px)': { display: 'none' },
   },
   sideDot: {
     width: 10,
