@@ -98,36 +98,78 @@ const STYLE = `
   }
 
   /* ═══ MOBILE ═══ */
+  .mobile-header { display: none; }
+
   @media (max-width: 768px) {
     .login-left-panel { display: none !important; }
-    .login-root { min-height: 100dvh; }
+    .login-root { min-height: 100dvh; flex-direction: column; }
+
+    /* ── sticky mini-header on mobile ── */
+    .mobile-header {
+      display: flex !important;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(10,22,40,0.72);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+    .mobile-header-logo {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: white; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; overflow: hidden;
+    }
+    .mobile-header-text { flex: 1; min-width: 0; }
+    .mobile-header-text h3 {
+      color: white; font-size: 13.5px; font-weight: 900;
+      margin: 0; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mobile-header-text p {
+      color: rgba(255,255,255,0.55); font-size: 10.5px; margin: 0; line-height: 1.4;
+    }
+
     .login-right-panel {
       width: 100% !important;
       min-width: 0 !important;
       max-width: 100vw !important;
-      padding: 20px 16px !important;
+      padding: 16px 14px 24px !important;
       align-items: flex-start !important;
       justify-content: flex-start !important;
-      min-height: 100dvh;
+      flex: 1;
       box-sizing: border-box !important;
     }
     .login-right-panel > div {
-      padding: 22px 18px !important;
+      padding: 18px 16px !important;
       border-radius: 16px !important;
       width: 100% !important;
       box-sizing: border-box !important;
     }
-    .l-input { font-size: 16px !important; padding: 12px 12px !important; }
+    /* smaller headings inside card */
+    .login-right-panel h2 { font-size: 18px !important; margin-bottom: 2px !important; }
+    .login-right-panel > div > div:first-child { margin-bottom: 16px !important; }
+    /* compact tabs */
+    .l-tab-btn { font-size: 13px !important; padding: 8px 6px !important; }
+    /* compact inputs */
+    .l-input { font-size: 16px !important; padding: 10px 12px !important; }
     .l-phone-input { font-size: 16px !important; }
-    .l-btn-submit { font-size: 15px !important; padding: 13px !important; }
-    .l-tab-btn { font-size: 13px !important; padding: 9px 6px !important; }
-    .l-phone-prefix { padding: 12px 10px !important; }
-    .l-feature-item { padding: 10px 12px !important; }
+    .l-phone-prefix { padding: 10px 10px !important; }
+    .l-btn-submit { font-size: 15px !important; padding: 12px !important; }
+    .l-label { font-size: 12px !important; margin-bottom: 5px !important; }
+    /* tighten vertical gaps */
+    .login-right-panel > div > div { margin-bottom: 12px !important; }
   }
 
   @media (max-width: 400px) {
-    .login-right-panel { padding: 16px 12px !important; }
-    .login-right-panel > div { padding: 18px 14px !important; }
+    .mobile-header { padding: 10px 12px; }
+    .login-right-panel { padding: 12px 10px 20px !important; }
+    .login-right-panel > div { padding: 16px 14px !important; }
   }
 `;
 
@@ -219,6 +261,20 @@ export default function Login() {
         minHeight: '100vh', display: 'flex',
         position: 'relative', overflow: 'hidden',
       }}>
+
+        {/* ── Mobile sticky header ── */}
+        <div className="mobile-header">
+          <div className="mobile-header-logo">
+            <img src="/logo-transparent.png" alt="لوجو" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+          </div>
+          <div className="mobile-header-text">
+            <h3>عيادة د. وسام يوسف</h3>
+            <p>أخصائي تقويم الأسنان — بني مزار، المنيا</p>
+          </div>
+          <button onClick={() => navigate('/')} style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: 'white', fontSize: 11, fontWeight: 700, padding: '5px 10px', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            الرئيسية
+          </button>
+        </div>
 
         {/* Video background */}
         <video ref={bgVideoRef} autoPlay muted loop playsInline
