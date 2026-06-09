@@ -26,6 +26,7 @@ const paymentRequestRoutes = require('./routes/paymentRequests');
 const commentRoutes = require('./routes/comments');
 const employeeRoutes = require('./routes/employees');
 const messageRoutes = require('./routes/messages');
+const Image = require('./models/Image');
 const { registerWsClient, unregisterWsClient } = require('./utils/fireNotify');
 
 const app = express();
@@ -105,6 +106,18 @@ app.use('/api/employees', employeeRoutes);
 app.use('/api/messages', messageRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Dr. Wessam Clinic API v3' }));
+
+app.get('/api/images/:id', async (req, res) => {
+  try {
+    const img = await Image.findById(req.params.id);
+    if (!img) return res.status(404).send('الصورة غير موجودة');
+    res.set('Content-Type', img.mimetype || 'image/jpeg');
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    res.send(img.data);
+  } catch {
+    res.status(404).send('الصورة غير موجودة');
+  }
+});
 
 // ─── Serve React build (whenever dist exists) ─────────────────────
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
