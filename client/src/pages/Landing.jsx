@@ -380,11 +380,11 @@ const STYLE = `
   .l-tooth-btn {
     position: fixed; bottom: 28px; right: 0; z-index: 9999;
     width: 46px; height: 52px;
-    background: linear-gradient(145deg, #25d366, #128c7e);
+    background: #ffffff;
     border: none; cursor: pointer;
     border-radius: 22px 0 0 22px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: -3px 4px 18px rgba(37,211,102,0.5);
+    box-shadow: -3px 4px 18px rgba(0,0,0,0.15);
     animation: toothBounce 3.5s ease-in-out infinite;
     transition: all 0.22s;
     padding: 0;
@@ -392,7 +392,7 @@ const STYLE = `
   }
   .l-tooth-btn:hover {
     width: 52px;
-    box-shadow: -4px 6px 24px rgba(37,211,102,0.65);
+    box-shadow: -4px 6px 24px rgba(0,0,0,0.2);
     animation: none;
   }
 
