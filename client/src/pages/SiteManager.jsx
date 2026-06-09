@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { FiSave, FiGlobe, FiUser, FiPhone, FiStar, FiHelpCircle, FiPlus, FiTrash2, FiUpload, FiImage, FiX, FiBookOpen } from 'react-icons/fi';
+import { FiSave, FiGlobe, FiUser, FiPhone, FiStar, FiHelpCircle, FiPlus, FiTrash2, FiUpload, FiImage, FiX, FiBookOpen, FiMessageSquare } from 'react-icons/fi';
 
 const tabs = [
   { id: 'hero', label: 'الرئيسية', icon: <FiGlobe /> },
@@ -11,6 +11,7 @@ const tabs = [
   { id: 'reviews', label: 'آراء المرضى', icon: <FiStar /> },
   { id: 'faqs', label: 'الأسئلة الشائعة', icon: <FiHelpCircle /> },
   { id: 'contact', label: 'التواصل', icon: <FiPhone /> },
+  { id: 'texts', label: 'نصوص النظام', icon: <FiMessageSquare /> },
 ];
 
 export default function SiteManager() {
@@ -409,6 +410,54 @@ export default function SiteManager() {
             <div className="form-group">
               <label>مواعيد العمل</label>
               <input className="form-control" value={settings.workingHours || ''} onChange={e => set('workingHours', e.target.value)} placeholder="السبت - الخميس: 10 ص - 8 م" />
+            </div>
+          </div>
+        )}
+
+        {/* System Texts Tab */}
+        {activeTab === 'texts' && (
+          <div>
+            <h3 className="section-title">نصوص النظام</h3>
+            <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>تحكم في كل النصوص التي تظهر في النظام لك وللمرضى</p>
+            <div className="grid-2">
+              <div className="form-group">
+                <label>اسم النظام</label>
+                <input className="form-control" value={settings.systemName || ''} onChange={e => set('systemName', e.target.value)} placeholder="نظام عيادة د. وسام يوسف" />
+              </div>
+              <div className="form-group">
+                <label>وصف النظام</label>
+                <input className="form-control" value={settings.systemSubtitle || ''} onChange={e => set('systemSubtitle', e.target.value)} placeholder="نظام إدارة العيادة المتكامل" />
+              </div>
+            </div>
+            <h3 className="section-title" style={{ marginTop: '24px' }}>بوابة المريض</h3>
+            <div className="grid-2">
+              <div className="form-group">
+                <label>عنوان الترحيب</label>
+                <input className="form-control" value={settings.portalWelcomeTitle || ''} onChange={e => set('portalWelcomeTitle', e.target.value)} placeholder="أهلاً بك في بوابتك الطبية" />
+              </div>
+              <div className="form-group">
+                <label>رسالة الترحيب</label>
+                <input className="form-control" value={settings.portalWelcomeMsg || ''} onChange={e => set('portalWelcomeMsg', e.target.value)} placeholder="تابع مواعيدك وجلساتك..." />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>رسالة الحجز عبر واتساب</label>
+              <input className="form-control" value={settings.bookingWhatsappMsg || ''} onChange={e => set('bookingWhatsappMsg', e.target.value)} placeholder="مرحباً دكتور، أريد حجز موعد" />
+              <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px' }}>📱 تظهر هذه الرسالة عند ضغط المريض على زر الحجز عبر واتساب</p>
+            </div>
+            <div className="form-group">
+              <label>رسالة تسجيل الدخول</label>
+              <input className="form-control" value={settings.loginWelcomeMsg || ''} onChange={e => set('loginWelcomeMsg', e.target.value)} placeholder="سجل دخولك للوصول إلى حسابك" />
+            </div>
+            <h3 className="section-title" style={{ marginTop: '24px' }}>ملفات التقويم</h3>
+            <div className="form-group">
+              <label>موقع العيادة في ملفات التقويم</label>
+              <input className="form-control" value={settings.appointmentLocation || ''} onChange={e => set('appointmentLocation', e.target.value)} placeholder="بني مزار - المنيا - شرق المحطة فوق مكتبة الأهرام" />
+              <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px' }}>📅 يظهر هذا عند إضافة المواعيد لتقويم الجهاز أو تقويم جوجل</p>
+            </div>
+            <div className="form-group">
+              <label>شعار العيادة (Tagline)</label>
+              <input className="form-control" value={settings.clinicTagline || ''} onChange={e => set('clinicTagline', e.target.value)} placeholder="ابتسامة أجمل تبدأ من هنا" />
             </div>
           </div>
         )}

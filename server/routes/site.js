@@ -4,6 +4,9 @@ const { auth, doctorOnly } = require('../middleware/auth');
 
 const router = express.Router();
 
+const siteCache = { data: null, ts: 0 };
+const SITE_CACHE_TTL = 5 * 60 * 1000;
+
 const defaultSettings = {
   key: 'main',
   doctorName: 'د. وسام يوسف',
@@ -57,11 +60,22 @@ const defaultSettings = {
     { question: 'كيف أحجز موعد مع دكتور وسام يوسف؟', answer: 'يمكنك الحجز عبر واتساب على الرقم 01156798324 أو من خلال نظام الحجز الإلكتروني على الموقع.', isActive: true },
     { question: 'هل أحتاج لحجز موعد مسبق؟', answer: 'نعم، يُفضّل حجز موعد مسبق لضمان الوقت المناسب.', isActive: true },
   ],
+  systemName: 'نظام عيادة د. وسام يوسف',
+  systemSubtitle: 'نظام إدارة العيادة المتكامل',
+  portalWelcomeTitle: 'أهلاً بك في بوابتك الطبية',
+  portalWelcomeMsg: 'تابع مواعيدك وجلساتك ومدفوعاتك بكل سهولة',
+  bookingWhatsappMsg: 'مرحباً دكتور، أريد حجز موعد',
+  appointmentLocation: 'بني مزار - المنيا - شرق المحطة فوق مكتبة الأهرام',
+  clinicTagline: 'ابتسامة أجمل تبدأ من هنا',
+  loginWelcomeMsg: 'سجل دخولك للوصول إلى حسابك',
 };
 
 router.get('/', async (req, res) => {
   try {
-    let settings = await SiteSettings.findOne({ key: 'main' });
+    if (siteCache.data && Date.now() - siteCache.ts < SITE_CACHE_TTL) {
+      return res.json(siteCache.data);
+    }
+    let settings = await SiteSettings.findOne({ key: 'main' }).lean();
     if (!settings) {
       settings = await SiteSettings.create(defaultSettings);
     } else {
@@ -82,9 +96,11 @@ router.get('/', async (req, res) => {
           },
           { new: true }
         );
-        settings = await SiteSettings.findOne({ key: 'main' });
+        settings = await SiteSettings.findOne({ key: 'main' }).lean();
       }
     }
+    siteCache.data = settings;
+    siteCache.ts = Date.now();
     res.json(settings);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -93,6 +109,7 @@ router.get('/', async (req, res) => {
 
 router.put('/', auth, doctorOnly, async (req, res) => {
   try {
+    siteCache.data = null;
     let settings = await SiteSettings.findOneAndUpdate(
       { key: 'main' },
       { ...req.body, key: 'main' },

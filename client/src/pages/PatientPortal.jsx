@@ -12,6 +12,7 @@ import {
   FiMessageSquare as FiMessageCircle, FiSend,
 } from 'react-icons/fi';
 import { FaWhatsapp, FaTooth } from 'react-icons/fa';
+import { generateICS, googleCalendarUrl } from '../utils/addToCalendar';
 
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
@@ -210,6 +211,7 @@ export default function PatientPortal() {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
   const [savingComment, setSavingComment] = useState(false);
+  const [calOpen, setCalOpen] = useState(null);
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -553,7 +555,7 @@ export default function PatientPortal() {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px', color: '#94a3b8', gap: '10px' }}>
                       <span style={{ fontSize: '36px', opacity: 0.4 }}>📅</span>
                       <p style={{ fontSize: '13.5px', fontWeight: 500 }}>لا توجد مواعيد قادمة</p>
-                      <a href="https://wa.me/201156798324?text=مرحباً دكتور، أريد حجز موعد" target="_blank" rel="noreferrer" className="pp-wa-btn" style={{ fontFamily: 'Cairo, sans-serif', fontSize: '13px' }}>
+                      <a href={`https://wa.me/${siteInfo?.whatsapp || '201156798324'}?text=${encodeURIComponent(siteInfo?.bookingWhatsappMsg || 'مرحباً دكتور، أريد حجز موعد')}`} target="_blank" rel="noreferrer" className="pp-wa-btn" style={{ fontFamily: 'Cairo, sans-serif', fontSize: '13px' }}>
                         <FaWhatsapp size={14} /> احجز موعداً
                       </a>
                     </div>
@@ -605,7 +607,7 @@ export default function PatientPortal() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                 <h2 style={{ fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>مواعيدي</h2>
-                <a href="https://wa.me/201156798324?text=مرحباً دكتور، أريد حجز موعد" target="_blank" rel="noreferrer" className="pp-wa-btn" style={{ fontFamily: 'Cairo, sans-serif', fontSize: '13px', padding: '9px 16px' }}>
+                <a href={`https://wa.me/${siteInfo?.whatsapp || '201156798324'}?text=${encodeURIComponent(siteInfo?.bookingWhatsappMsg || 'مرحباً دكتور، أريد حجز موعد')}`} target="_blank" rel="noreferrer" className="pp-wa-btn" style={{ fontFamily: 'Cairo, sans-serif', fontSize: '13px', padding: '9px 16px' }}>
                   <FaWhatsapp size={14} /> حجز موعد جديد
                 </a>
               </div>
@@ -640,13 +642,35 @@ export default function PatientPortal() {
                           </div>
                           {apt.notes && <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{apt.notes}</div>}
                         </div>
-                        <span style={{
-                          padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, flexShrink: 0,
-                          background: isUpcoming ? '#eff6ff' : apt.status === 'completed' ? '#f0fdf4' : '#f8fafc',
-                          color: isUpcoming ? '#2563eb' : apt.status === 'completed' ? '#16a34a' : '#94a3b8',
-                        }}>
-                          {isUpcoming ? 'قادم' : apt.status === 'completed' ? 'مكتمل' : apt.status === 'cancelled' ? 'ملغي' : 'مجدول'}
-                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 }}>
+                          <span style={{
+                            padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 700,
+                            background: isUpcoming ? '#eff6ff' : apt.status === 'completed' ? '#f0fdf4' : '#f8fafc',
+                            color: isUpcoming ? '#2563eb' : apt.status === 'completed' ? '#16a34a' : '#94a3b8',
+                          }}>
+                            {isUpcoming ? 'قادم' : apt.status === 'completed' ? 'مكتمل' : apt.status === 'cancelled' ? 'ملغي' : 'مجدول'}
+                          </span>
+                          {isUpcoming && (
+                            <div style={{ position: 'relative' }}>
+                              <button
+                                onClick={() => setCalOpen(calOpen === apt._id ? null : apt._id)}
+                                style={{ padding: '5px 9px', borderRadius: '8px', background: '#fff', border: '1px solid #bfdbfe', color: '#2563eb', cursor: 'pointer', fontFamily: 'Cairo', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}
+                              >
+                                <FiCalendar size={12} /> أضف للتقويم
+                              </button>
+                              {calOpen === apt._id && (
+                                <div style={{ position: 'absolute', top: '110%', left: 0, background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 20, overflow: 'hidden', minWidth: '170px' }}>
+                                  <button onClick={() => { generateICS(apt); setCalOpen(null); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'none', border: 'none', borderBottom: '1px solid #f1f5f9', width: '100%', cursor: 'pointer', fontFamily: 'Cairo', fontSize: '12.5px', color: '#0f172a', fontWeight: 600 }}>
+                                    📥 تقويم الجهاز
+                                  </button>
+                                  <a href={googleCalendarUrl(apt)} target="_blank" rel="noreferrer" onClick={() => setCalOpen(null)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'none', width: '100%', cursor: 'pointer', fontFamily: 'Cairo', fontSize: '12.5px', color: '#0f172a', textDecoration: 'none', fontWeight: 600 }}>
+                                    🗓 تقويم جوجل
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}

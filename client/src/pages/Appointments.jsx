@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { FiCalendar, FiPlus, FiX, FiTrash2, FiCheck, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { generateICS, googleCalendarUrl } from '../utils/addToCalendar';
 
 const statusMap = {
   scheduled: ['badge-info', 'مجدول'],
@@ -140,6 +141,8 @@ export default function Appointments() {
                       <>
                         <button className="btn btn-success btn-sm" onClick={() => updateStatus(apt._id, 'completed')}><FiCheck /> مكتمل</button>
                         <button className="btn btn-secondary btn-sm" onClick={() => updateStatus(apt._id, 'cancelled')}><FiX /> إلغاء</button>
+                        <button className="btn btn-secondary btn-sm" title="أضف للتقويم" onClick={() => generateICS(apt)} style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}><FiCalendar /> تقويم</button>
+                        <a href={googleCalendarUrl(apt)} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm" title="تقويم جوجل" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', textDecoration: 'none' }}>🗓 جوجل</a>
                       </>
                     )}
                     <button className="btn btn-danger btn-sm" onClick={() => deleteApt(apt._id)}><FiTrash2 /></button>

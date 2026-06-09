@@ -43,6 +43,14 @@ const siteSettingsSchema = new mongoose.Schema({
   seoTitle: String,
   seoDescription: String,
   seoKeywords: String,
+  systemName: { type: String, default: 'نظام عيادة د. وسام يوسف' },
+  systemSubtitle: { type: String, default: 'نظام إدارة العيادة المتكامل' },
+  portalWelcomeTitle: { type: String, default: 'أهلاً بك في بوابتك الطبية' },
+  portalWelcomeMsg: { type: String, default: 'تابع مواعيدك وجلساتك ومدفوعاتك بكل سهولة' },
+  bookingWhatsappMsg: { type: String, default: 'مرحباً دكتور، أريد حجز موعد' },
+  appointmentLocation: { type: String, default: 'بني مزار - المنيا - شرق المحطة فوق مكتبة الأهرام' },
+  clinicTagline: { type: String, default: 'ابتسامة أجمل تبدأ من هنا' },
+  loginWelcomeMsg: { type: String, default: 'سجل دخولك للوصول إلى حسابك' },
 }, { timestamps: true });
 
 module.exports = mongoose.model('SiteSettings', siteSettingsSchema);
