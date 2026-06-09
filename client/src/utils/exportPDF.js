@@ -46,12 +46,29 @@ const XRAY_TYPES = [
 ];
 
 function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
-  const clinicName = siteInfo?.clinicName || 'عيادة د. وسام يوسف';
+  const clinicName     = siteInfo?.clinicName || 'عيادة د. وسام يوسف';
   const clinicSubtitle = siteInfo?.clinicSubtitle || 'أخصائي تقويم الأسنان — بني مزار، المنيا';
-  const clinicPhone = siteInfo?.phone || '+20 115 679 8324';
-  const patientName = patient.fullName || '';
-  const generated = format(new Date(), 'd MMMM yyyy', { locale: ar });
-  const fin = patient.financials || {};
+  const clinicPhone    = siteInfo?.phone || '+20 115 679 8324';
+  const patientName    = patient.fullName || '';
+  const generated      = format(new Date(), 'd MMMM yyyy', { locale: ar });
+  const fin            = patient.financials || {};
+
+  const o = {
+    includeTTT: true,
+    includePhotos: true,
+    includeFacePhotos: true,
+    includeIntraOralPhotos: true,
+    includeXrays: true,
+    includeSessions: true,
+    includeSessionImages: true,
+    includeFinancials: false,
+    includeClinicHeader: true,
+    includePatientCard: true,
+    includeTTTObjectives: true,
+    includeTTTBolton: true,
+    includeTTTSpace: true,
+    ...opts,
+  };
 
   const imgTag = (url, style = '') => {
     const src = imgMap[url] || url;
@@ -76,7 +93,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
   }).join('');
 
   const tttSection = () => {
-    if (!opts.includeTTT || !ttt) return '';
+    if (!o.includeTTT || !ttt) return '';
     const v = (k) => ttt[k] || '';
     const chk = (k) => ttt[k] ? '✓' : '☐';
     return `
@@ -94,6 +111,8 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
           <tr><td class="label">4. S.T</td><td>${v('st') || '—'}</td></tr>
           <tr><td class="label">5. Habit</td><td>${v('habit') || '—'}</td></tr>
         </table>
+
+        ${o.includeTTTObjectives ? `
         <table class="ttt-table" style="margin-top:16px">
           <tr><th colspan="2" class="th-head">TTT Objectives</th></tr>
           <tr><td class="label">1. OH</td><td>${v('obj1') || '—'}</td></tr>
@@ -106,21 +125,25 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
           <tr><td class="label">8.</td><td>${v('obj8') || 'Achieve Class I Molar Relationship'}</td></tr>
           <tr><td class="label">9.</td><td>${v('obj9') || 'Coordinate both arches with good Buccal Interdigitation.'}</td></tr>
           <tr><td class="label">10.</td><td>${v('obj10') || 'Retention.'}</td></tr>
-        </table>
+        </table>` : ''}
+
+        ${o.includeTTTBolton ? `
         <table class="ttt-table" style="margin-top:16px">
           <tr><th colspan="2" class="th-head">Bolton Analysis</th></tr>
           <tr><td class="label">Anterior Ratio (%)</td><td>${v('boltonAnterior') || '—'}</td></tr>
           <tr><td class="label">Overall Ratio (%)</td><td>${v('boltonOverall') || '—'}</td></tr>
-        </table>
+        </table>` : ''}
+
+        ${o.includeTTTSpace ? `
         <table class="ttt-table" style="margin-top:16px">
-          <tr><th colspan="4" class="th-head">Tooth Size & Arch Length Analysis</th></tr>
+          <tr><th colspan="4" class="th-head">Tooth Size &amp; Arch Length Analysis</th></tr>
           <tr><th></th><th>Total Arch Length</th><th>Total Tooth Size</th><th>Discrepancy</th></tr>
           <tr><td class="label">Upper</td><td>${v('upperArchLength') || '—'}</td><td>${v('upperToothSize') || '—'}</td><td>${v('upperDiscrepancy') || '—'}</td></tr>
           <tr><td class="label">Lower</td><td>${v('lowerArchLength') || '—'}</td><td>${v('lowerToothSize') || '—'}</td><td>${v('lowerDiscrepancy') || '—'}</td></tr>
         </table>
         <table class="ttt-table" style="margin-top:16px">
           <tr><th colspan="2" class="th-head">Summary of Space Requirements</th></tr>
-          <tr><td class="label">Crowding & Spacing</td><td>${v('srCrowding') || '—'}</td></tr>
+          <tr><td class="label">Crowding &amp; Spacing</td><td>${v('srCrowding') || '—'}</td></tr>
           <tr><td class="label">Levelling Occlusal Curve</td><td>${v('srLevelling') || '—'}</td></tr>
           <tr><td class="label">Arch Width Change</td><td>${v('srArchWidth') || '—'}</td></tr>
           <tr><td class="label">Incisor Sagittal Position Change</td><td>${v('srIncisorSagittal') || '—'}</td></tr>
@@ -151,15 +174,15 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
             <tr><td class="label">BOND</td><td>${v('lowerTeethBond') || '—'}</td></tr>
             <tr><td class="label">SKIP</td><td>${v('lowerTeethSkip') || '—'}</td></tr>
           </table>
-        </div>
+        </div>` : ''}
       </div>`;
   };
 
   const photosSection = () => {
-    if (!opts.includePhotos) return '';
-    const faceImgs = (patient.faceImages || []);
-    const intraImgs = (patient.intraOralImages || []);
-    const xrayImgs = (patient.xrays || []);
+    if (!o.includePhotos) return '';
+    const faceImgs   = o.includeFacePhotos      ? (patient.faceImages || [])     : [];
+    const intraImgs  = o.includeIntraOralPhotos ? (patient.intraOralImages || []) : [];
+    const xrayImgs   = o.includeXrays           ? (patient.xrays || [])          : [];
     if (!faceImgs.length && !intraImgs.length && !xrayImgs.length) return '';
 
     const xrayGrid = XRAY_TYPES.map(slot => {
@@ -185,7 +208,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
   };
 
   const sessionsSection = () => {
-    if (!opts.includeSessions) return '';
+    if (!o.includeSessions) return '';
     let toShow = sessions;
     if (opts.sessionIds && opts.sessionIds.length > 0) {
       toShow = sessions.filter(s => opts.sessionIds.includes(s._id));
@@ -195,7 +218,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     if (!toShow.length) return '';
 
     return toShow.map((s, i) => {
-      const imgs = s.images || [];
+      const imgs = o.includeSessionImages ? (s.images || []) : [];
       return `
         <div class="page-break">
           ${sectionTitle(`📋 جلسة #${s.sessionNumber || i + 1} — ${format(new Date(s.sessionDate), 'd MMMM yyyy', { locale: ar })}`)}
@@ -223,7 +246,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
   };
 
   const financialSection = () => {
-    if (!opts.includeFinancials) return '';
+    if (!o.includeFinancials) return '';
     return `
       <div class="page-break">
         ${sectionTitle('💰 البيانات المالية')}
@@ -246,12 +269,12 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:'Cairo',Arial,sans-serif; color:#0f172a; background:white; direction:rtl; font-size:13px; line-height:1.6; }
-    .page { max-width:210mm; margin:0 auto; padding:20mm 18mm; }
+    .page { max-width:210mm; margin:0 auto; padding:14mm 16mm 20mm; }
     @media print {
       body { font-size:11px; }
       .no-print { display:none !important; }
-      .page-break { page-break-before:auto; }
-      @page { margin:15mm 12mm; size:A4; }
+      .page-break { page-break-inside:avoid; break-inside:avoid; }
+      @page { margin:12mm 10mm; size:A4; }
     }
     .clinic-header { display:flex; align-items:center; gap:18px; padding-bottom:16px; border-bottom:3px solid #2563eb; margin-bottom:20px; }
     .clinic-logo { width:72px; height:72px; object-fit:contain; border-radius:12px; }
@@ -272,11 +295,10 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     .field-row { display:flex; gap:12px; margin-bottom:8px; align-items:flex-start; }
     .fl { font-weight:700; color:#334155; min-width:160px; font-size:12px; }
     .fv { color:#475569; font-size:12px; flex:1; }
-    .page-break { margin-bottom:24px; }
+    .page-break { margin-bottom:28px; padding-bottom:8px; }
     .footer { margin-top:30px; padding-top:12px; border-top:1px solid #e2e8f0; text-align:center; color:#94a3b8; font-size:11px; }
     .print-toolbar { position:fixed; top:0; left:0; right:0; background:#1e3a8a; color:white; padding:10px 20px; display:flex; align-items:center; justify-content:space-between; z-index:9999; font-family:'Cairo',sans-serif; }
     .print-toolbar button { background:#2563eb; color:white; border:none; border-radius:8px; padding:8px 20px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Cairo',sans-serif; }
-    .print-toolbar .dl-btn { background:#10b981; }
     body { padding-top: 50px; }
   </style>
 </head>
@@ -288,6 +310,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     </div>
   </div>
   <div class="page">
+    ${o.includeClinicHeader ? `
     <div class="clinic-header">
       <img src="/logo.png" class="clinic-logo" onerror="this.style.display='none'" />
       <div class="clinic-info">
@@ -298,15 +321,16 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
       <div style="margin-right:auto;text-align:left;font-size:11px;color:#94a3b8">
         <div>تاريخ التقرير: ${generated}</div>
       </div>
-    </div>
+    </div>` : ''}
 
+    ${o.includePatientCard ? `
     <div class="patient-card">
       <div><div class="pf">اسم المريض</div><div class="pv">${patient.fullName || '—'}</div></div>
       <div><div class="pf">رقم الجوال</div><div class="pv" style="direction:ltr">${patient.phone || '—'}</div></div>
       ${patient.age ? `<div><div class="pf">العمر</div><div class="pv">${patient.age} سنة</div></div>` : '<div></div>'}
       ${patient.address ? `<div><div class="pf">العنوان</div><div class="pv">${patient.address}</div></div>` : ''}
       ${patient.diagnosis ? `<div style="grid-column:1/-1"><div class="pf">التشخيص</div><div class="pv">${patient.diagnosis}</div></div>` : ''}
-    </div>
+    </div>` : ''}
 
     ${tttSection()}
     ${photosSection()}

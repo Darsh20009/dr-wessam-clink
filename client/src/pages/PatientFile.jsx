@@ -47,6 +47,7 @@ const VIS_LABELS = {
   xrays: 'الأشعة',
   sessions: 'الجلسات',
   financials: 'البيانات المالية',
+  pdfDownload: '📥 تحميل PDF في بوابة المريض',
 };
 const tabs = [
   { id: 'info', label: 'البيانات', icon: <FiFileText size={13}/> },

@@ -50,6 +50,7 @@ const patientSchema = new mongoose.Schema({
     xrays: { type: Boolean, default: true },
     sessions: { type: Boolean, default: true },
     financials: { type: Boolean, default: true },
+    pdfDownload: { type: Boolean, default: false },
   },
   tttFile: { type: mongoose.Schema.Types.Mixed, default: {} },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

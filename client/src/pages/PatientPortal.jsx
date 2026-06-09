@@ -9,10 +9,12 @@ import {
   FiLogOut, FiCalendar, FiDollarSign, FiFileText, FiImage,
   FiUser, FiActivity, FiClock, FiCheck, FiAlertCircle, FiPhone,
   FiMapPin, FiChevronLeft, FiAward, FiStar, FiZap, FiUpload, FiEye, FiRefreshCw,
-  FiMessageSquare as FiMessageCircle, FiSend,
+  FiMessageSquare as FiMessageCircle, FiSend, FiDownload,
 } from 'react-icons/fi';
 import { FaWhatsapp, FaTooth } from 'react-icons/fa';
 import { generateICS, googleCalendarUrl } from '../utils/addToCalendar';
+import { exportPatientPDF } from '../utils/exportPDF';
+import { htmlToPdfBlob } from '../utils/pdfScreenshot';
 
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
@@ -194,6 +196,7 @@ export default function PatientPortal() {
   const [openSession, setOpenSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [siteInfo, setSiteInfo] = useState(null);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
 
   // Payment request form state
   const [prForm, setPrForm] = useState({ paymentType: 'remaining', customAmount: '', notes: '' });
@@ -300,6 +303,28 @@ export default function PatientPortal() {
       toast.error(err.response?.data?.message || 'حدث خطأ');
     }
     setPrSubmitting(false);
+  };
+
+  const handlePdfDownload = async () => {
+    if (!patient) return;
+    setPdfDownloading(true);
+    try {
+      const sessions = patient.sessions || [];
+      const ttt = patient.tttFile || {};
+      const { html } = await exportPatientPDF({ patient, sessions, ttt, siteInfo: siteInfo || {}, opts: {} });
+      const blob = await htmlToPdfBlob(html, { filename: `ملف-${patient.fullName}.pdf` });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ملف-${patient.fullName}.pdf`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      toast.success('تم تحميل ملفك الطبي PDF ✅');
+    } catch (e) {
+      console.error(e);
+      toast.error('تعذّر تحميل الملف، حاول مجدداً');
+    }
+    setPdfDownloading(false);
   };
 
   const handleLogout = () => { logout(); navigate('/'); };
@@ -734,7 +759,19 @@ export default function PatientPortal() {
           {/* ── MEDICAL FILE ── */}
           {activeTab === 'file' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>الملف الطبي</h2>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                <h2 style={{ fontWeight: 800, fontSize: '18px', color: '#0f172a', margin: 0 }}>الملف الطبي</h2>
+                {patient.visibility?.pdfDownload && (
+                  <button onClick={handlePdfDownload} disabled={pdfDownloading}
+                    style={{ background: pdfDownloading ? '#94a3b8' : 'linear-gradient(135deg,#1e3a8a,#2563eb)', color: 'white', border: 'none', borderRadius: 10, padding: '10px 18px', fontFamily: 'Cairo, sans-serif', fontWeight: 800, fontSize: 13, cursor: pdfDownloading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: pdfDownloading ? 'none' : '0 4px 14px rgba(37,99,235,0.4)', transition: 'all 0.2s' }}>
+                    {pdfDownloading ? (
+                      <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> جاري التحميل...</>
+                    ) : (
+                      <><FiDownload size={15}/> تحميل ملفي PDF</>
+                    )}
+                  </button>
+                )}
+              </div>
               <div className="pp-card">
                 <h3 style={{ fontWeight: 800, fontSize: '15px', color: '#0f172a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}><span>👤</span> البيانات الشخصية</h3>
                 <div className="pp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
