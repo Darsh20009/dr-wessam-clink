@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiX, FiDownload, FiMail, FiCheck, FiPrinter, FiArrowRight, FiFileText, FiCamera, FiDollarSign, FiList } from 'react-icons/fi';
+import { FiX, FiDownload, FiMail, FiCheck, FiArrowRight, FiFileText, FiCamera, FiDollarSign, FiList } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { exportPatientPDF } from '../utils/exportPDF';
 import toast from 'react-hot-toast';
@@ -20,7 +20,9 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
   });
   const [allSessions, setAllSessions] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState('');
   const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+  const [pdfFileBlob, setPdfFileBlob] = useState(null);
   const iframeRef = useRef(null);
 
   useEffect(() => {
@@ -47,49 +49,84 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
     return c;
   };
 
+  const buildPdfBlob = async (htmlString) => {
+    const { default: html2pdf } = await import('html2pdf.js');
+    const container = document.createElement('div');
+    container.innerHTML = htmlString;
+    container.style.cssText = 'position:absolute;left:-99999px;top:0;width:210mm;background:white;';
+    document.body.appendChild(container);
+    try {
+      const blob = await html2pdf().set({
+        margin: [8, 8, 8, 8],
+        filename: `ملف-${patient.fullName}.pdf`,
+        image: { type: 'jpeg', quality: 0.92 },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+      }).from(container).outputPdf('blob');
+      return blob;
+    } finally {
+      document.body.removeChild(container);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!dest.download && !dest.whatsapp && !dest.email) return toast.error('اختر وجهة واحدة على الأقل');
     setLoading(true);
     try {
+      setLoadingStep('جاري تجهيز البيانات والصور...');
       const finalOpts = { ...opts, sessionIds: allSessions ? [] : opts.sessionIds };
-      const { blobUrl } = await exportPatientPDF({ patient, sessions, ttt, siteInfo, opts: finalOpts });
+      const { blobUrl, html } = await exportPatientPDF({ patient, sessions, ttt, siteInfo, opts: finalOpts });
       setPdfBlobUrl(blobUrl);
+
+      setLoadingStep('جاري تحويل الملف إلى PDF...');
+      const pdfBlob = await buildPdfBlob(html);
+      setPdfFileBlob(pdfBlob);
+
       setStep(2);
-    } catch { toast.error('خطأ في إنشاء الملف'); }
+    } catch (e) {
+      console.error(e);
+      toast.error('خطأ في إنشاء الملف');
+    }
     setLoading(false);
+    setLoadingStep('');
   };
 
-  const handlePrint = () => iframeRef.current?.contentWindow.print();
+  const fileName = `ملف-${patient.fullName}-${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.pdf`;
 
   const handleDownload = () => {
-    if (!pdfBlobUrl) return;
+    if (!pdfFileBlob) return;
+    const url = URL.createObjectURL(pdfFileBlob);
     const a = document.createElement('a');
-    a.href = pdfBlobUrl;
-    a.download = `ملف-${patient.fullName}-${new Date().toLocaleDateString('ar')}.html`;
-    a.click();
-    toast.success('تم التحميل');
+    a.href = url; a.download = fileName; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast.success('تم تحميل ملف PDF');
   };
 
   const handleWhatsapp = async () => {
     const cleaned = normalizePhone(phone);
     if (!cleaned || cleaned.length < 10) { toast.error('أدخل رقم واتساب صحيح'); return; }
-    const fileName = `ملف-${patient.fullName}-${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.html`;
-    const msgText = `السلام عليكم ${patient.fullName} 😊\nتحية من عيادة د. وسام يوسف\nمرفق ملفك الطبي الكامل — يمكنك فتحه على أي متصفح.`;
-    try {
-      const blob = await fetch(pdfBlobUrl).then(r => r.blob());
-      const file = new File([blob], fileName, { type: 'text/html' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: `ملف المريض — ${patient.fullName}`, text: msgText });
+
+    const msgText = `السلام عليكم ${patient.fullName} 😊\nتحية من عيادة د. وسام يوسف\nمرفق ملفك الطبي الكامل.`;
+
+    if (pdfFileBlob) {
+      try {
+        const file = new File([pdfFileBlob], fileName, { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: `ملف المريض — ${patient.fullName}`, text: msgText });
+          return;
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          toast.error('فشل مشاركة الملف مباشرة');
+        }
         return;
       }
-    } catch {}
-    const a = document.createElement('a');
-    a.href = pdfBlobUrl; a.download = fileName; a.click();
-    setTimeout(() => {
-      const msg = encodeURIComponent(msgText + '\n\n📎 الملف تم تحميله على جهازك — أرفقه في المحادثة.');
-      window.open(`https://wa.me/${cleaned}?text=${msg}`, '_blank');
-    }, 800);
-    toast.success('تم تحميل الملف — أرفقه في محادثة واتساب', { duration: 5000 });
+    }
+
+    const msg = encodeURIComponent(msgText);
+    window.open(`https://wa.me/${cleaned}?text=${msg}`, '_blank');
+    toast('✅ تم فتح واتساب — حمّل الملف وأرفقه في المحادثة', { duration: 5000 });
   };
 
   const handleEmail = () => {
@@ -145,15 +182,12 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
           </button>
           <span style={{ color: 'white', fontWeight: 800, fontSize: 14, flex: 1 }}>📄 معاينة ملف {patient.fullName}</span>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button onClick={handlePrint} style={{ background: '#2563eb', border: 'none', borderRadius: 8, padding: '7px 16px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <FiPrinter size={14}/> طباعة / PDF
-            </button>
-            <button onClick={handleDownload} style={{ background: '#0ea5e9', border: 'none', borderRadius: 8, padding: '7px 14px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <FiDownload size={14}/> تحميل
+            <button onClick={handleDownload} style={{ background: '#0ea5e9', border: 'none', borderRadius: 8, padding: '7px 16px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <FiDownload size={14}/> تحميل PDF
             </button>
             {dest.whatsapp && (
               <button onClick={handleWhatsapp} style={{ background: '#16a34a', border: 'none', borderRadius: 8, padding: '7px 16px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 7 }}>
-                <FaWhatsapp size={16}/> إرسال
+                <FaWhatsapp size={16}/> إرسال واتساب
               </button>
             )}
             {dest.email && (
@@ -176,7 +210,6 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 520, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column' }}>
 
-        {/* Header */}
         <div style={{ padding: '20px 22px 16px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 42, height: 42, borderRadius: 12, background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -193,55 +226,29 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
         </div>
 
         <div style={{ padding: '18px 22px' }}>
-
-          {/* Destination */}
           <div style={{ marginBottom: 20 }}>
             <div style={{ fontWeight: 800, fontSize: 12, color: '#94a3b8', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 10 }}>وجهة التصدير</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
 
-              {/* PDF card */}
-              <button onClick={() => toggleDest('download')} style={{
-                padding: '14px 8px', borderRadius: 14,
-                border: `2px solid ${dest.download ? '#2563eb' : '#e2e8f0'}`,
-                background: dest.download ? '#eff6ff' : 'white',
-                cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                transition: 'all 0.15s', position: 'relative'
-              }}>
+              <button onClick={() => toggleDest('download')} style={{ padding: '14px 8px', borderRadius: 14, border: `2px solid ${dest.download ? '#2563eb' : '#e2e8f0'}`, background: dest.download ? '#eff6ff' : 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, transition: 'all 0.15s', position: 'relative' }}>
                 {dest.download && <div style={{ position: 'absolute', top: 6, left: 6, width: 18, height: 18, borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiCheck size={10} color="white" strokeWidth={3}/></div>}
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: dest.download ? '#dbeafe' : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: dest.download ? '#dbeafe' : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <FiFileText size={22} color={dest.download ? '#2563eb' : '#94a3b8'}/>
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 700, color: dest.download ? '#1e3a8a' : '#64748b' }}>معاينة / PDF</span>
               </button>
 
-              {/* WhatsApp card */}
-              <button onClick={() => toggleDest('whatsapp')} style={{
-                padding: '14px 8px', borderRadius: 14,
-                border: `2px solid ${dest.whatsapp ? '#16a34a' : '#e2e8f0'}`,
-                background: dest.whatsapp ? '#f0fdf4' : 'white',
-                cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                transition: 'all 0.15s', position: 'relative'
-              }}>
+              <button onClick={() => toggleDest('whatsapp')} style={{ padding: '14px 8px', borderRadius: 14, border: `2px solid ${dest.whatsapp ? '#16a34a' : '#e2e8f0'}`, background: dest.whatsapp ? '#f0fdf4' : 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, transition: 'all 0.15s', position: 'relative' }}>
                 {dest.whatsapp && <div style={{ position: 'absolute', top: 6, left: 6, width: 18, height: 18, borderRadius: '50%', background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiCheck size={10} color="white" strokeWidth={3}/></div>}
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: dest.whatsapp ? '#dcfce7' : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: dest.whatsapp ? '#dcfce7' : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <FaWhatsapp size={24} color={dest.whatsapp ? '#16a34a' : '#94a3b8'}/>
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 700, color: dest.whatsapp ? '#166534' : '#64748b' }}>واتساب</span>
               </button>
 
-              {/* Email card */}
-              <button onClick={() => toggleDest('email')} style={{
-                padding: '14px 8px', borderRadius: 14,
-                border: `2px solid ${dest.email ? '#7c3aed' : '#e2e8f0'}`,
-                background: dest.email ? '#faf5ff' : 'white',
-                cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                transition: 'all 0.15s', position: 'relative'
-              }}>
+              <button onClick={() => toggleDest('email')} style={{ padding: '14px 8px', borderRadius: 14, border: `2px solid ${dest.email ? '#7c3aed' : '#e2e8f0'}`, background: dest.email ? '#faf5ff' : 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, transition: 'all 0.15s', position: 'relative' }}>
                 {dest.email && <div style={{ position: 'absolute', top: 6, left: 6, width: 18, height: 18, borderRadius: '50%', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiCheck size={10} color="white" strokeWidth={3}/></div>}
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: dest.email ? '#ede9fe' : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: dest.email ? '#ede9fe' : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <FiMail size={22} color={dest.email ? '#7c3aed' : '#94a3b8'}/>
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 700, color: dest.email ? '#5b21b6' : '#64748b' }}>بريد إلكتروني</span>
@@ -249,7 +256,6 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
             </div>
           </div>
 
-          {/* WhatsApp input */}
           {dest.whatsapp && (
             <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -258,13 +264,12 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
               </div>
               <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="01156798324 أو +20..." dir="ltr"
                 style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #86efac', borderRadius: 8, fontSize: 13, fontFamily: 'Cairo, sans-serif', outline: 'none', boxSizing: 'border-box', background: 'white' }} />
-              <div style={{ fontSize: 11, color: '#16a34a', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                📎 سيُحمَّل الملف تلقائياً ثم يُفتح واتساب — أرفقه في المحادثة
+              <div style={{ fontSize: 11, color: '#16a34a', marginTop: 6 }}>
+                📎 سيُرسل ملف PDF مباشرة عبر واتساب (على الموبايل)
               </div>
             </div>
           )}
 
-          {/* Email input */}
           {dest.email && (
             <div style={{ background: '#faf5ff', border: '1.5px solid #c4b5fd', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -276,37 +281,15 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
             </div>
           )}
 
-          {/* Content options */}
           <div style={{ marginBottom: 20 }}>
             <div style={{ fontWeight: 800, fontSize: 12, color: '#94a3b8', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 10 }}>محتوى التقرير</div>
+            <ContentRow checked={opts.includeTTT} onChange={() => toggleOpt('includeTTT')} icon={<FiFileText size={18}/>} label="الملف الطبي التفصيلي (TTT File)" sublabel="بيانات الأسنان والخطة العلاجية"/>
+            <ContentRow checked={opts.includePhotos} onChange={() => toggleOpt('includePhotos')} icon={<FiCamera size={18}/>} label="الصور والأشعة" sublabel="صور الوجه والفم والأشعة التشخيصية"/>
+            <ContentRow checked={opts.includeFinancials} onChange={() => toggleOpt('includeFinancials')} icon={<FiDollarSign size={18}/>} label="البيانات المالية" sublabel="المدفوعات والمتبقي والإيصالات"/>
 
-            <ContentRow
-              checked={opts.includeTTT} onChange={() => toggleOpt('includeTTT')}
-              icon={<FiFileText size={18}/>}
-              label="الملف الطبي التفصيلي (TTT File)"
-              sublabel="بيانات الأسنان والخطة العلاجية"
-            />
-            <ContentRow
-              checked={opts.includePhotos} onChange={() => toggleOpt('includePhotos')}
-              icon={<FiCamera size={18}/>}
-              label="الصور والأشعة"
-              sublabel="صور الوجه والفم والأشعة التشخيصية"
-            />
-            <ContentRow
-              checked={opts.includeFinancials} onChange={() => toggleOpt('includeFinancials')}
-              icon={<FiDollarSign size={18}/>}
-              label="البيانات المالية"
-              sublabel="المدفوعات والمتبقي والإيصالات"
-            />
-
-            {/* Sessions row with expand */}
             <div style={{ border: `1.5px solid ${opts.includeSessions ? '#bfdbfe' : '#e2e8f0'}`, borderRadius: 12, overflow: 'hidden', marginBottom: 8 }}>
-              <div onClick={() => toggleOpt('includeSessions')} style={{
-                display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
-                background: opts.includeSessions ? '#f0f9ff' : '#fafafa', cursor: 'pointer',
-                transition: 'all 0.15s', userSelect: 'none'
-              }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: opts.includeSessions ? '#dbeafe' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: opts.includeSessions ? '#2563eb' : '#94a3b8', transition: 'all 0.15s' }}>
+              <div onClick={() => toggleOpt('includeSessions')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: opts.includeSessions ? '#f0f9ff' : '#fafafa', cursor: 'pointer', transition: 'all 0.15s', userSelect: 'none' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: opts.includeSessions ? '#dbeafe' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: opts.includeSessions ? '#2563eb' : '#94a3b8' }}>
                   <FiList size={18}/>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -319,38 +302,28 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
               {opts.includeSessions && sessions.length > 0 && (
                 <div style={{ padding: '10px 14px 12px', borderTop: '1px solid #e2e8f0', background: '#fafcff' }}>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                    {[
-                      { val: true, label: 'كل الجلسات' },
-                      { val: false, label: 'جلسات محددة' },
-                    ].map(opt => (
+                    {[{ val: true, label: 'كل الجلسات' }, { val: false, label: 'جلسات محددة' }].map(opt => (
                       <button key={String(opt.val)} onClick={() => { setAllSessions(opt.val); if (opt.val) setOpts(o => ({ ...o, sessionIds: [] })); }}
-                        style={{ flex: 1, padding: '7px 10px', border: `1.5px solid ${allSessions === opt.val ? '#93c5fd' : '#e2e8f0'}`, borderRadius: 8, background: allSessions === opt.val ? '#eff6ff' : 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 12, color: allSessions === opt.val ? '#2563eb' : '#64748b', transition: 'all 0.15s' }}>
+                        style={{ flex: 1, padding: '7px 10px', border: `1.5px solid ${allSessions === opt.val ? '#93c5fd' : '#e2e8f0'}`, borderRadius: 8, background: allSessions === opt.val ? '#eff6ff' : 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 12, color: allSessions === opt.val ? '#2563eb' : '#64748b' }}>
                         {allSessions === opt.val && '✓ '}{opt.label}
                       </button>
                     ))}
                   </div>
-
                   {!allSessions && (
                     <div style={{ maxHeight: 160, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
                       {[...sessions].sort((a, b) => new Date(a.sessionDate) - new Date(b.sessionDate)).map((s, i) => {
                         const checked = opts.sessionIds.includes(s._id);
                         return (
                           <label key={s._id} onClick={() => toggleSessionId(s._id)} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, border: `1.5px solid ${checked ? '#93c5fd' : '#e2e8f0'}`, background: checked ? '#eff6ff' : 'white', userSelect: 'none' }}>
-                            <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${checked ? '#2563eb' : '#cbd5e1'}`, background: checked ? '#2563eb' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                            <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${checked ? '#2563eb' : '#cbd5e1'}`, background: checked ? '#2563eb' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                               {checked && <FiCheck size={10} color="white" strokeWidth={3}/>}
                             </div>
-                            <span style={{ fontSize: 12, fontWeight: 600, color: checked ? '#1e3a8a' : '#475569', flex: 1 }}>
-                              جلسة #{s.sessionNumber || i + 1}
-                            </span>
-                            <span style={{ fontSize: 11, color: '#94a3b8' }}>
-                              {format(new Date(s.sessionDate), 'd MMM yyyy', { locale: ar })}
-                            </span>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: checked ? '#1e3a8a' : '#475569', flex: 1 }}>جلسة #{s.sessionNumber || i + 1}</span>
+                            <span style={{ fontSize: 11, color: '#94a3b8' }}>{format(new Date(s.sessionDate), 'd MMM yyyy', { locale: ar })}</span>
                           </label>
                         );
                       })}
-                      {opts.sessionIds.length === 0 && (
-                        <div style={{ fontSize: 11, color: '#f59e0b', padding: '4px 6px', fontWeight: 600 }}>⚠️ اختر جلسة واحدة على الأقل</div>
-                      )}
+                      {opts.sessionIds.length === 0 && <div style={{ fontSize: 11, color: '#f59e0b', padding: '4px 6px', fontWeight: 600 }}>⚠️ اختر جلسة واحدة على الأقل</div>}
                     </div>
                   )}
                 </div>
@@ -358,18 +331,22 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
             </div>
           </div>
 
-          {/* Generate button */}
           <button
             onClick={handleGenerate}
             disabled={loading || (!allSessions && opts.includeSessions && opts.sessionIds.length === 0 && sessions.length > 0)}
-            style={{ width: '100%', padding: '14px', background: loading ? '#93c5fd' : 'linear-gradient(135deg,#1e40af,#2563eb)', color: 'white', border: 'none', borderRadius: 13, fontWeight: 900, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, boxShadow: loading ? 'none' : '0 4px 16px rgba(37,99,235,0.35)', transition: 'all 0.2s' }}>
-            {loading
-              ? <><div style={{ width: 18, height: 18, border: '2.5px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }}/><style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style> جاري الإنشاء...</>
-              : <><FiFileText size={17}/> إنشاء التقرير ومعاينته</>
-            }
+            style={{ width: '100%', padding: '14px', background: loading ? '#93c5fd' : 'linear-gradient(135deg,#1e40af,#2563eb)', color: 'white', border: 'none', borderRadius: 13, fontWeight: 900, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, boxShadow: loading ? 'none' : '0 4px 16px rgba(37,99,235,0.35)' }}>
+            {loading ? (
+              <>
+                <div style={{ width: 18, height: 18, border: '2.5px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }}/>
+                <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
+                {loadingStep || 'جاري الإنشاء...'}
+              </>
+            ) : (
+              <><FiFileText size={17}/> إنشاء ملف PDF</>
+            )}
           </button>
           <p style={{ textAlign: 'center', fontSize: 11, color: '#94a3b8', marginTop: 10, lineHeight: 1.6 }}>
-            سيُعرض التقرير داخل النظام — ثم يمكنك طباعته أو تحميله أو إرساله
+            يُعرض التقرير داخل النظام — ثم يمكنك تحميله كـ PDF أو إرساله
           </p>
         </div>
       </div>
