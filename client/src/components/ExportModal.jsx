@@ -9,7 +9,14 @@ import { ar } from 'date-fns/locale';
 export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo = {}, onClose }) {
   const [step, setStep] = useState(1);
   const [dest, setDest] = useState({ download: true, whatsapp: false, email: false });
-  const [phone, setPhone] = useState(patient?.phone || '');
+  const initPhone = () => {
+    let p = (patient?.phone || '').replace(/\D/g, '');
+    if (p.startsWith('00')) p = p.slice(2);
+    if (p.startsWith('20')) p = p.slice(2);
+    if (p.startsWith('0')) p = p.slice(1);
+    return p;
+  };
+  const [phone, setPhone] = useState(initPhone);
   const [email, setEmail] = useState('');
   const [opts, setOpts] = useState({
     includeTTT: true,
@@ -44,9 +51,9 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
   const normalizePhone = (raw) => {
     let c = raw.replace(/\D/g, '');
     if (c.startsWith('00')) c = c.slice(2);
-    if (c.startsWith('0') && c.length === 11) c = '2' + c;
-    if (!c.startsWith('20') && c.length === 11) c = '20' + c;
-    return c;
+    if (c.startsWith('20')) return c;
+    if (c.startsWith('0')) c = c.slice(1);
+    return '20' + c;
   };
 
   const buildPdfBlob = async (htmlString) => {
@@ -262,8 +269,20 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
                 <FaWhatsapp size={16} color="#16a34a"/>
                 <span style={{ fontWeight: 700, fontSize: 12, color: '#166534' }}>رقم واتساب المريض</span>
               </div>
-              <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="01156798324 أو +20..." dir="ltr"
-                style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #86efac', borderRadius: 8, fontSize: 13, fontFamily: 'Cairo, sans-serif', outline: 'none', boxSizing: 'border-box', background: 'white' }} />
+              <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #86efac', borderRadius: 8, background: 'white', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', background: '#f0fdf4', borderLeft: '1.5px solid #86efac', flexShrink: 0, userSelect: 'none' }}>
+                  <span style={{ fontSize: 18, lineHeight: 1 }}>🇪🇬</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#166534', letterSpacing: '0.5px' }}>+20</span>
+                </div>
+                <input
+                  value={phone}
+                  onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
+                  placeholder="1156798324"
+                  dir="ltr"
+                  maxLength={10}
+                  style={{ flex: 1, padding: '8px 10px', border: 'none', fontSize: 14, fontFamily: 'monospace', outline: 'none', background: 'transparent', letterSpacing: '1px' }}
+                />
+              </div>
               <div style={{ fontSize: 11, color: '#16a34a', marginTop: 6 }}>
                 📎 سيُرسل ملف PDF مباشرة عبر واتساب (على الموبايل)
               </div>
