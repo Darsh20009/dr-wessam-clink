@@ -186,7 +186,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { login, setupPassword } = useAuth();
-  const [mode, setMode] = useState('patient');
+  const [mode, setMode] = useState('login');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -229,7 +229,7 @@ export default function Login() {
     if (!phone || !password) return toast.error('يرجى إدخال جميع البيانات');
     setLoading(true);
     try {
-      const user = await login(phone, password, mode === 'doctor');
+      const user = await login(phone, password);
       toast.success(`أهلاً ${user.name}`);
       navigate(user.role === 'doctor' ? '/doctor' : user.role === 'employee' ? '/reception' : '/portal');
     } catch (err) {
@@ -404,23 +404,9 @@ export default function Login() {
                 {mode === 'setup' ? '🔐 إنشاء كلمة مرور' : 'مرحباً بك'}
               </h2>
               <p style={{ color: '#94a3b8', fontSize: '13.5px' }}>
-                {mode === 'setup' ? 'أدخل كلمة مرور لتفعيل حسابك' : 'سجّل دخولك للوصول إلى حسابك'}
+                {mode === 'setup' ? 'أدخل كلمة مرور لتفعيل حسابك' : 'سجّل دخولك للوصول إلى حسابك تلقائياً'}
               </p>
             </div>
-
-            {/* Mode tabs */}
-            {mode !== 'setup' && (
-              <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', background: '#f1f5f9', padding: '4px', borderRadius: '11px' }}>
-                {[
-                  { key: 'patient', icon: '🧑‍⚕️', label: 'مريض' },
-                  { key: 'doctor', icon: '🩺', label: 'طبيب' },
-                ].map(m => (
-                  <button key={m.key} onClick={() => setMode(m.key)} className={`l-tab-btn${mode === m.key ? ' active' : ''}`}>
-                    <span>{m.icon}</span> {m.label}
-                  </button>
-                ))}
-              </div>
-            )}
 
             {/* Phone field */}
             <div style={{ marginBottom: '16px' }}>
