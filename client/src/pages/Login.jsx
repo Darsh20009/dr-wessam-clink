@@ -97,43 +97,54 @@ const STYLE = `
     position: absolute; border-radius: 50%; pointer-events: none;
   }
 
-  /* ═══ MOBILE ═══ */
-  .mobile-header { display: none; }
+  /* ═══ SITE HEADER (all screens) ═══ */
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 13px 28px;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #0284c7 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    box-shadow: 0 2px 16px rgba(15,30,80,0.25);
+  }
+  .mobile-header-logo {
+    width: 42px; height: 42px; border-radius: 11px;
+    background: white; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+  .mobile-header-text { flex: 1; min-width: 0; }
+  .mobile-header-text h3 {
+    color: white; font-size: 15px; font-weight: 900;
+    margin: 0; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mobile-header-text p {
+    color: rgba(255,255,255,0.65); font-size: 11.5px; margin: 0; line-height: 1.4;
+  }
+  .mobile-header-nav { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .mobile-header-nav a, .mobile-header-nav button {
+    color: rgba(255,255,255,0.82); font-size: 13px; font-weight: 700;
+    font-family: 'Cairo', sans-serif; text-decoration: none;
+    padding: 6px 14px; border-radius: 8px;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+    cursor: pointer; transition: all 0.18s; white-space: nowrap;
+  }
+  .mobile-header-nav a:hover, .mobile-header-nav button:hover {
+    background: rgba(255,255,255,0.22); color: white;
+  }
 
   @media (max-width: 768px) {
     .login-left-panel { display: none !important; }
     .login-root { min-height: 100dvh; flex-direction: column; }
-
-    /* ── sticky mini-header on mobile ── */
-    .mobile-header {
-      display: flex !important;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
-      padding: 12px 16px;
-      background: rgba(10,22,40,0.72);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      box-sizing: border-box;
-      flex-shrink: 0;
-    }
-    .mobile-header-logo {
-      width: 38px; height: 38px; border-radius: 10px;
-      background: white; display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; overflow: hidden;
-    }
-    .mobile-header-text { flex: 1; min-width: 0; }
-    .mobile-header-text h3 {
-      color: white; font-size: 13.5px; font-weight: 900;
-      margin: 0; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .mobile-header-text p {
-      color: rgba(255,255,255,0.55); font-size: 10.5px; margin: 0; line-height: 1.4;
-    }
+    .mobile-header { padding: 10px 14px; }
+    .mobile-header-text h3 { font-size: 13px; }
+    .mobile-header-text p { font-size: 10.5px; }
 
     .login-right-panel {
       width: 100% !important;
@@ -258,23 +269,27 @@ export default function Login() {
         <QrScanner onScan={handleQrScan} onClose={() => setShowQrScanner(false)} />
       )}
       <div className="login-root" style={{
-        minHeight: '100vh', display: 'flex',
+        minHeight: '100vh', display: 'flex', flexDirection: 'column',
         position: 'relative', overflow: 'hidden',
       }}>
 
-        {/* ── Mobile sticky header ── */}
+        {/* ── Top header — visible on ALL screen sizes ── */}
         <div className="mobile-header">
           <div className="mobile-header-logo">
-            <img src="/logo-transparent.png" alt="لوجو" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+            <img src="/logo-transparent.png" alt="لوجو" style={{ width: 36, height: 36, objectFit: 'contain' }} />
           </div>
           <div className="mobile-header-text">
             <h3>عيادة د. وسام يوسف</h3>
             <p>أخصائي تقويم الأسنان — بني مزار، المنيا</p>
           </div>
-          <button onClick={() => navigate('/')} style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: 'white', fontSize: 11, fontWeight: 700, padding: '5px 10px', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            الرئيسية
-          </button>
+          <div className="mobile-header-nav">
+            <a href="tel:01156798324">📞 01156798324</a>
+            <button onClick={() => navigate('/')}>الرئيسية</button>
+          </div>
         </div>
+
+        {/* ── Panels row (left brand + right form) ── */}
+        <div style={{ display: 'flex', flex: 1, position: 'relative', overflow: 'hidden' }}>
 
         {/* ── LEFT BRAND PANEL — video fills this column naturally ── */}
         <div className="login-left-panel" style={{
@@ -573,6 +588,7 @@ export default function Login() {
             </div>
           </div>
         </div>
+        </div>{/* end panels row */}
       </div>
     </>
   );
