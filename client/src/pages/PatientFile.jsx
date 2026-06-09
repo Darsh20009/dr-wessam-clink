@@ -13,27 +13,27 @@ import {
 import { printInvoice } from '../utils/printInvoice';
 
 const FACE_SLOTS = [
-  { type: 'frontal_rest', label: 'أمامية - راحة' },
-  { type: 'frontal_smile', label: 'أمامية - ابتسام' },
-  { type: 'lateral', label: 'جانبية - راحة' },
+  { type: 'frontal_rest', label: 'Frontal - Rest' },
+  { type: 'frontal_smile', label: 'Frontal - Smile' },
+  { type: 'lateral', label: 'Lateral - Rest' },
 ];
 const INTRAORAL_SLOTS = [
-  { type: 'frontal_occlusion', label: 'أمامية - إطباق' },
-  { type: 'upper_jaw', label: 'فك علوي' },
-  { type: 'lower_jaw', label: 'فك سفلي' },
-  { type: 'right_lateral', label: 'جانبية يمين' },
-  { type: 'left_lateral', label: 'جانبية يسار' },
+  { type: 'frontal_occlusion', label: 'Frontal Occlusion' },
+  { type: 'upper_jaw', label: 'Upper Jaw' },
+  { type: 'lower_jaw', label: 'Lower Jaw' },
+  { type: 'right_lateral', label: 'Right Lateral' },
+  { type: 'left_lateral', label: 'Left Lateral' },
 ];
 const SESSION_SLOTS = [
-  { type: 'frontal_occlusion', label: 'أمامية - إطباق' },
-  { type: 'right_lateral', label: 'جانبية يمين' },
-  { type: 'left_lateral', label: 'جانبية يسار' },
-  { type: 'upper_jaw', label: 'فك علوي' },
-  { type: 'lower_jaw', label: 'فك سفلي' },
+  { type: 'frontal_occlusion', label: 'Frontal Occlusion' },
+  { type: 'right_lateral', label: 'Right Lateral' },
+  { type: 'left_lateral', label: 'Left Lateral' },
+  { type: 'upper_jaw', label: 'Upper Jaw' },
+  { type: 'lower_jaw', label: 'Lower Jaw' },
 ];
 const XRAY_TYPES = [
-  { type: 'panorama', label: 'بانوراما' },
-  { type: 'lateral', label: 'جانبية' },
+  { type: 'panorama', label: 'Panoramic X-Ray' },
+  { type: 'lateral', label: 'Lateral Ceph' },
   { type: 'cbct', label: 'CBCT' },
 ];
 const VIS_LABELS = {
@@ -65,7 +65,7 @@ function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, toggleVis,
   return (
     <div style={{ border: '1.5px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', background: 'white' }}>
       <div style={{ background: '#f8fafc', padding: '8px 12px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#334155' }}>{slotLabel}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#334155', fontFamily: 'monospace, sans-serif' }}>{slotLabel}</span>
         <span style={{ fontSize: 11, color: '#94a3b8', background: '#e2e8f0', borderRadius: 99, padding: '1px 8px' }}>{slotImages.length}</span>
       </div>
       {slotImages.length > 0 && (
@@ -76,11 +76,17 @@ function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, toggleVis,
                 <img src={img.url} alt={slotLabel} style={{ width: 90, height: 70, objectFit: 'cover', borderRadius: 8, border: '1.5px solid #e2e8f0', cursor: 'pointer', display: 'block' }} onClick={() => openLightbox(img.url)} />
                 <button onClick={() => openLightbox(img.url)} style={{ position: 'absolute', top: 3, left: 3, background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 4, padding: '2px 4px', cursor: 'pointer', color: 'white', lineHeight: 1 }}><FiMaximize2 size={10}/></button>
               </div>
+              {(img.description1 || img.notes) && (
+                <div style={{ fontSize: 10, color: '#475569', marginTop: 3, lineHeight: 1.4, wordBreak: 'break-word' }}>
+                  {img.description1 && <div style={{ fontWeight: 700, color: '#1e293b' }}>{img.description1}</div>}
+                  {img.notes && <div style={{ color: '#64748b' }}>{img.notes}</div>}
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
                 <button title={img.isVisibleToPatient !== false ? 'ظاهر - اضغط للإخفاء' : 'مخفي - اضغط للإظهار'} onClick={() => toggleVis(cat, img._id, img.isVisibleToPatient !== false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: img.isVisibleToPatient !== false ? '#10b981' : '#cbd5e1' }}>
                   {img.isVisibleToPatient !== false ? <FiEye size={13}/> : <FiEyeOff size={13}/>}
                 </button>
-                <button onClick={() => openEdit(cat, img)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#2563eb' }} title="تعديل الوصف"><FiEdit2 size={12}/></button>
+                <button onClick={() => openEdit(cat, img)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#2563eb' }} title="تعديل العنوان والملاحظات"><FiEdit2 size={12}/></button>
                 <button onClick={() => deleteImg(cat, img._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#ef4444' }}><FiTrash2 size={12}/></button>
               </div>
             </div>
@@ -156,7 +162,7 @@ export default function PatientFile() {
   const [form, setForm] = useState({});
 
   const [showAddSession, setShowAddSession] = useState(false);
-  const [sessionForm, setSessionForm] = useState({ sessionDate: '', notes: '', nextStep: '', nextAppointment: '', amountPaid: '', remainingAmount: '' });
+  const [sessionForm, setSessionForm] = useState({ sessionDate: '', notes: '', nextStep: '', nextAppointment: '', amountPaid: '' });
   const [showPayment, setShowPayment] = useState(false);
   const [payForm, setPayForm] = useState({ amount: '', method: 'cash', notes: '' });
 
@@ -167,6 +173,11 @@ export default function PatientFile() {
   const [sessionUpload, setSessionUpload] = useState(null);
 
   const [expandedSessions, setExpandedSessions] = useState(new Set());
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [sessionEditMode, setSessionEditMode] = useState(false);
+  const [sessionEditForm, setSessionEditForm] = useState({});
+  const [editingSessionImg, setEditingSessionImg] = useState(null);
+  const [sessionImgForm, setSessionImgForm] = useState({ notes: '' });
   const [lightbox, setLightbox] = useState(null);
   const [editingImg, setEditingImg] = useState(null);
   const [imgForm, setImgForm] = useState({});
@@ -254,13 +265,13 @@ export default function PatientFile() {
     e.preventDefault();
     if (!sessionForm.sessionDate) return toast.error('يرجى إدخال تاريخ الجلسة');
     try {
-      await axios.post('/sessions', { patientId: id, sessionDate: sessionForm.sessionDate, notes: sessionForm.notes, nextStep: sessionForm.nextStep, nextAppointment: sessionForm.nextAppointment || undefined, amountPaid: parseFloat(sessionForm.amountPaid) || 0, remainingAmount: parseFloat(sessionForm.remainingAmount) || 0 });
+      await axios.post('/sessions', { patientId: id, sessionDate: sessionForm.sessionDate, notes: sessionForm.notes, nextStep: sessionForm.nextStep, nextAppointment: sessionForm.nextAppointment || undefined, amountPaid: parseFloat(sessionForm.amountPaid) || 0 });
       if (parseFloat(sessionForm.amountPaid) > 0) {
         await axios.post('/payments', { patientId: id, patientName: patient.fullName, amount: parseFloat(sessionForm.amountPaid), type: 'session', method: 'cash', notes: `جلسة ${format(new Date(sessionForm.sessionDate), 'd/M/yyyy')}` });
       }
       toast.success('تم إضافة الجلسة');
       setShowAddSession(false);
-      setSessionForm({ sessionDate: '', notes: '', nextStep: '', nextAppointment: '', amountPaid: '', remainingAmount: '' });
+      setSessionForm({ sessionDate: '', notes: '', nextStep: '', nextAppointment: '', amountPaid: '' });
       fetchData();
     } catch { toast.error('خطأ في إضافة الجلسة'); }
   };
@@ -368,6 +379,46 @@ export default function PatientFile() {
     setExpandedSessions(prev => { const n = new Set(prev); n.has(sid) ? n.delete(sid) : n.add(sid); return n; });
   };
 
+  const openSessionDetail = (s) => {
+    setSelectedSession(s);
+    setSessionEditMode(false);
+    setSessionEditForm({
+      notes: s.notes || '',
+      nextStep: s.nextStep || '',
+      nextAppointment: s.nextAppointment ? s.nextAppointment.substring(0, 10) : '',
+      amountPaid: s.amountPaid || 0,
+    });
+  };
+
+  const saveSessionEdit = async () => {
+    if (!selectedSession) return;
+    try {
+      const res = await axios.put(`/sessions/${selectedSession._id}`, sessionEditForm);
+      setSessions(prev => prev.map(s => s._id === selectedSession._id ? res.data : s));
+      setSelectedSession(res.data);
+      setSessionEditMode(false);
+      toast.success('تم حفظ الجلسة');
+    } catch { toast.error('خطأ في الحفظ'); }
+  };
+
+  const openSessionImgEdit = (sessionId, img) => {
+    setEditingSessionImg({ sessionId, img });
+    setSessionImgForm({ notes: img.notes || '' });
+  };
+
+  const saveSessionImgEdit = async () => {
+    if (!editingSessionImg) return;
+    try {
+      await axios.patch(`/sessions/${editingSessionImg.sessionId}/images/${editingSessionImg.img._id}`, sessionImgForm);
+      toast.success('تم الحفظ');
+      const sRes = await axios.get(`/sessions?patientId=${id}`);
+      setSessions(sRes.data);
+      const updated = sRes.data.find(s => s._id === editingSessionImg.sessionId);
+      if (updated) setSelectedSession(updated);
+      setEditingSessionImg(null);
+    } catch { toast.error('خطأ في الحفظ'); }
+  };
+
   if (loading) return <div className="loading"><div className="spinner"></div></div>;
   if (!patient) return null;
 
@@ -387,12 +438,164 @@ export default function PatientFile() {
         </div>
       )}
 
+      {/* ── Session Detail Full-Page Overlay ── */}
+      {selectedSession && (
+        <div style={{ position: 'fixed', inset: 0, background: '#f8fafc', zIndex: 9000, overflowY: 'auto', direction: 'rtl' }}>
+          <div style={{ maxWidth: 860, margin: '0 auto', padding: '20px 16px 60px' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+              <button onClick={() => setSelectedSession(null)} style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: 10, padding: '8px 14px', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', alignItems: 'center', gap: 6, color: '#475569' }}>
+                <FiArrowRight size={14}/> رجوع للجلسات
+              </button>
+              <div style={{ flex: 1 }}>
+                <h1 style={{ fontWeight: 900, fontSize: 20, color: '#0f172a', margin: 0 }}>
+                  جلسة #{selectedSession.sessionNumber} — {patient.fullName}
+                </h1>
+                <div style={{ color: '#64748b', fontSize: 13, marginTop: 3 }}>
+                  {format(new Date(selectedSession.sessionDate), 'EEEE d MMMM yyyy', { locale: ar })}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {!sessionEditMode ? (
+                  <button className="btn btn-secondary btn-sm" onClick={() => setSessionEditMode(true)}><FiEdit2 size={13}/> تعديل</button>
+                ) : (
+                  <>
+                    <button className="btn btn-secondary btn-sm" onClick={() => setSessionEditMode(false)}>إلغاء</button>
+                    <button className="btn btn-primary btn-sm" onClick={saveSessionEdit}><FiSave size={13}/> حفظ</button>
+                  </>
+                )}
+                <button className="btn btn-danger btn-sm" onClick={async () => { if(window.confirm('حذف الجلسة؟')) { await deleteSession(selectedSession._id); setSelectedSession(null); } }}>
+                  <FiTrash2 size={13}/>
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+              {/* Notes */}
+              <div className="card" style={{ gridColumn: '1 / -1' }}>
+                <h3 style={{ fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>📝 ملاحظات الجلسة</h3>
+                {sessionEditMode ? (
+                  <textarea className="form-control" rows={4} value={sessionEditForm.notes} onChange={e => setSessionEditForm(f => ({ ...f, notes: e.target.value }))} placeholder="ما تم في هذه الجلسة..." />
+                ) : (
+                  <p style={{ color: '#475569', lineHeight: 1.9, margin: 0, fontSize: 14, whiteSpace: 'pre-wrap', minHeight: 40 }}>{selectedSession.notes || <span style={{ color: '#cbd5e1' }}>لا توجد ملاحظات</span>}</p>
+                )}
+              </div>
+
+              {/* Next Step */}
+              <div className="card" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+                <h3 style={{ fontWeight: 800, fontSize: 14, color: '#1e40af', marginBottom: 10 }}>📋 الخطوة القادمة</h3>
+                {sessionEditMode ? (
+                  <textarea className="form-control" rows={3} value={sessionEditForm.nextStep} onChange={e => setSessionEditForm(f => ({ ...f, nextStep: e.target.value }))} placeholder="ما سيتم في الجلسة القادمة..." />
+                ) : (
+                  <p style={{ color: '#1e3a8a', lineHeight: 1.8, margin: 0, fontSize: 14, whiteSpace: 'pre-wrap', minHeight: 36 }}>{selectedSession.nextStep || <span style={{ color: '#93c5fd' }}>لم تُحدَّد بعد</span>}</p>
+                )}
+              </div>
+
+              {/* Appointment + Payment */}
+              <div className="card">
+                <h3 style={{ fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 10 }}>💰 المالية والموعد</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>المبلغ المدفوع:</span>
+                    <span style={{ fontWeight: 800, fontSize: 15, color: '#10b981' }}>{selectedSession.amountPaid?.toLocaleString() || 0} ج.م</span>
+                  </div>
+                  {selectedSession.nextAppointment && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>موعد المتابعة:</span>
+                      <span style={{ fontWeight: 700, fontSize: 13, color: '#2563eb', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <FiCalendar size={13}/> {format(new Date(selectedSession.nextAppointment), 'd MMMM yyyy', { locale: ar })}
+                      </span>
+                    </div>
+                  )}
+                  {sessionEditMode && (
+                    <>
+                      <div className="form-group" style={{ margin: 0 }}><label style={{ fontSize: 12 }}>موعد الجلسة القادمة</label><input className="form-control" type="date" value={sessionEditForm.nextAppointment} onChange={e => setSessionEditForm(f => ({ ...f, nextAppointment: e.target.value }))} /></div>
+                      <div className="form-group" style={{ margin: 0 }}><label style={{ fontSize: 12 }}>المبلغ المدفوع (ج.م)</label><input className="form-control" type="number" value={sessionEditForm.amountPaid} onChange={e => setSessionEditForm(f => ({ ...f, amountPaid: parseFloat(e.target.value) || 0 }))} /></div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Session Images */}
+            <div className="card">
+              <h3 style={{ fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>📷 صور الجلسة</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
+                {SESSION_SLOTS.map(slot => {
+                  const slotImgs = (selectedSession.images || []).filter(img => img.type === slot.type);
+                  return (
+                    <div key={slot.type} style={{ border: '1.5px solid #e2e8f0', borderRadius: 10, overflow: 'hidden', background: 'white' }}>
+                      <div style={{ background: '#0f172a', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'white', fontFamily: 'monospace' }}>{slot.label}</span>
+                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.1)', borderRadius: 99, padding: '1px 6px' }}>{slotImgs.length}</span>
+                      </div>
+                      {slotImgs.length > 0 && (
+                        <div style={{ padding: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          {slotImgs.map(img => (
+                            <div key={img._id} style={{ width: 80 }}>
+                              <div style={{ position: 'relative' }}>
+                                <img src={img.url} alt={slot.label} style={{ width: 80, height: 60, objectFit: 'cover', borderRadius: 6, border: '1px solid #e2e8f0', display: 'block', cursor: 'pointer' }} onClick={() => setLightbox(img.url)} />
+                                <button onClick={() => setLightbox(img.url)} style={{ position: 'absolute', top: 2, left: 2, background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: 3, padding: '1px 3px', cursor: 'pointer', color: 'white' }}><FiMaximize2 size={9}/></button>
+                              </div>
+                              {img.notes && <div style={{ fontSize: 9, color: '#64748b', marginTop: 2, lineHeight: 1.3 }}>{img.notes}</div>}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+                                <button onClick={() => toggleSessionImageVis(selectedSession._id, img._id, img.isVisibleToPatient !== false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: img.isVisibleToPatient !== false ? '#10b981' : '#cbd5e1' }}>
+                                  {img.isVisibleToPatient !== false ? <FiEye size={11}/> : <FiEyeOff size={11}/>}
+                                </button>
+                                <button onClick={() => openSessionImgEdit(selectedSession._id, img)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#2563eb' }} title="ملاحظات الصورة"><FiEdit2 size={10}/></button>
+                                <button onClick={() => deleteSessionImage(selectedSession._id, img._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><FiTrash2 size={11}/></button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ padding: '6px 8px', borderTop: slotImgs.length > 0 ? '1px solid #f1f5f9' : 'none' }}>
+                        <button style={{ width: '100%', padding: '5px', border: '1.5px dashed #bfdbfe', borderRadius: 6, background: '#f8fbff', color: '#2563eb', fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }} onClick={() => triggerSessionUpload(selectedSession._id, slot.type)}>
+                          <FiUpload size={10}/> أضف
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Session Image Notes Modal */}
+      {editingSessionImg && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setEditingSessionImg(null)}>
+          <div className="modal">
+            <div className="modal-header"><span className="modal-title">📝 ملاحظات الصورة</span><button className="modal-close" onClick={() => setEditingSessionImg(null)}>×</button></div>
+            {editingSessionImg?.img?.url && (
+              <div style={{ marginBottom: 14, textAlign: 'center' }}>
+                <img src={editingSessionImg.img.url} alt="" style={{ maxWidth: '100%', maxHeight: 180, objectFit: 'contain', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+              </div>
+            )}
+            <div className="form-group">
+              <label>📝 ملاحظات الصورة</label>
+              <textarea className="form-control" rows={3} value={sessionImgForm.notes} onChange={e => setSessionImgForm(f => ({ ...f, notes: e.target.value }))} placeholder="أضف ملاحظة طبية لهذه الصورة..." />
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+              <button className="btn btn-secondary" onClick={() => setEditingSessionImg(null)}>إلغاء</button>
+              <button className="btn btn-primary" onClick={saveSessionImgEdit}><FiSave /> حفظ</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Image Edit Modal */}
       {editingImg && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setEditingImg(null)}>
           <div className="modal">
             <div className="modal-header"><span className="modal-title">تعديل وصف الصورة</span><button className="modal-close" onClick={() => setEditingImg(null)}>×</button></div>
-            {[['description1', 'الوصف 1'], ['description2', 'الوصف 2'], ['description3', 'الوصف 3'], ['notes', 'ملاحظات']].map(([k, l]) => (
+            {editingImg?.img?.url && (
+              <div style={{ marginBottom: 14, textAlign: 'center' }}>
+                <img src={editingImg.img.url} alt="" style={{ maxWidth: '100%', maxHeight: 160, objectFit: 'contain', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+              </div>
+            )}
+            {[['description1', '📌 العنوان / Title'], ['description2', 'تفاصيل إضافية'], ['description3', 'وصف 3'], ['notes', '📝 ملاحظات']].map(([k, l]) => (
               <div className="form-group" key={k}>
                 <label>{l}</label>
                 <input className="form-control" value={imgForm[k] || ''} onChange={e => setImgForm(f => ({ ...f, [k]: e.target.value }))} placeholder={l} />
@@ -561,75 +764,33 @@ export default function PatientFile() {
           {sessions.length === 0 ? (
             <div className="empty-state card"><p>لا توجد جلسات بعد</p></div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {sessions.map((s, i) => {
-                const isExpanded = expandedSessions.has(s._id);
-                return (
-                  <div key={s._id} className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                    <div style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: isExpanded ? '#f8fafc' : 'white', borderBottom: isExpanded ? '1px solid #e2e8f0' : 'none' }} onClick={() => toggleExpanded(s._id)}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#2563eb', fontSize: 14, flexShrink: 0 }}>{s.sessionNumber || i + 1}</div>
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: 15 }}>جلسة #{s.sessionNumber || i + 1}</div>
-                          <div style={{ color: '#64748b', fontSize: 12 }}>{format(new Date(s.sessionDate), 'EEEE d MMMM yyyy', { locale: ar })}</div>
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        {s.amountPaid > 0 && <span className="badge badge-success">{s.amountPaid.toLocaleString()} ج.م</span>}
-                        {s.images?.length > 0 && <span style={{ fontSize: 11, background: '#eff6ff', color: '#2563eb', borderRadius: 99, padding: '2px 8px', fontWeight: 600 }}>📷 {s.images.length}</span>}
-                        <button title={s.isVisibleToPatient !== false ? 'ظاهر للمريض' : 'مخفي'} onClick={e => { e.stopPropagation(); toggleSessionVis(s._id, s.isVisibleToPatient !== false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: s.isVisibleToPatient !== false ? '#10b981' : '#cbd5e1', padding: 4 }}>
-                          {s.isVisibleToPatient !== false ? <FiEye size={15}/> : <FiEyeOff size={15}/>}
-                        </button>
-                        <button className="btn btn-danger btn-sm" onClick={e => { e.stopPropagation(); deleteSession(s._id); }}><FiTrash2 size={12}/></button>
-                        {isExpanded ? <FiChevronUp size={15} color="#94a3b8"/> : <FiChevronDown size={15} color="#94a3b8"/>}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {sessions.map((s, i) => (
+                <div key={s._id} className="card" style={{ padding: 0, overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.15s', border: '1.5px solid #e2e8f0' }}
+                  onClick={() => openSessionDetail(s)}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 20px rgba(37,99,235,0.12)'}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = ''}>
+                  <div style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,#2563eb,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: 'white', fontSize: 15, flexShrink: 0 }}>{s.sessionNumber || i + 1}</div>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: '#0f172a' }}>جلسة #{s.sessionNumber || i + 1}</div>
+                        <div style={{ color: '#64748b', fontSize: 12, marginTop: 2 }}>{format(new Date(s.sessionDate), 'EEEE d MMMM yyyy', { locale: ar })}</div>
+                        {s.notes && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2, maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.notes}</div>}
                       </div>
                     </div>
-                    {isExpanded && (
-                      <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        {s.notes && <div style={{ background: '#f8fafc', borderRadius: 8, padding: '10px 14px', color: '#475569', lineHeight: 1.8, fontSize: 14 }}><div style={{ fontWeight: 700, fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>ملاحظات الجلسة</div>{s.notes}</div>}
-                        {s.nextStep && <div style={{ background: '#eff6ff', borderRadius: 8, padding: '10px 14px', border: '1px solid #bfdbfe' }}><div style={{ fontWeight: 700, fontSize: 11, color: '#1e40af', marginBottom: 4 }}>الخطوة القادمة</div><p style={{ color: '#1e3a8a', fontSize: 14, margin: 0 }}>{s.nextStep}</p></div>}
-                        {s.nextAppointment && <div style={{ display: 'flex', gap: 8, alignItems: 'center', color: '#2563eb', fontSize: 13, fontWeight: 600 }}><FiCalendar size={13}/> موعد المتابعة: {format(new Date(s.nextAppointment), 'd MMMM yyyy', { locale: ar })}</div>}
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b', marginBottom: 10 }}>📷 صور الجلسة</div>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
-                            {SESSION_SLOTS.map(slot => {
-                              const slotImgs = (s.images || []).filter(img => img.type === slot.type);
-                              return (
-                                <div key={slot.type} style={{ border: '1.5px solid #e2e8f0', borderRadius: 10, overflow: 'hidden', background: 'white' }}>
-                                  <div style={{ background: '#f8fafc', padding: '6px 10px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>{slot.label}</span>
-                                    <span style={{ fontSize: 10, color: '#94a3b8', background: '#e2e8f0', borderRadius: 99, padding: '1px 6px' }}>{slotImgs.length}</span>
-                                  </div>
-                                  {slotImgs.length > 0 && (
-                                    <div style={{ padding: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                      {slotImgs.map(img => (
-                                        <div key={img._id} style={{ width: 68 }}>
-                                          <img src={img.url} alt={slot.label} style={{ width: 68, height: 52, objectFit: 'cover', borderRadius: 6, border: '1px solid #e2e8f0', display: 'block', cursor: 'pointer' }} onClick={() => setLightbox(img.url)} />
-                                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-                                            <button onClick={() => toggleSessionImageVis(s._id, img._id, img.isVisibleToPatient !== false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: img.isVisibleToPatient !== false ? '#10b981' : '#cbd5e1' }}>
-                                              {img.isVisibleToPatient !== false ? <FiEye size={11}/> : <FiEyeOff size={11}/>}
-                                            </button>
-                                            <button onClick={() => deleteSessionImage(s._id, img._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><FiTrash2 size={11}/></button>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                  <div style={{ padding: '6px 8px', borderTop: slotImgs.length > 0 ? '1px solid #f1f5f9' : 'none' }}>
-                                    <button style={{ width: '100%', padding: '5px', border: '1.5px dashed #bfdbfe', borderRadius: 6, background: '#f8fbff', color: '#2563eb', fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }} onClick={() => triggerSessionUpload(s._id, slot.type)}>
-                                      <FiUpload size={10}/> أضف
-                                    </button>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      {s.amountPaid > 0 && <span className="badge badge-success">{s.amountPaid.toLocaleString()} ج.م</span>}
+                      {s.images?.length > 0 && <span style={{ fontSize: 11, background: '#eff6ff', color: '#2563eb', borderRadius: 99, padding: '2px 8px', fontWeight: 600 }}>📷 {s.images.length}</span>}
+                      {s.nextStep && <span style={{ fontSize: 11, background: '#fef3c7', color: '#92400e', borderRadius: 99, padding: '2px 8px', fontWeight: 600 }}>📋 خطوة</span>}
+                      <button title={s.isVisibleToPatient !== false ? 'ظاهر للمريض' : 'مخفي'} onClick={e => { e.stopPropagation(); toggleSessionVis(s._id, s.isVisibleToPatient !== false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: s.isVisibleToPatient !== false ? '#10b981' : '#cbd5e1', padding: 4 }}>
+                        {s.isVisibleToPatient !== false ? <FiEye size={15}/> : <FiEyeOff size={15}/>}
+                      </button>
+                      <span style={{ color: '#94a3b8', fontSize: 13 }}>←</span>
+                    </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -784,9 +945,13 @@ export default function PatientFile() {
               </div>
               <div className="form-group"><label>ملاحظات الجلسة</label><textarea className="form-control" rows={3} value={sessionForm.notes} onChange={e => setS('notes', e.target.value)} placeholder="ما تم في هذه الجلسة..." /></div>
               <div className="form-group"><label>الخطوة القادمة</label><textarea className="form-control" rows={2} value={sessionForm.nextStep} onChange={e => setS('nextStep', e.target.value)} placeholder="ما سيتم في الجلسة القادمة..." /></div>
-              <div className="grid-2">
-                <div className="form-group"><label>المبلغ المدفوع (ج.م)</label><input className="form-control" type="number" value={sessionForm.amountPaid} onChange={e => setS('amountPaid', e.target.value)} placeholder="0" min="0" /></div>
-                <div className="form-group"><label>المبلغ المتبقي (ج.م)</label><input className="form-control" type="number" value={sessionForm.remainingAmount} onChange={e => setS('remainingAmount', e.target.value)} placeholder="0" min="0" /></div>
+              <div className="form-group">
+                <label>المبلغ المدفوع في هذه الجلسة (ج.م)</label>
+                <input className="form-control" type="number" value={sessionForm.amountPaid} onChange={e => setS('amountPaid', e.target.value)} placeholder="0" min="0" />
+                <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                  المتبقي الحالي: <strong style={{ color: '#ef4444' }}>{remaining.toLocaleString()} ج.م</strong>
+                  {sessionForm.amountPaid > 0 && <span> → بعد الدفع: <strong style={{ color: '#10b981' }}>{Math.max(0, remaining - parseFloat(sessionForm.amountPaid || 0)).toLocaleString()} ج.م</strong></span>}
+                </div>
               </div>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '8px' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowAddSession(false)}>إلغاء</button>
