@@ -19,6 +19,12 @@ const treatmentSessionSchema = new mongoose.Schema({
   notes: String,
   sessionNumber: Number,
   isVisibleToPatient: { type: Boolean, default: true },
+  medicines: [{
+    name: { type: String, required: true },
+    dose: { type: String, default: '' },
+    duration: { type: String, default: '' },
+    notes: { type: String, default: '' },
+  }],
 }, { timestamps: true });
 
 module.exports = mongoose.model('Session', treatmentSessionSchema);

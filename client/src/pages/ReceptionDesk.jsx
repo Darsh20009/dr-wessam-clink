@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { FiSearch, FiUser, FiPhone, FiPlus, FiPrinter, FiDollarSign, FiCalendar, FiLogOut, FiFileText, FiX } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { printInvoice, printTestPage } from '../utils/printInvoice';
+import { printInvoice, printTestPage, printPrescription } from '../utils/printInvoice';
 
 const statusMap   = { paid: '#10b981', partial: '#f59e0b', overdue: '#ef4444', pending: '#94a3b8' };
 const statusLabel = { paid: 'مدفوع', partial: 'جزئي', overdue: 'متأخر', pending: 'معلق' };
@@ -79,8 +79,8 @@ export default function ReceptionDesk() {
     try {
       let p = phone.trim();
       if (!p.startsWith('0') && p.length === 10) p = '0' + p;
-      const res = await axios.get(`/patients/search?q=${encodeURIComponent(p)}`);
-      const list = res.data || [];
+      const res = await axios.get(`/patients?search=${encodeURIComponent(p)}&limit=5`);
+      const list = res.data?.patients || res.data || [];
       if (list.length === 0) { toast.error('لا يوجد مريض بهذا الرقم'); setSearching(false); return; }
       const pData = list[0];
       const [pFull, sData] = await Promise.all([
@@ -130,7 +130,12 @@ export default function ReceptionDesk() {
   const doPrint = async (type) => {
     setShowPrintModal(false);
     setPrinting(true);
-    await printInvoice({ patient, session: lastSession || sessions[sessions.length - 1], type });
+    const sess = lastSession || sessions[sessions.length - 1];
+    if (type === 'prescription') {
+      await printPrescription({ patient, session: sess, receptionist: user?.name || '' });
+    } else {
+      await printInvoice({ patient, session: sess, type, receptionist: user?.name || '' });
+    }
     setPrinting(false);
   };
 
@@ -313,7 +318,7 @@ export default function ReceptionDesk() {
               <h2 style={{ fontWeight: 900, fontSize: 17, color: '#0f172a', margin: 0 }}>🖨️ اختر نوع الطباعة</h2>
               <button onClick={() => setShowPrintModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', display: 'flex' }}><FiX size={20} /></button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
               <button className="rd-print-opt" onClick={() => doPrint('full')}>
                 <span className="icon">📄</span>
                 <span>فاتورة A4</span>
@@ -325,8 +330,17 @@ export default function ReceptionDesk() {
                 <span className="sub">طابعة 72mm / إيصالات</span>
               </button>
             </div>
+            {(lastSession?.medicines?.length > 0 || sessions[sessions.length-1]?.medicines?.length > 0) && (
+              <button className="rd-print-opt" onClick={() => doPrint('prescription')} style={{ width: '100%', marginBottom: 12, borderColor: '#7c3aed', color: '#7c3aed', flexDirection: 'row', justifyContent: 'center', gap: 12 }}>
+                <span style={{ fontSize: 24 }}>💊</span>
+                <div style={{ textAlign: 'right' }}>
+                  <div>طباعة الروشتة</div>
+                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>الأدوية الموصوفة للمريض</div>
+                </div>
+              </button>
+            )}
             <div style={{ background: '#f0f9ff', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#0369a1', lineHeight: 1.7 }}>
-              💡 <strong>تلميح:</strong> وصّل الطابعة عبر USB ثم اختر نوع الطباعة. سيفتح نافذة الطباعة تلقائياً وتختار الطابعة المناسبة من النظام.
+              💡 <strong>تلميح:</strong> اختر نوع الطباعة — ستبدأ تلقائياً بدون أي توجيه لصفحات خارجية.
             </div>
           </div>
         </div>
