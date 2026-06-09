@@ -868,6 +868,43 @@ export default function PatientPortal() {
                 </div>
 
                 <div style={{ padding: '18px 20px' }}>
+
+                  {/* ── ادفع الآن button ── */}
+                  <a
+                    href="https://ipn.eg/S/wesam49/instapay/125uYm"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                      width: '100%', padding: '14px 20px', borderRadius: '12px', marginBottom: '14px',
+                      background: 'linear-gradient(135deg, #f97316, #ea580c)',
+                      color: 'white', fontWeight: 900, fontSize: '16px',
+                      fontFamily: 'Cairo, sans-serif', textDecoration: 'none',
+                      boxShadow: '0 6px 20px rgba(249,115,22,0.4)',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                  >
+                    <img src="/instapay.png" alt="InstaPay" style={{ width: '28px', height: '28px', objectFit: 'contain', borderRadius: '6px', background: 'white', padding: '2px' }} />
+                    ادفع الآن عبر InstaPay
+                  </a>
+
+                  {/* ── رسالة بعد التحويل ── */}
+                  <div style={{
+                    background: '#fef3c7', border: '1.5px solid #fcd34d', borderRadius: '10px',
+                    padding: '12px 14px', marginBottom: '16px',
+                    display: 'flex', alignItems: 'flex-start', gap: '10px',
+                  }}>
+                    <span style={{ fontSize: '18px', flexShrink: 0, marginTop: '1px' }}>📎</span>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: '13px', color: '#92400e', marginBottom: '3px' }}>بعد التحويل</div>
+                      <div style={{ fontSize: '12.5px', color: '#78350f', lineHeight: 1.6 }}>
+                        يرجى ارفاق السند هنا لتوثيق التحويل وحساب المبلغ
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Account number */}
                   <div style={{ background: '#f8fafc', borderRadius: '10px', padding: '12px 16px', border: '1px solid #e2e8f0', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
