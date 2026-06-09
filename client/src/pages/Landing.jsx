@@ -25,7 +25,6 @@ const defaultSettings = {
   services: [
     { icon: 'braces', title: 'تقويم الأسنان', description: 'تقويم احترافي بأحدث التقنيات وأفضل المواد العالمية', isActive: true },
     { icon: 'clear', title: 'التقويم الشفاف', description: 'تقويم غير مرئي مريح وفعّال لنتائج مثالية', isActive: true },
-    { icon: 'jaw', title: 'علاج مشاكل الفك', description: 'تشخيص وعلاج شامل لاضطرابات المفصل الفكي', isActive: true },
     { icon: 'child', title: 'تقويم الأطفال', description: 'رعاية متخصصة لتقويم أسنان الأطفال', isActive: true },
     { icon: 'smile', title: 'تصميم الابتسامة', description: 'إعادة تصميم ابتسامتك لتكون أكثر جمالاً', isActive: true },
     { icon: 'fast', title: 'العلاج السريع', description: 'بروتوكولات حديثة لتقليل مدة العلاج', isActive: true },
@@ -1649,7 +1648,7 @@ export default function Landing() {
                   خدمات تقويم الأسنان
                 </h3>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {['تقويم الأسنان التقليدي', 'التقويم الشفاف (Invisalign)', 'تصميم الابتسامة', 'تقويم أسنان الأطفال في المنيا', 'علاج مشاكل الفك', 'العلاج السريع للتقويم'].map((s, i) => (
+                  {['تقويم الأسنان التقليدي', 'التقويم الشفاف (Invisalign)', 'تصميم الابتسامة', 'تقويم أسنان الأطفال في المنيا', 'العلاج السريع للتقويم'].map((s, i) => (
                     <li key={i} style={{ fontSize: '13px', color: '#64748b', padding: '4px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ color: '#2563eb', fontSize: '10px' }}>●</span> {s}
                     </li>
