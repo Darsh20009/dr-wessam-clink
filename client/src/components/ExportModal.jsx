@@ -11,7 +11,7 @@ import { ar } from 'date-fns/locale';
 import axios from 'axios';
 
 const Toggle = ({ checked, onChange }) => (
-  <div onClick={onChange} style={{
+  <div onClick={(e) => { e.stopPropagation(); onChange(); }} style={{
     width: 44, height: 24, borderRadius: 12, cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s',
     background: checked ? '#2563eb' : '#cbd5e1', position: 'relative'
   }}>
