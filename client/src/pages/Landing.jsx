@@ -1597,7 +1597,6 @@ export default function Landing() {
             <div className="l-contact-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '14px', maxWidth: '1060px', margin: '0 auto' }}>
               {[
                 { icon: <FaWhatsapp size={24} />, label: 'واتساب', value: `+${settings.whatsapp}`, href: `https://wa.me/${settings.whatsapp}`, bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' },
-                { icon: <FaPhone size={22} />, label: 'اتصل بنا', value: settings.phone, href: `tel:${settings.phone}`, bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
                 { icon: <FiMapPin size={22} />, label: 'الموقع', value: settings.address, href: 'https://www.google.com/maps/search/?api=1&query=بني+مزار+شرق+المحطة+ميدان+25+يناير+المنيا+مصر', bg: '#fdf4ff', color: '#9333ea', border: '#e9d5ff' },
                 { icon: <FiClock size={22} />, label: 'ساعات العمل', value: settings.workingHours, href: '#', bg: '#fff7ed', color: '#ea580c', border: '#fed7aa' },
                 { icon: <span style={{ fontSize: '22px', lineHeight: 1 }}>⚡</span>, label: 'إنستا باي', value: '01156798324', href: '#', bg: '#fffbeb', color: '#d97706', border: '#fde68a' },

@@ -571,6 +571,25 @@ export default function Login() {
                     🔑 نسيت كلمة المرور؟
                   </button>
                 </div>
+                <div style={{ marginTop: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/register')}
+                    style={{
+                      width: '100%', padding: '12px',
+                      background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
+                      color: '#15803d', border: '1.5px solid #86efac',
+                      borderRadius: '10px', fontSize: '14px', fontWeight: 800,
+                      cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)'; e.currentTarget.style.borderColor = '#4ade80'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #f0fdf4, #dcfce7)'; e.currentTarget.style.borderColor = '#86efac'; }}
+                  >
+                    📋 فتح ملف مريض جديد
+                  </button>
+                </div>
               </div>
             )}
 
