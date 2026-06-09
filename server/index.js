@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const compression = require('compression');
 const path = require('path');
+const fs = require('fs');
 const http = require('http');
 const { WebSocketServer } = require('ws');
 const url = require('url');
@@ -91,33 +92,42 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Dr. Wess
 // ─── Serve React build in production ──────────────────────────────
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '..', 'client', 'dist');
+  const indexHtml = path.join(clientDist, 'index.html');
 
-  app.use(express.static(clientDist, {
-    maxAge: '1y',
-    immutable: true,
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith('.html')) {
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.setHeader('X-Robots-Tag', 'index, follow');
-      } else if (filePath.endsWith('robots.txt') || filePath.endsWith('sitemap.xml')) {
-        res.setHeader('Cache-Control', 'public, max-age=86400');
-        res.setHeader('Content-Type', filePath.endsWith('.xml') ? 'application/xml; charset=utf-8' : 'text/plain; charset=utf-8');
-      }
-    },
-  }));
+  console.log('📁 Client dist path:', clientDist);
+  console.log('📄 index.html exists:', fs.existsSync(indexHtml));
 
-  app.get('/sitemap.xml', (req, res) => {
-    res.sendFile(path.join(clientDist, 'sitemap.xml'));
-  });
+  if (!fs.existsSync(indexHtml)) {
+    console.error('❌ client/dist/index.html not found — frontend was not built!');
+    app.get('*', (req, res) => {
+      if (req.path.startsWith('/api')) return res.status(404).json({ message: 'Not found' });
+      res.status(503).send(`
+        <html><body style="font-family:sans-serif;text-align:center;padding:60px">
+          <h2>⚙️ الموقع قيد الإعداد</h2>
+          <p>يرجى المحاولة مرة أخرى خلال دقائق</p>
+          <p style="color:#999;font-size:12px">Build not found — please redeploy</p>
+        </body></html>
+      `);
+    });
+  } else {
+    app.use(express.static(clientDist, {
+      maxAge: '1y',
+      immutable: true,
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html')) {
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        }
+      },
+    }));
 
-  app.get('/robots.txt', (req, res) => {
-    res.sendFile(path.join(clientDist, 'robots.txt'));
-  });
+    app.get('/sitemap.xml', (req, res) => res.sendFile(path.join(clientDist, 'sitemap.xml')));
+    app.get('/robots.txt', (req, res) => res.sendFile(path.join(clientDist, 'robots.txt')));
 
-  app.get('*', (req, res) => {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.sendFile(path.join(clientDist, 'index.html'));
-  });
+    app.get('*', (req, res) => {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.sendFile(indexHtml);
+    });
+  }
 }
 
 server.listen(PORT, () => {

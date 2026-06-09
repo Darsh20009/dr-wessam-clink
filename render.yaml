@@ -3,13 +3,11 @@ services:
     name: dr-wessam-clinic
     env: node
     region: frankfurt
-    buildCommand: cd server && npm install && cd ../client && npm install && npm run build
+    buildCommand: npm install --prefix server && npm install --prefix client && npm run build --prefix client
     startCommand: cd server && NODE_ENV=production node index.js
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 3001
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
