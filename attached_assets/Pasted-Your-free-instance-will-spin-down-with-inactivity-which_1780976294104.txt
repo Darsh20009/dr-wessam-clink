@@ -1,0 +1,47 @@
+Your free instance will spin down with inactivity, which can delay requests by 50 seconds or more.
+Upgrade now
+
+All logs
+Search
+Search
+
+Last hour
+
+
+
+==> Deploying...
+==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+==> Running 'cd server && NODE_ENV=production node index.js'
+(node:70) [MONGOOSE] Warning: Duplicate schema index on {"phone":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Server running on port 3001
+✅ Connected to MongoDB
+==> Your service is live 🎉
+==> 
+==> ///////////////////////////////////////////////////////////
+==> 
+==> Available at your primary URL https://dr-wessam.online + 2 more domains
+==> 
+==> ///////////////////////////////////////////////////////////
+Deploy cancelled
+==> Running 'cd server && NODE_ENV=production node index.js'
+(node:70) [MONGOOSE] Warning: Duplicate schema index on {"phone":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Server running on port 3001
+✅ Connected to MongoDB
+==> Detected service running on port 3001
+==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+==> Deploying...
+==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+==> Running 'cd server && NODE_ENV=production node index.js'
+(node:52) [MONGOOSE] Warning: Duplicate schema index on {"phone":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Server running on port 3001
+==> Your service is live 🎉
+==> 
+==> ///////////////////////////////////////////////////////////
+==> 
+==> Available at your primary URL https://dr-wessam.online + 2 more domains
+==> 
+==> ///////////////////////////////////////////////////////////
+✅ Connected to MongoDB

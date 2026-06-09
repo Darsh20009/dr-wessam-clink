@@ -51,7 +51,12 @@ wss.on('connection', (ws, req) => {
 
 // ─── Middleware ───────────────────────────────────────────────────
 app.use(compression({ level: 6, threshold: 1024 }));
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors({
+  origin: (origin, cb) => cb(null, true),
+  credentials: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
