@@ -567,6 +567,8 @@ const STYLE = `
     /* ── Thanks section ── */
     .l-thanks-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
     .l-about-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+    .l-about-grid > div:first-child { order: 2; }
+    .l-about-grid > div:last-child { order: 1; }
 
     /* ── CTA Banner ── */
     .l-cta-banner { flex-direction: column !important; padding: 22px 18px !important; text-align: center; gap: 16px !important; }

@@ -106,7 +106,10 @@ router.post('/register-verify', auth, async (req, res) => {
 router.post('/login-options', async (req, res) => {
   try {
     const { rpId, origin } = getRpConfig(req);
-    const { phone } = req.body;
+    let phone = (req.body.phone || '').trim();
+    if (phone.startsWith('+20')) phone = '0' + phone.slice(3);
+    else if (phone.startsWith('20') && phone.length === 12) phone = '0' + phone.slice(2);
+    else if (!phone.startsWith('0') && phone.length === 10) phone = '0' + phone;
     let user = await User.findOne({ phone });
     let userId;
     if (user) { userId = user._id; }
