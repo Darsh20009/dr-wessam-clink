@@ -112,7 +112,9 @@ const STYLE = `
 
   .l-hero-overlay {
     position: absolute; inset: 0;
-    background: transparent;
+    background: rgba(255,255,255,0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     pointer-events: none;
     z-index: 1;
   }
