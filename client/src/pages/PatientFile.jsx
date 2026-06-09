@@ -775,6 +775,36 @@ export default function PatientFile() {
               ))}
             </div>
           </div>
+
+          {sessions.some(s => s.images && s.images.length > 0) && (
+            <div className="card">
+              <h3 className="section-title" style={{ margin: '0 0 16px' }}>🗂️ صور الجلسات</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {sessions.filter(s => s.images && s.images.length > 0).map((s, i) => (
+                  <div key={s._id}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                      <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg,#2563eb,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: 13, flexShrink: 0 }}>{s.sessionNumber || i + 1}</div>
+                      <span style={{ fontWeight: 700, fontSize: 14, color: '#334155' }}>
+                        جلسة #{s.sessionNumber || i + 1} — {format(new Date(s.sessionDate), 'd MMMM yyyy', { locale: ar })}
+                      </span>
+                      <span style={{ fontSize: 11, color: '#94a3b8', background: '#f1f5f9', borderRadius: 99, padding: '2px 10px' }}>{s.images.length} صورة</span>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, paddingRight: 40 }}>
+                      {s.images.map((img, idx) => (
+                        <div key={img._id || idx} onClick={() => setLightbox(img.url)} style={{ cursor: 'pointer', borderRadius: 10, overflow: 'hidden', border: '1.5px solid #e2e8f0', background: '#f8fafc', width: 120, flexShrink: 0 }}>
+                          <img src={img.url} alt={img.type} style={{ width: 120, height: 90, objectFit: 'cover', display: 'block' }} />
+                          <div style={{ padding: '4px 6px' }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', fontFamily: 'monospace, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.type?.replace(/_/g, ' ') || 'صورة'}</div>
+                            {img.notes && <div style={{ fontSize: 10, color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.notes}</div>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
