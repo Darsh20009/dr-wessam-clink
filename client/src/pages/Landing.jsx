@@ -1814,11 +1814,7 @@ export default function Landing() {
         )}
 
         <button className="l-tooth-btn" onClick={() => setWaOpen(o => !o)} title="تواصل عبر واتساب">
-          <svg width="26" height="28" viewBox="0 0 26 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M13 2C10.5 2 8.5 3.5 7.5 5.5C6.8 4.8 5.8 4.5 4.8 4.8C3.2 5.3 2.2 7 2.5 8.8C1.5 9.8 1 11.2 1 12.5C1 15 2.5 17.2 4.5 18.3C5 20.5 5.8 22.5 7 24C8 25.3 9 26 10 25.8C10.8 25.6 11.5 24.8 12 23.5C12.3 22.7 12.7 22 13 22C13.3 22 13.7 22.7 14 23.5C14.5 24.8 15.2 25.6 16 25.8C17 26 18 25.3 19 24C20.2 22.5 21 20.5 21.5 18.3C23.5 17.2 25 15 25 12.5C25 11.2 24.5 9.8 23.5 8.8C23.8 7 22.8 5.3 21.2 4.8C20.2 4.5 19.2 4.8 18.5 5.5C17.5 3.5 15.5 2 13 2Z" fill="white" fillOpacity="0.92"/>
-            <path d="M9.5 10.5C9.5 9.4 10.2 8.5 11 8.5C11.8 8.5 12.5 9.4 12.5 10.5" stroke="rgba(37,211,102,0.7)" strokeWidth="1.2" strokeLinecap="round"/>
-            <path d="M13.5 10.5C13.5 9.4 14.2 8.5 15 8.5C15.8 8.5 16.5 9.4 16.5 10.5" stroke="rgba(37,211,102,0.7)" strokeWidth="1.2" strokeLinecap="round"/>
-          </svg>
+          <img src="/logo-transparent.png" alt="شعار العيادة" style={{ width: '34px', height: '34px', objectFit: 'contain' }} />
         </button>
       </div>
     </>
