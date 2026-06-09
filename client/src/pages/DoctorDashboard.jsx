@@ -108,7 +108,7 @@ export default function DoctorDashboard() {
             </div>
             لوحة التحكم
           </h1>
-          <p className="page-subtitle" style={{ marginTop: '4px', marginRight: '46px' }}>{today}</p>
+          <p className="page-subtitle" style={{ marginTop: '4px' }}>{today}</p>
         </div>
         <button className="btn btn-primary btn-lg" onClick={() => navigate('/doctor/patients/new')}>
           <FiUserPlus /> مريض جديد

@@ -140,19 +140,32 @@ const STYLE = `
     .pp-hero-content { padding: 0 4% !important; }
     .pp-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
 
-    .pp-avatar { width: 60px !important; height: 60px !important; font-size: 22px !important; }
+    /* Patient info row: stack vertically */
+    .pp-patient-row { flex-direction: column !important; gap: 14px !important; padding: 20px 0 8px !important; }
+    .pp-patient-meta { min-width: 0 !important; }
+    .pp-patient-name { font-size: 20px !important; }
 
-    .pp-glass-pill { min-width: 70px !important; padding: 10px 12px !important; }
+    /* Glass stat pills: 2x2 grid */
+    .pp-pills-row { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; width: 100% !important; }
+    .pp-glass-pill { min-width: 0 !important; padding: 10px 8px !important; }
+    .pp-glass-pill > div:nth-child(1) { font-size: 18px !important; margin-bottom: 3px !important; }
     .pp-glass-pill > div:nth-child(2) { font-size: 15px !important; }
     .pp-glass-pill > div:nth-child(3) { font-size: 10px !important; }
 
-    .pp-tab { padding: 9px 12px !important; font-size: 12px !important; gap: 5px !important; }
+    .pp-avatar { width: 60px !important; height: 60px !important; font-size: 22px !important; }
 
-    .pp-card { padding: 16px !important; }
+    .pp-tab { padding: 9px 10px !important; font-size: 12px !important; gap: 4px !important; }
+
+    .pp-card { padding: 14px !important; }
     .pp-session-header { padding: 12px 14px !important; }
     .pp-wa-btn { padding: 10px 14px !important; font-size: 13px !important; }
 
     .pp-grid-2 { grid-template-columns: 1fr !important; gap: 12px !important; }
+  }
+
+  @media (max-width: 400px) {
+    .pp-hero-content { padding: 0 3% !important; }
+    .pp-tab { padding: 8px 8px !important; font-size: 11.5px !important; }
   }
 `;
 
@@ -359,7 +372,7 @@ export default function PatientPortal() {
             </div>
 
             {/* ── Patient info row ── */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '28px 0 10px', flexWrap: 'wrap' }}>
+            <div className="pp-patient-row" style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '28px 0 10px', flexWrap: 'wrap' }}>
               {/* Avatar — اضغط لتغيير الصورة */}
               <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
               <div
@@ -388,12 +401,12 @@ export default function PatientPortal() {
               </div>
 
               {/* Name & meta */}
-              <div style={{ flex: 1, minWidth: '180px' }}>
+              <div className="pp-patient-meta" style={{ flex: 1, minWidth: '180px' }}>
                 <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12.5px', fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ width: '20px', height: '1px', background: 'rgba(255,255,255,0.4)', display: 'inline-block' }} />
                   مرحباً بك
                 </div>
-                <h1 style={{ color: 'white', fontSize: '26px', fontWeight: 900, margin: '0 0 10px', letterSpacing: '-0.5px', textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
+                <h1 className="pp-patient-name" style={{ color: 'white', fontSize: '26px', fontWeight: 900, margin: '0 0 10px', letterSpacing: '-0.5px', textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
                   {patient.fullName}
                 </h1>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -414,7 +427,7 @@ export default function PatientPortal() {
               </div>
 
               {/* Glass stat pills */}
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <div className="pp-pills-row" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 {[
                   { val: upcomingApts.length, label: 'موعد قادم', icon: '📅' },
                   { val: sessions.length,     label: 'جلسة علاج', icon: '🦷' },

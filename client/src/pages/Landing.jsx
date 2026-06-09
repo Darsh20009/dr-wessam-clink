@@ -511,55 +511,97 @@ const STYLE = `
   @media (max-width: 640px) {
     .l-nav { padding: 0 4%; height: 60px; }
 
-    .l-hero { padding: 48px 4% 48px; }
-    .l-hero-title { font-size: clamp(24px, 8vw, 36px); }
+    /* ── Hero ── */
+    .l-hero { padding: 52px 4% 36px; min-height: auto !important; }
+    .l-hero-title { font-size: clamp(26px, 7.5vw, 36px); }
     .l-hero-sub { font-size: 14px; max-width: 100%; }
-    .l-hero-checks { margin-bottom: 24px; }
-    .l-hero-check { font-size: 13.5px; }
+    .l-hero-checks { margin-bottom: 20px; }
+    .l-hero-check { font-size: 13px; }
     .l-hero-btns { flex-direction: column; gap: 10px; }
     .l-hero-btns a, .l-hero-btns button { width: 100%; justify-content: center; }
     .l-btn-primary, .l-btn-secondary { padding: 13px 20px; font-size: 14px; }
-    .l-hero-card { padding: 20px 16px; }
+    .l-hero-card { padding: 16px 14px; }
 
+    /* ── Stats bar ── */
     .l-stats-bar {
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px; padding: 16px 14px;
+      gap: 10px; padding: 14px 12px;
       border-radius: 12px; margin: 0 4px;
     }
     .l-stat-num { font-size: 22px; }
-    .l-stat-label { font-size: 12px; }
+    .l-stat-label { font-size: 11px; }
 
-    .l-section { padding: 48px 4%; }
-    .l-section-header { margin-bottom: 36px; }
-    .l-section-sub { font-size: 14px; }
+    /* ── Sections ── */
+    .l-section { padding: 44px 4%; }
+    .l-section-header { margin-bottom: 28px; }
+    .l-section-sub { font-size: 13.5px; }
+    .l-section-title { font-size: clamp(20px, 6vw, 28px); }
 
-    .l-service-card { padding: 22px 16px; }
-    .l-service-icon { width: 54px; height: 54px; font-size: 22px; }
+    .l-service-card { padding: 20px 14px; }
+    .l-service-icon { width: 52px; height: 52px; font-size: 20px; }
 
-    .l-doctor-card { padding: 20px 16px; }
+    .l-doctor-card { padding: 18px 14px; }
+    .l-review-card { padding: 18px 14px; }
 
-    .l-review-card { padding: 20px 16px; }
+    /* ── About section doctor photo ── */
+    .l-about-photo-outer { max-width: 100% !important; }
+    .l-about-photo-outer img { width: 100% !important; max-width: 260px !important; }
 
-    .l-mentors-section { padding: 52px 4%; }
-    .l-mentors-section::before { font-size: 80px; }
-
-    .l-footer { padding: 36px 4% 20px; }
-
-    .l-contact-card { padding: 20px 14px; }
-
-    .l-wa-popup { width: calc(100vw - 32px); right: 8px; }
-    .l-tooth-btn { bottom: 16px; }
-
-    .l-mobile-menu { top: 60px; }
-
-    /* Fix inline grids on mobile */
+    /* ── Portal section ── */
     .l-portal-split { grid-template-columns: 1fr !important; }
     .l-portal-divider { display: none !important; }
     .l-portal-col { padding-right: 0 !important; padding-left: 0 !important; }
-    .l-thanks-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
-    .l-cta-banner { flex-direction: column !important; padding: 24px 20px !important; text-align: center; }
+    .l-portal-stats-grid { grid-template-columns: 1fr !important; border-radius: 12px; }
+    .l-portal-stats-grid > div {
+      padding: 14px 16px !important;
+      border-left: none !important;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      text-align: right !important;
+    }
+    .l-portal-stats-grid > div:last-child { border-bottom: none !important; }
+    .l-portal-stats-grid > div > div:first-child { margin: 0 !important; }
+
+    /* ── Thanks section ── */
+    .l-thanks-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+    .l-about-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+
+    /* ── CTA Banner ── */
+    .l-cta-banner { flex-direction: column !important; padding: 22px 18px !important; text-align: center; gap: 16px !important; }
     .l-cta-banner h3 { font-size: 18px !important; }
+    .l-cta-banner p { font-size: 13px !important; }
     .l-cta-banner a { width: 100% !important; justify-content: center !important; }
+
+    /* ── Contact cards grid ── */
+    .l-contact-grid-mobile { grid-template-columns: repeat(2, 1fr) !important; }
+    .l-contact-card { padding: 16px 12px; }
+
+    /* ── Mentors ── */
+    .l-mentors-section { padding: 48px 4%; }
+    .l-mentors-section::before { font-size: 80px; }
+
+    /* ── Footer ── */
+    .l-footer { padding: 32px 4% 20px; }
+
+    /* ── WhatsApp widget ── */
+    .l-wa-popup { width: calc(100vw - 32px); right: 8px; }
+    .l-tooth-btn { bottom: 16px; }
+
+    /* ── Mobile menu ── */
+    .l-mobile-menu { top: 60px; }
+  }
+
+  /* ═══ SMALL (≤ 420px) ═══ */
+  @media (max-width: 420px) {
+    .l-hero { padding: 44px 4% 28px; }
+    .l-hero-title { font-size: clamp(23px, 7vw, 30px); }
+    .l-hero-card { padding: 14px 12px; }
+    .l-stats-bar { grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 12px 10px; }
+    .l-stat-num { font-size: 20px; }
+    .l-section { padding: 36px 4%; }
+    .l-btn-primary, .l-btn-secondary { padding: 12px 16px; font-size: 13.5px; }
   }
 `;
 
@@ -916,7 +958,7 @@ export default function Landing() {
                 <p style={{ color: '#2563eb', fontWeight: 700, fontSize: '15px', marginBottom: '16px' }}>{settings.doctorTitle}</p>
                 <p style={{ color: '#475569', lineHeight: 1.9, fontSize: '15px', marginBottom: '28px' }}>{settings.doctorBio}</p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '32px' }}>
+                <div className="l-about-mini-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '28px' }}>
                   {[
                     { val: '+10', label: 'سنوات خبرة', color: '#2563eb', bg: '#eff6ff' },
                     { val: '+1K', label: 'مريض', color: '#0891b2', bg: '#ecfeff' },
@@ -937,7 +979,7 @@ export default function Landing() {
               <div>
                 {/* Doctor Photo — creative frame */}
                 <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'center' }}>
-                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <div className="l-about-photo-outer" style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
                     {/* Outer glow ring */}
                     <div style={{
                       position: 'absolute', inset: '-8px',
@@ -957,7 +999,8 @@ export default function Landing() {
                         src="/doctor-photo.png"
                         alt="د. وسام يوسف"
                         style={{
-                          width: '360px',
+                          width: '100%',
+                          maxWidth: '340px',
                           height: 'auto',
                           objectFit: 'contain',
                           borderRadius: '18px',
@@ -1448,7 +1491,7 @@ export default function Landing() {
             </div>
 
             {/* Bottom stats bar */}
-            <div style={{ marginTop: '48px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+            <div className="l-portal-stats-grid" style={{ marginTop: '48px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
               {[
                 { icon: <FiShield size={20} />, label: 'بيانات محمية', val: '100%', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
                 { icon: <FiSmartphone size={20} />, label: 'يعمل على الجوال', val: 'كاملاً', color: '#10b981', bg: '#f0fdf4', border: '#bbf7d0' },
@@ -1479,7 +1522,7 @@ export default function Landing() {
               <div className="l-underline" />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', maxWidth: '1060px', margin: '0 auto' }}>
+            <div className="l-contact-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '14px', maxWidth: '1060px', margin: '0 auto' }}>
               {[
                 { icon: <FaWhatsapp size={24} />, label: 'واتساب', value: `+${settings.whatsapp}`, href: `https://wa.me/${settings.whatsapp}`, bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' },
                 { icon: <FaPhone size={22} />, label: 'اتصل بنا', value: settings.phone, href: `tel:${settings.phone}`, bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
