@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaWhatsapp, FaStar, FaGraduationCap, FaPhone } from 'react-icons/fa';
+import { FaStar, FaGraduationCap, FaPhone } from 'react-icons/fa';
+import { FaWhatsapp } from 'react-icons/fa6';
 import { FiCalendar, FiUser, FiCheck, FiArrowLeft, FiHeart, FiZap, FiShield, FiStar, FiMessageCircle, FiAward, FiGrid, FiMapPin, FiClock, FiChevronDown, FiPhone, FiUsers, FiTrendingUp, FiX, FiBookOpen, FiMail, FiGlobe, FiLock, FiFileText, FiSmartphone } from 'react-icons/fi';
 
 const defaultSettings = {
@@ -825,7 +826,7 @@ export default function Landing() {
 
               <div className="l-hero-btns">
                 <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noreferrer" className="l-btn-primary">
-                  <FaWhatsapp size={18} /> احجز موعدك الآن
+                  <FaWhatsapp size={22} style={{ flexShrink: 0 }} /> احجز موعدك الآن
                 </a>
                 <button onClick={() => navigate('/login')} className="l-btn-secondary">
                   <FiUser size={15} /> بوابة المريض
@@ -917,7 +918,7 @@ export default function Landing() {
                   boxShadow: '0 4px 14px rgba(37,211,102,0.3)',
                   transition: 'all 0.2s',
                 }}>
-                  <FaWhatsapp size={18} /> احجز عبر واتساب
+                  <FaWhatsapp size={22} style={{ flexShrink: 0 }} /> احجز عبر واتساب
                 </a>
               </div>
 

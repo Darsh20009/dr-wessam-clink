@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiX, FiDownload, FiMail, FiCheck, FiPrinter, FiArrowRight, FiFileText, FiCamera, FiDollarSign, FiList } from 'react-icons/fi';
-import { FaWhatsapp } from 'react-icons/fa';
+import { FaWhatsapp } from 'react-icons/fa6';
 import { exportPatientPDF } from '../utils/exportPDF';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
