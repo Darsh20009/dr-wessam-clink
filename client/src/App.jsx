@@ -3,6 +3,27 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  componentDidCatch(error, info) { console.error('App Error:', error, info); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Cairo, sans-serif', direction: 'rtl', background: '#f8fafc', padding: '24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+          <h2 style={{ color: '#1e3a8a', fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>حدث خطأ غير متوقع</h2>
+          <p style={{ color: '#64748b', marginBottom: '24px', fontSize: '14px' }}>{this.state.error?.message || 'يرجى تحديث الصفحة والمحاولة مرة أخرى'}</p>
+          <button onClick={() => window.location.reload()} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '10px', padding: '10px 24px', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}>
+            تحديث الصفحة
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const Landing = lazy(() => import('./pages/Landing'));
 const Login = lazy(() => import('./pages/Login'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
@@ -98,10 +119,11 @@ const AppRoutes = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <AppRoutes />
-        <Toaster
+    <ErrorBoundary>
+      <AuthProvider>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <AppRoutes />
+          <Toaster
           position="top-center"
           toastOptions={{
             style: {
@@ -115,7 +137,8 @@ export default function App() {
             duration: 3500,
           }}
         />
-      </BrowserRouter>
-    </AuthProvider>
+          </BrowserRouter>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

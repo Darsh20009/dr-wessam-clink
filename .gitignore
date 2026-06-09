@@ -8,3 +8,6 @@ server/uploads/
 .env.local
 *.log
 .DS_Store
+._*
+**/.DS_Store
+**/*.orig

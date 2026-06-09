@@ -65,9 +65,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const MONGODB_URI = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3001;
 
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('✅ Connected to MongoDB'))
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+if (!MONGODB_URI) {
+  console.error('❌ MONGODB_URI environment variable is not set!');
+} else {
+  mongoose.connect(MONGODB_URI)
+    .then(() => console.log('✅ Connected to MongoDB'))
+    .catch(err => console.error('❌ MongoDB connection error:', err));
+}
 
 // ─── Routes ───────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
