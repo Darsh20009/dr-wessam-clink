@@ -2,11 +2,21 @@ const webpush = require('web-push');
 const Notification = require('../models/Notification');
 const PushSubscription = require('../models/PushSubscription');
 
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL || 'mailto:admin@dr-wessam.online',
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+let vapidReady = false;
+try {
+  if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+      process.env.VAPID_EMAIL || 'mailto:admin@dr-wessam.online',
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+    vapidReady = true;
+  } else {
+    console.warn('⚠️  VAPID keys not set — web push notifications disabled');
+  }
+} catch (err) {
+  console.error('❌ VAPID setup error (push disabled):', err.message);
+}
 
 let wsClients = {};
 
@@ -19,6 +29,7 @@ const unregisterWsClient = (userId) => {
 };
 
 const sendPushToUser = async (userId, payload) => {
+  if (!vapidReady) return;
   try {
     const subs = await PushSubscription.find({ userId, isActive: true });
     const deadSubs = [];
@@ -45,16 +56,13 @@ const sendPushToUser = async (userId, payload) => {
 const fireNotify = async (userId, title, body, opts = {}) => {
   const { type = 'info', link = '/', icon = '🔔', patientId, isForDoctor = false } = opts;
 
-  // Layer 1: DB
   const notif = await Notification.create({ userId, patientId, title, message: body, type, isForDoctor });
 
-  // Layer 2: WebSocket (real-time if app is open)
   const ws = wsClients[userId.toString()];
   if (ws && ws.readyState === 1) {
     ws.send(JSON.stringify({ type: 'notification', _id: notif._id, title, body, notifType: type, link }));
   }
 
-  // Layer 3: Web Push (even if app is closed)
   await sendPushToUser(userId, { title, body, icon: '/logo.png', data: { url: link } });
 
   return notif;

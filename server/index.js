@@ -73,6 +73,10 @@ if (!MONGODB_URI) {
     .catch(err => console.error('❌ MongoDB connection error:', err));
 }
 
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️  JWT_SECRET is not set — auth will not work!');
+}
+
 // ─── Routes ───────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
