@@ -58,22 +58,40 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
 
   const buildPdfBlob = async (htmlString) => {
     const { default: html2pdf } = await import('html2pdf.js');
-    const container = document.createElement('div');
-    container.innerHTML = htmlString;
-    container.style.cssText = 'position:absolute;left:-99999px;top:0;width:210mm;background:white;';
-    document.body.appendChild(container);
+
+    // Use iframe so <head> styles are properly applied
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:794px;height:1123px;border:none;visibility:hidden;';
+    document.body.appendChild(iframe);
+
     try {
+      iframe.contentDocument.open();
+      iframe.contentDocument.write(htmlString);
+      iframe.contentDocument.close();
+
+      // Wait for fonts/images to render
+      await new Promise(r => setTimeout(r, 1800));
+
       const blob = await html2pdf().set({
-        margin: [8, 8, 8, 8],
+        margin: [6, 6, 6, 6],
         filename: `ملف-${patient.fullName}.pdf`,
         image: { type: 'jpeg', quality: 0.92 },
-        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false },
+        html2canvas: {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          windowWidth: 794,
+          scrollX: 0,
+          scrollY: 0,
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-      }).from(container).outputPdf('blob');
+        pagebreak: { mode: 'css' },
+      }).from(iframe.contentDocument.body).outputPdf('blob');
+
       return blob;
     } finally {
-      document.body.removeChild(container);
+      document.body.removeChild(iframe);
     }
   };
 
@@ -116,24 +134,31 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
 
     const msgText = `السلام عليكم ${patient.fullName} 😊\nتحية من عيادة د. وسام يوسف\nمرفق ملفك الطبي الكامل.`;
 
-    if (pdfFileBlob) {
+    // Mobile: try Web Share API (share file directly)
+    if (pdfFileBlob && navigator.canShare) {
       try {
         const file = new File([pdfFileBlob], fileName, { type: 'application/pdf' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        if (navigator.canShare({ files: [file] })) {
           await navigator.share({ files: [file], title: `ملف المريض — ${patient.fullName}`, text: msgText });
-          return;
+          return; // success — done
         }
       } catch (e) {
-        if (e.name !== 'AbortError') {
-          toast.error('فشل مشاركة الملف مباشرة');
-        }
-        return;
+        if (e.name === 'AbortError') return; // user cancelled share sheet
+        // any other error → fall through to wa.me
       }
     }
 
-    const msg = encodeURIComponent(msgText);
+    // Desktop / fallback: auto-download PDF then open WhatsApp
+    if (pdfFileBlob) {
+      const url = URL.createObjectURL(pdfFileBlob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fileName; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+
+    const msg = encodeURIComponent(msgText + '\n\n📎 تم تحميل ملف PDF — أرفقه في المحادثة');
     window.open(`https://wa.me/${cleaned}?text=${msg}`, '_blank');
-    toast('✅ تم فتح واتساب — حمّل الملف وأرفقه في المحادثة', { duration: 5000 });
+    toast.success('تم تحميل الملف وفتح واتساب ✅', { duration: 5000 });
   };
 
   const handleEmail = () => {
