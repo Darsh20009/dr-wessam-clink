@@ -23,6 +23,9 @@ const Settings = lazy(() => import('./pages/Settings'));
 const SelfRegister = lazy(() => import('./pages/SelfRegister'));
 const EmployeeCard = lazy(() => import('./pages/EmployeeCard'));
 const DoctorPaymentRequests = lazy(() => import('./pages/DoctorPaymentRequests'));
+const ReceptionDesk = lazy(() => import('./pages/ReceptionDesk'));
+const Employees = lazy(() => import('./pages/Employees'));
+const InternalMessages = lazy(() => import('./pages/InternalMessages'));
 
 const PageLoader = () => (
   <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px', fontFamily: 'Cairo, sans-serif', background: '#f8fafc' }}>
@@ -35,7 +38,12 @@ const ProtectedRoute = ({ children, role }) => {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/login" replace />;
-  if (role && user.role !== role) return <Navigate to={user.role === 'doctor' ? '/doctor' : '/portal'} replace />;
+  if (role) {
+    const roles = Array.isArray(role) ? role : [role];
+    if (!roles.includes(user.role)) {
+      return <Navigate to={user.role === 'doctor' ? '/doctor' : user.role === 'employee' ? '/reception' : '/portal'} replace />;
+    }
+  }
   return children;
 };
 
@@ -45,7 +53,7 @@ const AppRoutes = () => {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/login" element={user ? <Navigate to={user.role === 'doctor' ? '/doctor' : '/portal'} /> : <Login />} />
+        <Route path="/login" element={user ? <Navigate to={user.role === 'doctor' ? '/doctor' : user.role === 'employee' ? '/reception' : '/portal'} /> : <Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/register" element={user ? <Navigate to="/portal" /> : <SelfRegister />} />
         <Route path="/presentation" element={<Presentation />} />
@@ -67,7 +75,14 @@ const AppRoutes = () => {
           <Route path="payment-requests" element={<DoctorPaymentRequests />} />
           <Route path="id-card" element={<EmployeeCard />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="reception" element={<ReceptionDesk />} />
+          <Route path="employees" element={<Employees />} />
+          <Route path="messages" element={<InternalMessages />} />
         </Route>
+
+        <Route path="/reception" element={
+          <ProtectedRoute role={['doctor', 'employee']}><ReceptionDesk /></ProtectedRoute>
+        } />
 
         <Route path="/portal" element={
           <ProtectedRoute role="patient"><PatientPortal /></ProtectedRoute>

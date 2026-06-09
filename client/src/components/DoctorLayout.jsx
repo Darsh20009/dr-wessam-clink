@@ -6,7 +6,8 @@ import toast from 'react-hot-toast';
 import {
   FiHome, FiUsers, FiCalendar, FiDollarSign, FiBarChart2,
   FiMenu, FiLogOut, FiChevronLeft, FiBell, FiCreditCard,
-  FiGlobe, FiSettings, FiX, FiActivity, FiAward
+  FiGlobe, FiSettings, FiX, FiActivity, FiAward,
+  FiMonitor, FiUserCheck, FiMessageSquare,
 } from 'react-icons/fi';
 import PushNotifBell from './PushNotifBell';
 import { usePushNotifications } from '../hooks/usePushNotifications';
@@ -20,6 +21,9 @@ const navItems = [
   { to: '/doctor/payment-requests', icon: <FiCreditCard size={17} />, label: 'طلبات InstaPay', notif: true },
   { to: '/doctor/wallet', icon: <FiCreditCard size={17} />, label: 'المحفظة' },
   { to: '/doctor/reports', icon: <FiBarChart2 size={17} />, label: 'التقارير' },
+  { to: '/doctor/reception', icon: <FiMonitor size={17} />, label: 'الاستقبال' },
+  { to: '/doctor/employees', icon: <FiUserCheck size={17} />, label: 'الموظفون' },
+  { to: '/doctor/messages', icon: <FiMessageSquare size={17} />, label: 'الرسائل الداخلية' },
   { to: '/doctor/notifications', icon: <FiBell size={17} />, label: 'الإشعارات', notif: true },
   { to: '/doctor/site', icon: <FiGlobe size={17} />, label: 'إدارة الموقع' },
   { to: '/doctor/id-card', icon: <FiAward size={17} />, label: 'بطاقة التوظيف' },

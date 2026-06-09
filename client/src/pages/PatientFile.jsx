@@ -8,7 +8,9 @@ import {
   FiArrowRight, FiSave, FiPlus, FiTrash2, FiUpload,
   FiDollarSign, FiCalendar, FiImage, FiFileText, FiActivity, FiEdit2,
   FiEye, FiEyeOff, FiChevronDown, FiChevronUp, FiX, FiMaximize2,
+  FiPrinter, FiMessageSquare, FiSend, FiUser,
 } from 'react-icons/fi';
+import { printInvoice } from '../utils/printInvoice';
 
 const FACE_SLOTS = [
   { type: 'frontal_rest', label: 'أمامية - راحة' },
@@ -52,6 +54,7 @@ const tabs = [
   { id: 'xrays', label: 'الأشعة', icon: <FiImage size={13}/> },
   { id: 'sessions', label: 'الجلسات', icon: <FiCalendar size={13}/> },
   { id: 'financial', label: 'المالية', icon: <FiDollarSign size={13}/> },
+  { id: 'comments', label: 'التعليقات', icon: <FiMessageSquare size={13}/> },
   { id: 'visibility', label: 'الظهور', icon: <FiEye size={13}/> },
 ];
 const statusMap = { paid: 'badge-success', partial: 'badge-warning', overdue: 'badge-danger', pending: 'badge-gray' };
@@ -168,17 +171,62 @@ export default function PatientFile() {
   const [editingImg, setEditingImg] = useState(null);
   const [imgForm, setImgForm] = useState({});
 
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyText, setReplyText] = useState({});
+  const [savingComment, setSavingComment] = useState(false);
+
   const fetchData = async () => {
     try {
-      const [pRes, sRes] = await Promise.all([
+      const [pRes, sRes, cRes] = await Promise.all([
         axios.get(`/patients/${id}`),
         axios.get(`/sessions?patientId=${id}`),
+        axios.get(`/comments?patientId=${id}`),
       ]);
       setPatient(pRes.data);
       setForm({ ...pRes.data, financials: { ...pRes.data.financials } });
       setSessions(sRes.data);
+      setComments(cRes.data || []);
     } catch { toast.error('خطأ في تحميل الملف'); navigate('/doctor/patients'); }
     setLoading(false);
+  };
+
+  const handleAddComment = async (e) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+    setSavingComment(true);
+    try {
+      const { data } = await axios.post('/comments', { patientId: id, text: commentText.trim() });
+      setComments(prev => [...prev, data]);
+      setCommentText('');
+    } catch { toast.error('خطأ في إضافة التعليق'); }
+    setSavingComment(false);
+  };
+
+  const handleReply = async (commentId) => {
+    const text = replyText[commentId];
+    if (!text?.trim()) return;
+    setSavingComment(true);
+    try {
+      const { data } = await axios.post(`/comments/${commentId}/reply`, { text: text.trim() });
+      setComments(prev => prev.map(c => c._id === commentId ? { ...c, replies: [...(c.replies || []), data] } : c));
+      setReplyText(p => ({ ...p, [commentId]: '' }));
+      setReplyingTo(null);
+    } catch { toast.error('خطأ في إضافة الرد'); }
+    setSavingComment(false);
+  };
+
+  const handleDeleteComment = async (commentId, parentId) => {
+    if (!window.confirm('حذف هذا التعليق؟')) return;
+    try {
+      await axios.delete(`/comments/${commentId}`);
+      if (parentId) {
+        setComments(prev => prev.map(c => c._id === parentId ? { ...c, replies: (c.replies || []).filter(r => r._id !== commentId) } : c));
+      } else {
+        setComments(prev => prev.filter(c => c._id !== commentId));
+      }
+    } catch { toast.error('خطأ في الحذف'); }
   };
 
   useEffect(() => { fetchData(); }, [id]);
@@ -378,6 +426,7 @@ export default function PatientFile() {
                 <button className="btn btn-primary" disabled={saving} onClick={handleSave}><FiSave /> {saving ? 'جاري...' : 'حفظ'}</button>
               </>
             )}
+            <button className="btn btn-secondary" onClick={() => printInvoice({ patient, session: sessions[sessions.length - 1] })} title="طباعة إيصال"><FiPrinter /> طباعة</button>
             <button className="btn btn-success" onClick={() => setShowPayment(true)}><FiDollarSign /> تسجيل دفع</button>
             <button className="btn btn-primary" onClick={() => { setShowAddSession(true); setActiveTab('sessions'); }}><FiPlus /> جلسة جديدة</button>
           </div>
@@ -596,6 +645,93 @@ export default function PatientFile() {
             <span className={`badge ${statusMap[patient.financials?.status]}`}>{statusLabel[patient.financials?.status]}</span>
           </div>
           <button className="btn btn-success" style={{ width: '100%' }} onClick={() => setShowPayment(true)}><FiDollarSign /> تسجيل دفعة جديدة</button>
+        </div>
+      )}
+
+      {/* ── Comments Tab ── */}
+      {activeTab === 'comments' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="card">
+            <h3 className="section-title" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><FiMessageSquare size={16} /> تعليقات المريض وردود الطبيب</h3>
+            {comments.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '32px 20px', color: '#94a3b8' }}>
+                <FiMessageSquare size={32} style={{ marginBottom: 8, opacity: 0.4 }} />
+                <div style={{ fontSize: 14 }}>لا توجد تعليقات بعد</div>
+              </div>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {comments.map(comment => (
+                <div key={comment._id} style={{ background: '#f8fafc', borderRadius: 14, padding: 16, border: '1.5px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: '50%', background: comment.authorRole === 'patient' ? 'linear-gradient(135deg, #06b6d4, #0284c7)' : 'linear-gradient(135deg, #2563eb, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
+                      {comment.authorName?.[0]}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 800, fontSize: 14, color: '#0f172a' }}>{comment.authorName}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: comment.authorRole === 'patient' ? '#e0f2fe' : '#eff6ff', color: comment.authorRole === 'patient' ? '#0284c7' : '#2563eb' }}>
+                          {comment.authorRole === 'patient' ? '🙍 مريض' : '🩺 طبيب'}
+                        </span>
+                        <span style={{ fontSize: 11, color: '#94a3b8' }}>{format(new Date(comment.createdAt), 'd/M/yyyy - HH:mm', { locale: ar })}</span>
+                      </div>
+                      <p style={{ fontSize: 14, color: '#334155', margin: '8px 0 0', lineHeight: 1.7 }}>{comment.text}</p>
+                    </div>
+                    <button onClick={() => handleDeleteComment(comment._id, null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px', opacity: 0.6, flexShrink: 0 }} title="حذف">✕</button>
+                  </div>
+
+                  {(comment.replies || []).map(reply => (
+                    <div key={reply._id} style={{ marginRight: 48, marginTop: 10, background: '#eff6ff', borderRadius: 10, padding: '10px 14px', border: '1px solid #dbeafe' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontWeight: 800, fontSize: 13, color: '#1e40af' }}>{reply.authorName}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 99, background: '#dbeafe', color: '#1e40af' }}>رد الطبيب</span>
+                        <span style={{ fontSize: 11, color: '#94a3b8', flex: 1 }}>{format(new Date(reply.createdAt), 'd/M/yyyy', { locale: ar })}</span>
+                        <button onClick={() => handleDeleteComment(reply._id, comment._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 0, fontSize: 12, opacity: 0.6 }}>✕</button>
+                      </div>
+                      <p style={{ fontSize: 13, color: '#1e293b', margin: 0, lineHeight: 1.6 }}>{reply.text}</p>
+                    </div>
+                  ))}
+
+                  {replyingTo === comment._id ? (
+                    <div style={{ marginRight: 48, marginTop: 10, display: 'flex', gap: 8 }}>
+                      <textarea
+                        value={replyText[comment._id] || ''}
+                        onChange={e => setReplyText(p => ({ ...p, [comment._id]: e.target.value }))}
+                        placeholder="اكتب ردك هنا..."
+                        rows={2}
+                        style={{ flex: 1, padding: '8px 12px', border: '1.5px solid #bfdbfe', borderRadius: 10, fontSize: 13, fontFamily: 'Cairo, sans-serif', resize: 'none', outline: 'none' }}
+                      />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <button onClick={() => handleReply(comment._id)} disabled={savingComment} style={{ padding: '6px 14px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Cairo, sans-serif' }}>
+                          <FiSend size={11} /> إرسال
+                        </button>
+                        <button onClick={() => setReplyingTo(null)} style={{ padding: '6px 14px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: 9, fontSize: 12, cursor: 'pointer', fontFamily: 'Cairo, sans-serif' }}>إلغاء</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button onClick={() => setReplyingTo(comment._id)} style={{ marginRight: 48, marginTop: 8, background: 'none', border: 'none', color: '#2563eb', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <FiSend size={11} /> رد على التعليق
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <h3 className="section-title" style={{ marginBottom: 12 }}>💬 إضافة ملاحظة للمريض</h3>
+            <form onSubmit={handleAddComment} style={{ display: 'flex', gap: 10 }}>
+              <textarea
+                value={commentText}
+                onChange={e => setCommentText(e.target.value)}
+                placeholder="اكتب ملاحظة أو تعليقاً للمريض..."
+                rows={3}
+                style={{ flex: 1, padding: '10px 14px', border: '1.5px solid #e2e8f0', borderRadius: 12, fontSize: 14, fontFamily: 'Cairo, sans-serif', resize: 'none', outline: 'none' }}
+              />
+              <button type="submit" className="btn btn-primary" disabled={savingComment || !commentText.trim()} style={{ alignSelf: 'flex-end' }}>
+                <FiSend size={14} /> إرسال
+              </button>
+            </form>
+          </div>
         </div>
       )}
 

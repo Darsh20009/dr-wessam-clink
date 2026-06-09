@@ -916,7 +916,7 @@ export default function Landing() {
         </section>
 
         {/* Wave: Hero → Services */}
-        <WaveDivider from="#0a1628" to="#f8fafc" animate height={90} />
+        <WaveDivider from="#0a1628" to="#f8fafc" height={90} />
 
         {/* ── SERVICES ── */}
         <section id="services" className="l-section l-section-alt">

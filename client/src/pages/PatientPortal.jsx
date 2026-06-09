@@ -8,7 +8,8 @@ import { ar } from 'date-fns/locale';
 import {
   FiLogOut, FiCalendar, FiDollarSign, FiFileText, FiImage,
   FiUser, FiActivity, FiClock, FiCheck, FiAlertCircle, FiPhone,
-  FiMapPin, FiChevronLeft, FiAward, FiStar, FiZap, FiUpload, FiEye, FiRefreshCw
+  FiMapPin, FiChevronLeft, FiAward, FiStar, FiZap, FiUpload, FiEye, FiRefreshCw,
+  FiMessageSquare as FiMessageCircle, FiSend,
 } from 'react-icons/fi';
 import { FaWhatsapp, FaTooth } from 'react-icons/fa';
 
@@ -206,6 +207,9 @@ export default function PatientPortal() {
   const fileInputRef = useRef(null);
   const avatarInputRef = useRef(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState('');
+  const [savingComment, setSavingComment] = useState(false);
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -250,6 +254,9 @@ export default function PatientPortal() {
       setPayments(allPay.filter(p => p.patientId?._id === user.patientId || p.patientId === user.patientId));
       setPaymentRequests(prRes.data || []);
       setSiteInfo(siteRes.data);
+      if (user.patientId) {
+        axios.get(`/comments?patientId=${user.patientId}`).then(r => setComments(r.data || [])).catch(() => {});
+      }
     }).catch(console.error)
       .finally(() => setLoading(false));
   }, [user]);
@@ -333,6 +340,7 @@ export default function PatientPortal() {
     { id: 'file', label: 'ملفي الطبي', icon: <FiFileText size={15} /> },
     { id: 'images', label: 'الصور والأشعة', icon: <FiImage size={15} /> },
     { id: 'financial', label: 'حسابي', icon: <FiDollarSign size={15} /> },
+    { id: 'comments', label: 'ملاحظات', icon: <FiMessageCircle size={15} /> },
   ];
 
   return (
@@ -1011,6 +1019,74 @@ export default function PatientPortal() {
                   <FaWhatsapp size={16} /> تواصل لسداد المبلغ المتبقي ({remaining.toLocaleString()} ج.م)
                 </a>
               )}
+            </div>
+          )}
+
+          {/* ── Comments Tab ── */}
+          {activeTab === 'comments' && (
+            <div style={{ padding: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="pp-card" style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', fontWeight: 800, fontSize: '14px', color: 'white', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <FiMessageCircle size={16} /> ملاحظات وردود الطبيب
+                </div>
+                {comments.length === 0 ? (
+                  <div style={{ padding: '32px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
+                    لا توجد ملاحظات بعد
+                  </div>
+                ) : (
+                  <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {comments.map(comment => (
+                      <div key={comment._id} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: '12px 16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: '50%', background: comment.authorRole === 'patient' ? 'rgba(6,182,212,0.3)' : 'rgba(37,99,235,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 13 }}>
+                            {comment.authorName?.[0]}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>{comment.authorName}</div>
+                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{format(new Date(comment.createdAt), 'd/M/yyyy', { locale: ar })}</div>
+                          </div>
+                          <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: comment.authorRole === 'patient' ? 'rgba(6,182,212,0.2)' : 'rgba(37,99,235,0.25)', color: comment.authorRole === 'patient' ? '#67e8f9' : '#93c5fd', fontWeight: 700 }}>
+                            {comment.authorRole === 'patient' ? 'أنا' : '🩺 الطبيب'}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.88)', margin: 0, lineHeight: 1.7 }}>{comment.text}</p>
+                        {(comment.replies || []).map(reply => (
+                          <div key={reply._id} style={{ marginTop: 10, marginRight: 12, background: 'rgba(37,99,235,0.15)', borderRadius: 10, padding: '10px 14px', borderRight: '3px solid rgba(96,165,250,0.5)' }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: '#93c5fd', marginBottom: 4 }}>🩺 {reply.authorName}</div>
+                            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', margin: 0, lineHeight: 1.6 }}>{reply.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="pp-card" style={{ padding: '16px 20px' }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.8)', marginBottom: 10 }}>💬 أرسل ملاحظة للطبيب</div>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!commentText.trim() || !user?.patientId) return;
+                  setSavingComment(true);
+                  try {
+                    const { data } = await axios.post('/comments', { patientId: user.patientId, text: commentText.trim() });
+                    setComments(prev => [...prev, { ...data, replies: [] }]);
+                    setCommentText('');
+                  } catch { toast.error('خطأ في الإرسال'); }
+                  setSavingComment(false);
+                }} style={{ display: 'flex', gap: 8 }}>
+                  <textarea
+                    value={commentText}
+                    onChange={e => setCommentText(e.target.value)}
+                    placeholder="اكتب ملاحظتك أو سؤالك هنا..."
+                    rows={2}
+                    style={{ flex: 1, padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.1)', color: 'white', fontSize: 13, fontFamily: 'Cairo, sans-serif', resize: 'none', outline: 'none' }}
+                  />
+                  <button type="submit" disabled={savingComment || !commentText.trim()} style={{ background: '#2563eb', border: 'none', borderRadius: 12, color: 'white', padding: '0 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: savingComment || !commentText.trim() ? 0.6 : 1 }}>
+                    <FiSend size={16} />
+                  </button>
+                </form>
+              </div>
             </div>
           )}
         </div>

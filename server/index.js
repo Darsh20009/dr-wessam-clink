@@ -22,6 +22,9 @@ const siteRoutes = require('./routes/site');
 const pushRoutes = require('./routes/push');
 const webauthnRoutes = require('./routes/webauthn');
 const paymentRequestRoutes = require('./routes/paymentRequests');
+const commentRoutes = require('./routes/comments');
+const employeeRoutes = require('./routes/employees');
+const messageRoutes = require('./routes/messages');
 const { registerWsClient, unregisterWsClient } = require('./utils/fireNotify');
 
 const app = express();
@@ -74,6 +77,9 @@ app.use('/api/site', siteRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/webauthn', webauthnRoutes);
 app.use('/api/payment-requests', paymentRequestRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/employees', employeeRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Dr. Wessam Clinic API v3' }));
 

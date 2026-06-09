@@ -156,7 +156,7 @@ export default function Login() {
       const { data } = await axios.post('/auth/qr-login', { qrToken });
       localStorage.setItem('token', data.token);
       toast.success(`أهلاً ${data.user.name}`);
-      window.location.href = data.role === 'doctor' ? '/doctor' : '/portal';
+      window.location.href = data.role === 'doctor' ? '/doctor' : data.role === 'employee' ? '/reception' : '/portal';
     } catch (err) {
       toast.error(err.response?.data?.message || 'باركود غير صالح');
       setQrLoading(false);
@@ -180,7 +180,7 @@ export default function Login() {
     try {
       const user = await login(phone, password, mode === 'doctor');
       toast.success(`أهلاً ${user.name}`);
-      navigate(user.role === 'doctor' ? '/doctor' : '/portal');
+      navigate(user.role === 'doctor' ? '/doctor' : user.role === 'employee' ? '/reception' : '/portal');
     } catch (err) {
       const msg = err.response?.data?.message || 'خطأ في تسجيل الدخول';
       if (err.response?.data?.needsSetup) {
