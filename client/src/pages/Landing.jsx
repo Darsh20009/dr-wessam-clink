@@ -95,7 +95,7 @@ const STYLE = `
 
   /* HERO */
   .l-hero {
-    background: #0a1628;
+    background: #ffffff;
     padding: 90px 6% 80px;
     position: relative; overflow: hidden;
     min-height: 88vh; display: flex; align-items: center;
@@ -105,17 +105,14 @@ const STYLE = `
     position: absolute; inset: 0;
     width: 100%; height: 100%;
     object-fit: cover;
-    opacity: 0.22;
+    opacity: 1;
     pointer-events: none;
     z-index: 0;
   }
 
   .l-hero-overlay {
     position: absolute; inset: 0;
-    background:
-      linear-gradient(135deg, rgba(10,22,40,0.82) 0%, rgba(10,22,40,0.55) 50%, rgba(10,22,40,0.75) 100%),
-      radial-gradient(ellipse 900px 700px at 80% 50%, rgba(37,99,235,0.18) 0%, transparent 70%),
-      radial-gradient(ellipse 600px 500px at 15% 80%, rgba(6,182,212,0.12) 0%, transparent 70%);
+    background: transparent;
     pointer-events: none;
     z-index: 1;
   }
@@ -141,16 +138,16 @@ const STYLE = `
 
   .l-hero-title {
     font-size: clamp(32px, 4.5vw, 58px); font-weight: 900;
-    line-height: 1.18; color: #f1f5f9;
+    line-height: 1.18; color: #0f172a;
     margin-bottom: 20px; letter-spacing: -0.5px;
     animation: fadeUp 0.6s ease-out 0.1s both;
-    text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    text-shadow: none;
   }
-  .l-hero-title .blue { color: #60a5fa; }
-  .l-hero-title .teal { color: #22d3ee; }
+  .l-hero-title .blue { color: #2563eb; }
+  .l-hero-title .teal { color: #0891b2; }
 
   .l-hero-sub {
-    font-size: 17px; color: #cbd5e1; line-height: 1.8;
+    font-size: 17px; color: #475569; line-height: 1.8;
     margin-bottom: 28px; max-width: 480px;
     animation: fadeUp 0.6s ease-out 0.2s both;
   }
@@ -158,14 +155,14 @@ const STYLE = `
   .l-hero-checks { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; animation: fadeUp 0.6s ease-out 0.3s both; }
   .l-hero-check {
     display: flex; align-items: center; gap: 10px;
-    font-size: 14.5px; font-weight: 500; color: #e2e8f0;
+    font-size: 14.5px; font-weight: 500; color: #334155;
   }
   .l-hero-check-icon {
     width: 22px; height: 22px; border-radius: 50%;
-    background: rgba(37,99,235,0.35); color: #93c5fd;
+    background: #dbeafe; color: #2563eb;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; font-size: 12px;
-    border: 1px solid rgba(96,165,250,0.3);
+    border: 1px solid #bfdbfe;
   }
 
   .l-hero-btns { display: flex; gap: 12px; flex-wrap: wrap; animation: fadeUp 0.6s ease-out 0.4s both; }
