@@ -543,9 +543,53 @@ const STYLE = `
     .l-doctor-card { padding: 18px 14px; }
     .l-review-card { padding: 18px 14px; }
 
-    /* ── About section doctor photo ── */
-    .l-about-photo-outer { max-width: 100% !important; }
-    .l-about-photo-outer img { width: 100% !important; max-width: 260px !important; }
+    /* ══ About section — full mobile redesign ══ */
+
+    /* hide the big photo block on mobile; replaced by compact profile header */
+    .l-about-photo-block { display: none !important; }
+
+    /* show the mobile profile header (hidden on desktop) */
+    .l-about-mobile-hero { display: flex !important; }
+
+    /* reorder: bio first (after mobile hero), quals second */
+    .l-about-grid > div:first-child { order: 1 !important; }
+    .l-about-grid > div:last-child  { order: 2 !important; display: block !important; }
+
+    /* compact cert / achievement cards */
+    .l-cert-item {
+      padding: 10px 12px !important;
+      gap: 10px !important;
+      margin-bottom: 7px !important;
+    }
+    .l-cert-item > div:first-child {
+      width: 32px !important; height: 32px !important;
+      border-radius: 8px !important;
+    }
+    .l-cert-item > div:nth-child(2) > div:first-child { font-size: 13px !important; }
+    .l-cert-item > div:nth-child(2) > div:last-child  { font-size: 11px !important; }
+
+    /* achievement items: slimmer */
+    .l-achiev-item {
+      padding: 10px 12px !important;
+      margin-bottom: 7px !important;
+    }
+    .l-achiev-item > div:nth-child(2) > div:first-child { font-size: 13px !important; }
+    .l-achiev-item > div:nth-child(2) > div:last-child  { font-size: 11px !important; }
+
+    /* section headings inside about column */
+    .l-about-col-heading { font-size: 13px !important; margin-bottom: 10px !important; }
+
+    /* mini stats 3-col stays, just smaller */
+    .l-about-mini-stats > div { padding: 12px 6px !important; }
+    .l-about-mini-stats > div > div:first-child { font-size: 20px !important; }
+    .l-about-mini-stats > div > div:last-child  { font-size: 11px !important; }
+
+    /* bio text slightly smaller */
+    .l-about-bio { font-size: 13.5px !important; line-height: 1.8 !important; margin-bottom: 18px !important; }
+
+    /* hide doctor name h2 in bio col on mobile — already shown in profile header */
+    .l-about-bio-name { display: none !important; }
+    .l-about-bio-title { font-size: 13px !important; margin-bottom: 12px !important; }
 
     /* ── Portal section ── */
     .l-portal-split { grid-template-columns: 1fr !important; }
@@ -951,14 +995,42 @@ export default function Landing() {
         {/* ── ABOUT ── */}
         <section id="about" className="l-section">
           <div className="l-section-inner">
+
+            {/* ── Mobile-only profile hero (hidden on desktop) ── */}
+            <div className="l-about-mobile-hero" style={{
+              display: 'none',
+              alignItems: 'center', gap: '14px',
+              marginBottom: '20px',
+              background: 'linear-gradient(135deg,#0f172a 0%,#1e3a8a 100%)',
+              borderRadius: '18px', padding: '16px 18px',
+            }}>
+              {/* compact circular photo */}
+              <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '3px solid rgba(255,255,255,0.25)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
+                <img src="/doctor-photo.png" alt="د. وسام يوسف"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '60% top' }} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ color: 'white', fontWeight: 900, fontSize: '16px', lineHeight: 1.25 }}>{settings.doctorName}</div>
+                <div style={{ color: '#93c5fd', fontSize: '11.5px', fontWeight: 700, marginTop: 3 }}>{settings.doctorTitle}</div>
+                <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                  {[{val:'+10', lbl:'سنوات'},{val:'+1K', lbl:'مريض'},{val:'98%', lbl:'نجاح'}].map((s,i) => (
+                    <div key={i} style={{ background:'rgba(255,255,255,0.12)', borderRadius: 8, padding:'3px 10px', textAlign:'center' }}>
+                      <div style={{ color:'white', fontWeight:900, fontSize:13 }}>{s.val}</div>
+                      <div style={{ color:'rgba(255,255,255,0.6)', fontSize:9 }}>{s.lbl}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="l-about-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '56px', alignItems: 'start' }}>
               <div>
                 <div className="l-section-tag" style={{ display: 'inline-flex' }}><FiUser size={13} /> عن الطبيب</div>
-                <h2 className="l-section-title" style={{ textAlign: 'right', marginTop: '8px' }}>
+                <h2 className="l-section-title l-about-bio-name" style={{ textAlign: 'right', marginTop: '8px' }}>
                   {settings.doctorName}
                 </h2>
-                <p style={{ color: '#2563eb', fontWeight: 700, fontSize: '15px', marginBottom: '16px' }}>{settings.doctorTitle}</p>
-                <p style={{ color: '#475569', lineHeight: 1.9, fontSize: '15px', marginBottom: '28px' }}>{settings.doctorBio}</p>
+                <p className="l-about-bio-title" style={{ color: '#2563eb', fontWeight: 700, fontSize: '15px', marginBottom: '16px' }}>{settings.doctorTitle}</p>
+                <p className="l-about-bio" style={{ color: '#475569', lineHeight: 1.9, fontSize: '15px', marginBottom: '28px' }}>{settings.doctorBio}</p>
 
                 <div className="l-about-mini-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '28px' }}>
                   {[
@@ -979,8 +1051,8 @@ export default function Landing() {
               </div>
 
               <div>
-                {/* Doctor Photo — creative frame */}
-                <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'center' }}>
+                {/* Doctor Photo — creative frame (hidden on mobile, replaced by compact hero) */}
+                <div className="l-about-photo-block" style={{ marginBottom: '28px', display: 'flex', justifyContent: 'center' }}>
                   <div className="l-about-photo-outer" style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
                     {/* Outer glow ring */}
                     <div style={{
@@ -1067,7 +1139,7 @@ export default function Landing() {
 
                 {settings.certificates?.length > 0 && (
                   <div style={{ marginBottom: '24px' }}>
-                    <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+                    <h4 className="l-about-col-heading" style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
                       <FaGraduationCap style={{ color: '#2563eb' }} /> المؤهلات والشهادات
                     </h4>
                     {settings.certificates.map((c, i) => (
@@ -1092,7 +1164,7 @@ export default function Landing() {
 
                 {settings.doctorTraining?.length > 0 && (
                   <div style={{ marginBottom: '24px' }}>
-                    <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+                    <h4 className="l-about-col-heading" style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
                       <FiBookOpen style={{ color: '#0891b2' }} /> الدورات التدريبية
                     </h4>
                     {settings.doctorTraining.map((t, i) => (
@@ -1109,11 +1181,11 @@ export default function Landing() {
 
                 {settings.achievements?.length > 0 && (
                   <div>
-                    <h4 style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+                    <h4 className="l-about-col-heading" style={{ fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
                       <FiAward style={{ color: '#2563eb' }} /> الإنجازات
                     </h4>
                     {settings.achievements.map((a, i) => (
-                      <div key={i} style={{
+                      <div key={i} className="l-achiev-item" style={{
                         display: 'flex', gap: '12px', alignItems: 'flex-start',
                         padding: '14px 16px', borderRadius: '10px',
                         background: 'white', border: '1.5px solid #e2e8f0',
