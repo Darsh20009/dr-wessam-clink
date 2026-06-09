@@ -436,6 +436,7 @@ export default function PatientFile() {
               </>
             )}
             <button className="btn btn-secondary" onClick={() => setShowPrintModal(true)} title="طباعة إيصال" disabled={printing}><FiPrinter /> {printing ? 'جاري...' : 'طباعة'}</button>
+            <button className="btn btn-secondary" onClick={() => navigate(`/doctor/patients/${id}/card`)} title="بطاقة المريض" style={{ background: 'linear-gradient(135deg,#064e3b,#047857)', color: 'white', border: 'none' }}>🪪 بطاقة</button>
             <button className="btn btn-success" onClick={() => setShowPayment(true)}><FiDollarSign /> تسجيل دفع</button>
             <button className="btn btn-primary" onClick={() => { setShowAddSession(true); setActiveTab('sessions'); }}><FiPlus /> جلسة جديدة</button>
           </div>

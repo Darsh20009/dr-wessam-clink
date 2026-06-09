@@ -22,6 +22,7 @@ const SiteManager = lazy(() => import('./pages/SiteManager'));
 const Settings = lazy(() => import('./pages/Settings'));
 const SelfRegister = lazy(() => import('./pages/SelfRegister'));
 const EmployeeCard = lazy(() => import('./pages/EmployeeCard'));
+const PatientCard  = lazy(() => import('./pages/PatientCard'));
 const DoctorPaymentRequests = lazy(() => import('./pages/DoctorPaymentRequests'));
 const ReceptionDesk = lazy(() => import('./pages/ReceptionDesk'));
 const Employees = lazy(() => import('./pages/Employees'));
@@ -66,6 +67,7 @@ const AppRoutes = () => {
           <Route path="patients" element={<Patients />} />
           <Route path="patients/new" element={<NewPatient />} />
           <Route path="patients/:id" element={<PatientFile />} />
+          <Route path="patients/:id/card" element={<PatientCard />} />
           <Route path="appointments" element={<Appointments />} />
           <Route path="payments" element={<Payments />} />
           <Route path="reports" element={<Reports />} />
