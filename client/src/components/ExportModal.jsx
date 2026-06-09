@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiX, FiDownload, FiMail, FiCheck, FiPrinter, FiArrowRight, FiArrowLeft } from 'react-icons/fi';
+import { FiX, FiDownload, FiMail, FiCheck, FiPrinter, FiArrowRight, FiFileText, FiCamera, FiDollarSign, FiList } from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
 import { exportPatientPDF } from '../utils/exportPDF';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -23,9 +24,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
   const iframeRef = useRef(null);
 
   useEffect(() => {
-    return () => {
-      if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
-    };
+    return () => { if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl); };
   }, [pdfBlobUrl]);
 
   const toggleDest = (k) => setDest(d => ({ ...d, [k]: !d[k] }));
@@ -41,37 +40,26 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
   };
 
   const normalizePhone = (raw) => {
-    let cleaned = raw.replace(/\D/g, '');
-    if (cleaned.startsWith('00')) cleaned = cleaned.slice(2);
-    if (cleaned.startsWith('0') && cleaned.length === 11) cleaned = '2' + cleaned;
-    if (!cleaned.startsWith('20') && cleaned.length === 11) cleaned = '20' + cleaned;
-    return cleaned;
+    let c = raw.replace(/\D/g, '');
+    if (c.startsWith('00')) c = c.slice(2);
+    if (c.startsWith('0') && c.length === 11) c = '2' + c;
+    if (!c.startsWith('20') && c.length === 11) c = '20' + c;
+    return c;
   };
 
   const handleGenerate = async () => {
-    if (!dest.download && !dest.whatsapp && !dest.email) {
-      return toast.error('اختر وجهة واحدة على الأقل');
-    }
+    if (!dest.download && !dest.whatsapp && !dest.email) return toast.error('اختر وجهة واحدة على الأقل');
     setLoading(true);
     try {
-      const finalOpts = {
-        ...opts,
-        sessionIds: allSessions ? [] : opts.sessionIds,
-      };
+      const finalOpts = { ...opts, sessionIds: allSessions ? [] : opts.sessionIds };
       const { blobUrl } = await exportPatientPDF({ patient, sessions, ttt, siteInfo, opts: finalOpts });
       setPdfBlobUrl(blobUrl);
       setStep(2);
-    } catch (e) {
-      toast.error('خطأ في إنشاء الملف');
-    }
+    } catch { toast.error('خطأ في إنشاء الملف'); }
     setLoading(false);
   };
 
-  const handlePrint = () => {
-    if (iframeRef.current) {
-      iframeRef.current.contentWindow.print();
-    }
-  };
+  const handlePrint = () => iframeRef.current?.contentWindow.print();
 
   const handleDownload = () => {
     if (!pdfBlobUrl) return;
@@ -84,90 +72,93 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
 
   const handleWhatsapp = async () => {
     const cleaned = normalizePhone(phone);
-    if (!cleaned || cleaned.length < 10) {
-      toast.error('أدخل رقم واتساب صحيح');
-      return;
-    }
-
+    if (!cleaned || cleaned.length < 10) { toast.error('أدخل رقم واتساب صحيح'); return; }
     const fileName = `ملف-${patient.fullName}-${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.html`;
     const msgText = `السلام عليكم ${patient.fullName} 😊\nتحية من عيادة د. وسام يوسف\nمرفق ملفك الطبي الكامل — يمكنك فتحه على أي متصفح.`;
-
     try {
       const blob = await fetch(pdfBlobUrl).then(r => r.blob());
       const file = new File([blob], fileName, { type: 'text/html' });
-
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: `ملف المريض — ${patient.fullName}`,
-          text: msgText,
-        });
+        await navigator.share({ files: [file], title: `ملف المريض — ${patient.fullName}`, text: msgText });
         return;
       }
     } catch {}
-
     const a = document.createElement('a');
-    a.href = pdfBlobUrl;
-    a.download = fileName;
-    a.click();
-
+    a.href = pdfBlobUrl; a.download = fileName; a.click();
     setTimeout(() => {
       const msg = encodeURIComponent(msgText + '\n\n📎 الملف تم تحميله على جهازك — أرفقه في المحادثة.');
       window.open(`https://wa.me/${cleaned}?text=${msg}`, '_blank');
     }, 800);
-
     toast.success('تم تحميل الملف — أرفقه في محادثة واتساب', { duration: 5000 });
   };
 
   const handleEmail = () => {
     if (!email) { toast.error('أدخل البريد الإلكتروني'); return; }
     const subject = encodeURIComponent(`ملف المريض — ${patient.fullName}`);
-    const body = encodeURIComponent(
-      `السلام عليكم ${patient.fullName}\n\nمرفق ملفك الطبي من عيادة د. وسام يوسف\n\nللاستفسار: ${siteInfo?.phone || '+20 115 679 8324'}`
-    );
+    const body = encodeURIComponent(`السلام عليكم ${patient.fullName}\n\nمرفق ملفك الطبي من عيادة د. وسام يوسف\n\nللاستفسار: ${siteInfo?.phone || '+20 115 679 8324'}`);
     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
   };
 
-  const Checkbox = ({ checked, label, onChange, sub }) => (
-    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: sub ? '7px 10px' : '10px 12px', borderRadius: 10, border: `1.5px solid ${checked ? '#bfdbfe' : '#e2e8f0'}`, background: checked ? '#f0f9ff' : sub ? '#fafafa' : '#f8fafc', marginBottom: 6, userSelect: 'none' }}>
-      <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${checked ? '#2563eb' : '#cbd5e1'}`, background: checked ? '#2563eb' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
-        {checked && <FiCheck size={11} color="white" strokeWidth={3}/>}
-      </div>
-      <span style={{ fontWeight: sub ? 600 : 700, fontSize: sub ? 12 : 13, color: checked ? '#1e3a8a' : '#475569' }}>{label}</span>
-    </label>
+  const Toggle = ({ checked, onChange }) => (
+    <div onClick={onChange} style={{
+      width: 44, height: 24, borderRadius: 12, cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s',
+      background: checked ? '#2563eb' : '#cbd5e1', position: 'relative'
+    }}>
+      <div style={{
+        position: 'absolute', top: 3, transition: 'all 0.2s',
+        left: checked ? 'calc(100% - 21px)' : 3,
+        width: 18, height: 18, borderRadius: '50%', background: 'white',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.2)'
+      }} />
+    </div>
   );
 
-  const DestCard = ({ icon, label, active, onClick }) => (
-    <button onClick={onClick} style={{ flex: 1, padding: '12px 8px', border: `2px solid ${active ? '#2563eb' : '#e2e8f0'}`, borderRadius: 12, background: active ? '#eff6ff' : 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 12, color: active ? '#2563eb' : '#64748b', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, transition: 'all 0.15s' }}>
-      <span style={{ fontSize: 22 }}>{icon}</span>
-      {label}
-      {active && <FiCheck size={12} color="#2563eb"/>}
-    </button>
+  const ContentRow = ({ checked, onChange, icon, label, sublabel }) => (
+    <div onClick={onChange} style={{
+      display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
+      borderRadius: 12, border: `1.5px solid ${checked ? '#bfdbfe' : '#e2e8f0'}`,
+      background: checked ? '#f0f9ff' : '#fafafa', marginBottom: 8, cursor: 'pointer',
+      transition: 'all 0.15s', userSelect: 'none'
+    }}>
+      <div style={{
+        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+        background: checked ? '#dbeafe' : '#f1f5f9',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: checked ? '#2563eb' : '#94a3b8', transition: 'all 0.15s'
+      }}>
+        {icon}
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 700, fontSize: 13, color: checked ? '#1e3a8a' : '#475569' }}>{label}</div>
+        {sublabel && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 1 }}>{sublabel}</div>}
+      </div>
+      <Toggle checked={checked} onChange={onChange} />
+    </div>
   );
 
   if (step === 2 && pdfBlobUrl) {
     return (
       <div style={{ position: 'fixed', inset: 0, background: '#0f172a', zIndex: 99999, display: 'flex', flexDirection: 'column', direction: 'rtl' }}>
         <div style={{ background: '#1e3a8a', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-          <button onClick={() => setStep(1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '6px 12px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <FiArrowRight size={13}/> رجوع
+          <button onClick={() => setStep(1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '7px 14px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <FiArrowRight size={14}/> رجوع
           </button>
           <span style={{ color: 'white', fontWeight: 800, fontSize: 14, flex: 1 }}>📄 معاينة ملف {patient.fullName}</span>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button onClick={handlePrint} style={{ background: '#2563eb', border: 'none', borderRadius: 8, padding: '7px 16px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
               <FiPrinter size={14}/> طباعة / PDF
             </button>
-            <button onClick={handleDownload} style={{ background: '#10b981', border: 'none', borderRadius: 8, padding: '7px 14px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={handleDownload} style={{ background: '#0ea5e9', border: 'none', borderRadius: 8, padding: '7px 14px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
               <FiDownload size={14}/> تحميل
             </button>
             {dest.whatsapp && (
-              <button onClick={handleWhatsapp} style={{ background: '#16a34a', border: 'none', borderRadius: 8, padding: '7px 14px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13 }}>
-                💬 واتساب
+              <button onClick={handleWhatsapp} style={{ background: '#16a34a', border: 'none', borderRadius: 8, padding: '7px 16px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 7 }}>
+                <FaWhatsapp size={16}/> إرسال
               </button>
             )}
             {dest.email && (
-              <button onClick={handleEmail} style={{ background: '#7c3aed', border: 'none', borderRadius: 8, padding: '7px 14px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13 }}>
-                <FiMail size={14}/>
+              <button onClick={handleEmail} style={{ background: '#7c3aed', border: 'none', borderRadius: 8, padding: '7px 14px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <FiMail size={14}/> بريد
               </button>
             )}
             <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '7px 10px', color: 'white', cursor: 'pointer' }}>
@@ -175,118 +166,212 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
             </button>
           </div>
         </div>
-        <iframe
-          ref={iframeRef}
-          src={pdfBlobUrl}
-          style={{ flex: 1, border: 'none', background: 'white' }}
-          title="معاينة الملف"
-        />
+        <iframe ref={iframeRef} src={pdfBlobUrl} style={{ flex: 1, border: 'none', background: 'white' }} title="معاينة الملف" />
       </div>
     );
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, direction: 'rtl' }}
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, direction: 'rtl' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: 'white', borderRadius: 20, padding: 26, width: '100%', maxWidth: 540, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 24px 80px rgba(0,0,0,0.25)' }}>
+      <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 520, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div>
-            <h2 style={{ fontWeight: 900, fontSize: 17, color: '#0f172a', margin: 0 }}>📤 تصدير ملف المريض</h2>
-            <p style={{ fontSize: 12, color: '#64748b', margin: '3px 0 0' }}>{patient.fullName}</p>
+        {/* Header */}
+        <div style={{ padding: '20px 22px 16px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 42, height: 42, borderRadius: 12, background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FiFileText size={20} color="white"/>
+            </div>
+            <div>
+              <div style={{ fontWeight: 900, fontSize: 16, color: '#0f172a' }}>تصدير الملف الطبي</div>
+              <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>{patient.fullName}</div>
+            </div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 20 }}><FiX/></button>
+          <button onClick={onClose} style={{ background: '#f1f5f9', border: 'none', cursor: 'pointer', color: '#64748b', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <FiX size={16}/>
+          </button>
         </div>
 
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ fontWeight: 800, fontSize: 13, color: '#1e293b', marginBottom: 10 }}>1. وجهة التصدير</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <DestCard icon="📄" label="معاينة / PDF" active={dest.download} onClick={() => toggleDest('download')}/>
-            <DestCard icon="💬" label="واتساب" active={dest.whatsapp} onClick={() => toggleDest('whatsapp')}/>
-            <DestCard icon="📧" label="بريد" active={dest.email} onClick={() => toggleDest('email')}/>
+        <div style={{ padding: '18px 22px' }}>
+
+          {/* Destination */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontWeight: 800, fontSize: 12, color: '#94a3b8', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 10 }}>وجهة التصدير</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+
+              {/* PDF card */}
+              <button onClick={() => toggleDest('download')} style={{
+                padding: '14px 8px', borderRadius: 14,
+                border: `2px solid ${dest.download ? '#2563eb' : '#e2e8f0'}`,
+                background: dest.download ? '#eff6ff' : 'white',
+                cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                transition: 'all 0.15s', position: 'relative'
+              }}>
+                {dest.download && <div style={{ position: 'absolute', top: 6, left: 6, width: 18, height: 18, borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiCheck size={10} color="white" strokeWidth={3}/></div>}
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: dest.download ? '#dbeafe' : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                  <FiFileText size={22} color={dest.download ? '#2563eb' : '#94a3b8'}/>
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: dest.download ? '#1e3a8a' : '#64748b' }}>معاينة / PDF</span>
+              </button>
+
+              {/* WhatsApp card */}
+              <button onClick={() => toggleDest('whatsapp')} style={{
+                padding: '14px 8px', borderRadius: 14,
+                border: `2px solid ${dest.whatsapp ? '#16a34a' : '#e2e8f0'}`,
+                background: dest.whatsapp ? '#f0fdf4' : 'white',
+                cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                transition: 'all 0.15s', position: 'relative'
+              }}>
+                {dest.whatsapp && <div style={{ position: 'absolute', top: 6, left: 6, width: 18, height: 18, borderRadius: '50%', background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiCheck size={10} color="white" strokeWidth={3}/></div>}
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: dest.whatsapp ? '#dcfce7' : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                  <FaWhatsapp size={24} color={dest.whatsapp ? '#16a34a' : '#94a3b8'}/>
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: dest.whatsapp ? '#166534' : '#64748b' }}>واتساب</span>
+              </button>
+
+              {/* Email card */}
+              <button onClick={() => toggleDest('email')} style={{
+                padding: '14px 8px', borderRadius: 14,
+                border: `2px solid ${dest.email ? '#7c3aed' : '#e2e8f0'}`,
+                background: dest.email ? '#faf5ff' : 'white',
+                cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                transition: 'all 0.15s', position: 'relative'
+              }}>
+                {dest.email && <div style={{ position: 'absolute', top: 6, left: 6, width: 18, height: 18, borderRadius: '50%', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiCheck size={10} color="white" strokeWidth={3}/></div>}
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: dest.email ? '#ede9fe' : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                  <FiMail size={22} color={dest.email ? '#7c3aed' : '#94a3b8'}/>
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: dest.email ? '#5b21b6' : '#64748b' }}>بريد إلكتروني</span>
+              </button>
+            </div>
           </div>
-        </div>
 
-        {dest.whatsapp && (
-          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
-            <label style={{ fontWeight: 700, fontSize: 12, color: '#166534', display: 'block', marginBottom: 5 }}>رقم واتساب المريض</label>
-            <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="01156798324 أو +20..." dir="ltr"
-              style={{ width: '100%', padding: '7px 10px', border: '1.5px solid #bbf7d0', borderRadius: 8, fontSize: 13, fontFamily: 'Cairo, sans-serif', outline: 'none', boxSizing: 'border-box' }} />
-            <div style={{ fontSize: 11, color: '#16a34a', marginTop: 4 }}>📎 سيُحمَّل الملف تلقائياً ثم يُفتح واتساب — أرفق الملف في المحادثة</div>
-          </div>
-        )}
-
-        {dest.email && (
-          <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
-            <label style={{ fontWeight: 700, fontSize: 12, color: '#1e40af', display: 'block', marginBottom: 5 }}>البريد الإلكتروني</label>
-            <input value={email} onChange={e => setEmail(e.target.value)} placeholder="patient@example.com" dir="ltr"
-              style={{ width: '100%', padding: '7px 10px', border: '1.5px solid #bfdbfe', borderRadius: 8, fontSize: 13, fontFamily: 'Cairo, sans-serif', outline: 'none', boxSizing: 'border-box' }} />
-          </div>
-        )}
-
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ fontWeight: 800, fontSize: 13, color: '#1e293b', marginBottom: 10 }}>2. محتوى التقرير</div>
-          <Checkbox checked={opts.includeTTT} label="📋 الملف الطبي التفصيلي (TTT File)" onChange={() => toggleOpt('includeTTT')}/>
-          <Checkbox checked={opts.includePhotos} label="📸 صور الوجه والفم والأشعة" onChange={() => toggleOpt('includePhotos')}/>
-          <Checkbox checked={opts.includeFinancials} label="💰 البيانات المالية" onChange={() => toggleOpt('includeFinancials')}/>
-
-          <div style={{ border: `1.5px solid ${opts.includeSessions ? '#bfdbfe' : '#e2e8f0'}`, borderRadius: 10, overflow: 'hidden', marginBottom: 6 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 12px', background: opts.includeSessions ? '#f0f9ff' : '#f8fafc', userSelect: 'none' }} onClick={() => toggleOpt('includeSessions')}>
-              <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${opts.includeSessions ? '#2563eb' : '#cbd5e1'}`, background: opts.includeSessions ? '#2563eb' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {opts.includeSessions && <FiCheck size={11} color="white" strokeWidth={3}/>}
+          {/* WhatsApp input */}
+          {dest.whatsapp && (
+            <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <FaWhatsapp size={16} color="#16a34a"/>
+                <span style={{ fontWeight: 700, fontSize: 12, color: '#166534' }}>رقم واتساب المريض</span>
               </div>
-              <span style={{ fontWeight: 700, fontSize: 13, color: opts.includeSessions ? '#1e3a8a' : '#475569' }}>🗂️ جلسات المتابعة</span>
-            </label>
+              <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="01156798324 أو +20..." dir="ltr"
+                style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #86efac', borderRadius: 8, fontSize: 13, fontFamily: 'Cairo, sans-serif', outline: 'none', boxSizing: 'border-box', background: 'white' }} />
+              <div style={{ fontSize: 11, color: '#16a34a', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                📎 سيُحمَّل الملف تلقائياً ثم يُفتح واتساب — أرفقه في المحادثة
+              </div>
+            </div>
+          )}
 
-            {opts.includeSessions && sessions.length > 0 && (
-              <div style={{ padding: '10px 12px', borderTop: '1px solid #e2e8f0', background: '#fafcff' }}>
-                <Checkbox checked={allSessions} label="✅ كل الجلسات" onChange={() => { setAllSessions(true); setOpts(o => ({ ...o, sessionIds: [] })); }} sub/>
-                <Checkbox checked={!allSessions} label="🔍 اختيار جلسات محددة" onChange={() => setAllSessions(false)} sub/>
+          {/* Email input */}
+          {dest.email && (
+            <div style={{ background: '#faf5ff', border: '1.5px solid #c4b5fd', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <FiMail size={15} color="#7c3aed"/>
+                <span style={{ fontWeight: 700, fontSize: 12, color: '#5b21b6' }}>البريد الإلكتروني</span>
+              </div>
+              <input value={email} onChange={e => setEmail(e.target.value)} placeholder="patient@example.com" dir="ltr"
+                style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #c4b5fd', borderRadius: 8, fontSize: 13, fontFamily: 'Cairo, sans-serif', outline: 'none', boxSizing: 'border-box', background: 'white' }} />
+            </div>
+          )}
 
-                {!allSessions && (
-                  <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed #e2e8f0' }}>
-                    <div style={{ fontSize: 11, color: '#64748b', marginBottom: 6, fontWeight: 600 }}>اختر الجلسات المراد تضمينها:</div>
+          {/* Content options */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontWeight: 800, fontSize: 12, color: '#94a3b8', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 10 }}>محتوى التقرير</div>
+
+            <ContentRow
+              checked={opts.includeTTT} onChange={() => toggleOpt('includeTTT')}
+              icon={<FiFileText size={18}/>}
+              label="الملف الطبي التفصيلي (TTT File)"
+              sublabel="بيانات الأسنان والخطة العلاجية"
+            />
+            <ContentRow
+              checked={opts.includePhotos} onChange={() => toggleOpt('includePhotos')}
+              icon={<FiCamera size={18}/>}
+              label="الصور والأشعة"
+              sublabel="صور الوجه والفم والأشعة التشخيصية"
+            />
+            <ContentRow
+              checked={opts.includeFinancials} onChange={() => toggleOpt('includeFinancials')}
+              icon={<FiDollarSign size={18}/>}
+              label="البيانات المالية"
+              sublabel="المدفوعات والمتبقي والإيصالات"
+            />
+
+            {/* Sessions row with expand */}
+            <div style={{ border: `1.5px solid ${opts.includeSessions ? '#bfdbfe' : '#e2e8f0'}`, borderRadius: 12, overflow: 'hidden', marginBottom: 8 }}>
+              <div onClick={() => toggleOpt('includeSessions')} style={{
+                display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
+                background: opts.includeSessions ? '#f0f9ff' : '#fafafa', cursor: 'pointer',
+                transition: 'all 0.15s', userSelect: 'none'
+              }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: opts.includeSessions ? '#dbeafe' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: opts.includeSessions ? '#2563eb' : '#94a3b8', transition: 'all 0.15s' }}>
+                  <FiList size={18}/>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: opts.includeSessions ? '#1e3a8a' : '#475569' }}>جلسات المتابعة</div>
+                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 1 }}>{sessions.length} جلسة مسجّلة</div>
+                </div>
+                <Toggle checked={opts.includeSessions} onChange={() => toggleOpt('includeSessions')} />
+              </div>
+
+              {opts.includeSessions && sessions.length > 0 && (
+                <div style={{ padding: '10px 14px 12px', borderTop: '1px solid #e2e8f0', background: '#fafcff' }}>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                    {[
+                      { val: true, label: 'كل الجلسات' },
+                      { val: false, label: 'جلسات محددة' },
+                    ].map(opt => (
+                      <button key={String(opt.val)} onClick={() => { setAllSessions(opt.val); if (opt.val) setOpts(o => ({ ...o, sessionIds: [] })); }}
+                        style={{ flex: 1, padding: '7px 10px', border: `1.5px solid ${allSessions === opt.val ? '#93c5fd' : '#e2e8f0'}`, borderRadius: 8, background: allSessions === opt.val ? '#eff6ff' : 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 12, color: allSessions === opt.val ? '#2563eb' : '#64748b', transition: 'all 0.15s' }}>
+                        {allSessions === opt.val && '✓ '}{opt.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {!allSessions && (
                     <div style={{ maxHeight: 160, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
                       {[...sessions].sort((a, b) => new Date(a.sessionDate) - new Date(b.sessionDate)).map((s, i) => {
                         const checked = opts.sessionIds.includes(s._id);
                         return (
-                          <label key={s._id} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '6px 10px', borderRadius: 8, border: `1.5px solid ${checked ? '#93c5fd' : '#e2e8f0'}`, background: checked ? '#eff6ff' : 'white', userSelect: 'none' }}>
-                            <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#2563eb' : '#cbd5e1'}`, background: checked ? '#2563eb' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              {checked && <FiCheck size={9} color="white" strokeWidth={3}/>}
+                          <label key={s._id} onClick={() => toggleSessionId(s._id)} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, border: `1.5px solid ${checked ? '#93c5fd' : '#e2e8f0'}`, background: checked ? '#eff6ff' : 'white', userSelect: 'none' }}>
+                            <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${checked ? '#2563eb' : '#cbd5e1'}`, background: checked ? '#2563eb' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                              {checked && <FiCheck size={10} color="white" strokeWidth={3}/>}
                             </div>
-                            <span style={{ fontSize: 12, fontWeight: checked ? 700 : 500, color: checked ? '#1e3a8a' : '#475569', flex: 1 }}>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: checked ? '#1e3a8a' : '#475569', flex: 1 }}>
                               جلسة #{s.sessionNumber || i + 1}
-                              <span style={{ fontSize: 11, color: '#94a3b8', marginRight: 6 }}>
-                                {format(new Date(s.sessionDate), 'd MMM yyyy', { locale: ar })}
-                              </span>
                             </span>
-                            <input type="checkbox" checked={checked} onChange={() => toggleSessionId(s._id)} style={{ display: 'none' }}/>
+                            <span style={{ fontSize: 11, color: '#94a3b8' }}>
+                              {format(new Date(s.sessionDate), 'd MMM yyyy', { locale: ar })}
+                            </span>
                           </label>
                         );
                       })}
+                      {opts.sessionIds.length === 0 && (
+                        <div style={{ fontSize: 11, color: '#f59e0b', padding: '4px 6px', fontWeight: 600 }}>⚠️ اختر جلسة واحدة على الأقل</div>
+                      )}
                     </div>
-                    {!allSessions && opts.sessionIds.length === 0 && (
-                      <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 6, fontWeight: 600 }}>⚠️ اختر جلسة واحدة على الأقل</div>
-                    )}
-                    {opts.sessionIds.length > 0 && (
-                      <div style={{ fontSize: 11, color: '#10b981', marginTop: 6, fontWeight: 600 }}>✓ تم اختيار {opts.sessionIds.length} جلسة</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        <button
-          onClick={handleGenerate}
-          disabled={loading || (!allSessions && opts.includeSessions && opts.sessionIds.length === 0 && sessions.length > 0)}
-          style={{ width: '100%', padding: '13px', background: loading ? '#93c5fd' : 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: 'white', border: 'none', borderRadius: 12, fontWeight: 900, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          {loading ? '⏳ جاري الإنشاء...' : <><FiArrowLeft size={16}/> إنشاء التقرير ومعاينته</>}
-        </button>
-        <p style={{ textAlign: 'center', fontSize: 11, color: '#94a3b8', marginTop: 8 }}>
-          سيُعرض التقرير داخل النظام — ثم يمكنك طباعته أو تحميله
-        </p>
+          {/* Generate button */}
+          <button
+            onClick={handleGenerate}
+            disabled={loading || (!allSessions && opts.includeSessions && opts.sessionIds.length === 0 && sessions.length > 0)}
+            style={{ width: '100%', padding: '14px', background: loading ? '#93c5fd' : 'linear-gradient(135deg,#1e40af,#2563eb)', color: 'white', border: 'none', borderRadius: 13, fontWeight: 900, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, boxShadow: loading ? 'none' : '0 4px 16px rgba(37,99,235,0.35)', transition: 'all 0.2s' }}>
+            {loading
+              ? <><div style={{ width: 18, height: 18, border: '2.5px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }}/><style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style> جاري الإنشاء...</>
+              : <><FiFileText size={17}/> إنشاء التقرير ومعاينته</>
+            }
+          </button>
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#94a3b8', marginTop: 10, lineHeight: 1.6 }}>
+            سيُعرض التقرير داخل النظام — ثم يمكنك طباعته أو تحميله أو إرساله
+          </p>
+        </div>
       </div>
     </div>
   );
