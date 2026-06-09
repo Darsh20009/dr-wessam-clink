@@ -20,21 +20,6 @@ function imgToBase64(url) {
   });
 }
 
-async function resolveImages(sections) {
-  const results = {};
-  const all = [];
-  sections.forEach(s => {
-    if (!s.images) return;
-    s.images.forEach(img => {
-      if (img.url) all.push({ key: img._id || img.url, url: img.url });
-    });
-  });
-  await Promise.all(all.map(async ({ key, url }) => {
-    results[key] = await imgToBase64(url);
-  }));
-  return results;
-}
-
 const SESSION_SLOTS = [
   { type: 'frontal_occlusion', label: 'Frontal Occlusion' },
   { type: 'right_lateral', label: 'Right Lateral' },
@@ -64,7 +49,6 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
   const clinicName = siteInfo?.clinicName || 'عيادة د. وسام يوسف';
   const clinicSubtitle = siteInfo?.clinicSubtitle || 'أخصائي تقويم الأسنان — بني مزار، المنيا';
   const clinicPhone = siteInfo?.phone || '+20 115 679 8324';
-  const logoUrl = '/logo.png';
   const patientName = patient.fullName || '';
   const generated = format(new Date(), 'd MMMM yyyy', { locale: ar });
   const fin = patient.financials || {};
@@ -75,6 +59,21 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
   };
 
   const sectionTitle = (t) => `<div class="sec-title">${t}</div>`;
+
+  const slotGrid = (slots, images) => slots.map(slot => {
+    const imgs = images.filter(i => i.type === slot.type);
+    if (!imgs.length) return '';
+    return `<div class="img-slot">
+      <div class="slot-label">${slot.label}</div>
+      ${imgs.map(i => `
+        <div style="margin-bottom:6px;text-align:center">
+          ${imgTag(i.url, 'width:100px;height:78px;object-fit:cover;display:block;margin:0 auto')}
+          ${i.description1 ? `<div style="font-size:9px;font-weight:700;color:#1e293b;margin-top:2px">${i.description1}</div>` : ''}
+          ${i.notes ? `<div style="font-size:9px;color:#475569;margin-top:1px">${i.notes}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>`;
+  }).join('');
 
   const tttSection = () => {
     if (!opts.includeTTT || !ttt) return '';
@@ -95,7 +94,6 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
           <tr><td class="label">4. S.T</td><td>${v('st') || '—'}</td></tr>
           <tr><td class="label">5. Habit</td><td>${v('habit') || '—'}</td></tr>
         </table>
-
         <table class="ttt-table" style="margin-top:16px">
           <tr><th colspan="2" class="th-head">TTT Objectives</th></tr>
           <tr><td class="label">1. OH</td><td>${v('obj1') || '—'}</td></tr>
@@ -109,20 +107,17 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
           <tr><td class="label">9.</td><td>${v('obj9') || 'Coordinate both arches with good Buccal Interdigitation.'}</td></tr>
           <tr><td class="label">10.</td><td>${v('obj10') || 'Retention.'}</td></tr>
         </table>
-
         <table class="ttt-table" style="margin-top:16px">
           <tr><th colspan="2" class="th-head">Bolton Analysis</th></tr>
           <tr><td class="label">Anterior Ratio (%)</td><td>${v('boltonAnterior') || '—'}</td></tr>
           <tr><td class="label">Overall Ratio (%)</td><td>${v('boltonOverall') || '—'}</td></tr>
         </table>
-
         <table class="ttt-table" style="margin-top:16px">
           <tr><th colspan="4" class="th-head">Tooth Size & Arch Length Analysis</th></tr>
           <tr><th></th><th>Total Arch Length</th><th>Total Tooth Size</th><th>Discrepancy</th></tr>
           <tr><td class="label">Upper</td><td>${v('upperArchLength') || '—'}</td><td>${v('upperToothSize') || '—'}</td><td>${v('upperDiscrepancy') || '—'}</td></tr>
           <tr><td class="label">Lower</td><td>${v('lowerArchLength') || '—'}</td><td>${v('lowerToothSize') || '—'}</td><td>${v('lowerDiscrepancy') || '—'}</td></tr>
         </table>
-
         <table class="ttt-table" style="margin-top:16px">
           <tr><th colspan="2" class="th-head">Summary of Space Requirements</th></tr>
           <tr><td class="label">Crowding & Spacing</td><td>${v('srCrowding') || '—'}</td></tr>
@@ -131,7 +126,6 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
           <tr><td class="label">Incisor Sagittal Position Change</td><td>${v('srIncisorSagittal') || '—'}</td></tr>
           <tr><td class="label">Incisor Inclination</td><td>${v('srIncisorInclination') || '—'}</td></tr>
         </table>
-
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
           <table class="ttt-table">
             <tr><th colspan="2" class="th-head">Space Gaining — Upper</th></tr>
@@ -168,12 +162,16 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     const xrayImgs = (patient.xrays || []);
     if (!faceImgs.length && !intraImgs.length && !xrayImgs.length) return '';
 
-    const slotGrid = (slots, images) => slots.map(slot => {
-      const imgs = images.filter(i => i.type === slot.type);
+    const xrayGrid = XRAY_TYPES.map(slot => {
+      const imgs = xrayImgs.filter(i => i.type === slot.type);
       if (!imgs.length) return '';
       return `<div class="img-slot">
         <div class="slot-label">${slot.label}</div>
-        ${imgs.map(i => `<div>${imgTag(i.url, 'width:100px;height:78px;object-fit:cover;')}</div>`).join('')}
+        ${imgs.map(i => `
+          <div style="margin-bottom:6px;text-align:center">
+            ${imgTag(i.url, 'width:130px;height:100px;object-fit:cover;background:#0f172a;display:block;margin:0 auto')}
+          </div>
+        `).join('')}
       </div>`;
     }).join('');
 
@@ -182,15 +180,18 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
         ${sectionTitle('📸 Patient Photographs')}
         ${faceImgs.length ? `<div class="subsec">Extra-Oral Photos</div><div class="img-grid">${slotGrid(FACE_SLOTS, faceImgs)}</div>` : ''}
         ${intraImgs.length ? `<div class="subsec">Intra-Oral Photos</div><div class="img-grid">${slotGrid(INTRAORAL_SLOTS, intraImgs)}</div>` : ''}
-        ${xrayImgs.length ? `<div class="subsec">Radiographs</div><div class="img-grid">${slotGrid(XRAY_TYPES, xrayImgs)}</div>` : ''}
+        ${xrayImgs.length ? `<div class="subsec">Radiographs</div><div class="img-grid">${xrayGrid}</div>` : ''}
       </div>`;
   };
 
   const sessionsSection = () => {
     if (!opts.includeSessions) return '';
-    const toShow = opts.sessionId
-      ? sessions.filter(s => s._id === opts.sessionId)
-      : sessions;
+    let toShow = sessions;
+    if (opts.sessionIds && opts.sessionIds.length > 0) {
+      toShow = sessions.filter(s => opts.sessionIds.includes(s._id));
+    } else if (opts.sessionId) {
+      toShow = sessions.filter(s => s._id === opts.sessionId);
+    }
     if (!toShow.length) return '';
 
     return toShow.map((s, i) => {
@@ -209,8 +210,12 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
               if (!slotImgs.length) return '';
               return `<div class="img-slot">
                 <div class="slot-label">${slot.label}</div>
-                ${slotImgs.map(im => `<div>${imgTag(im.url, 'width:100px;height:78px;object-fit:cover;')}</div>`).join('')}
-                ${slotImgs[0].notes ? `<div style="font-size:10px;color:#64748b;margin-top:3px">${slotImgs[0].notes}</div>` : ''}
+                ${slotImgs.map(im => `
+                  <div style="margin-bottom:6px;text-align:center">
+                    ${imgTag(im.url, 'width:100px;height:78px;object-fit:cover;display:block;margin:0 auto')}
+                    ${im.notes ? `<div style="font-size:9px;color:#475569;margin-top:2px;padding:0 4px">${im.notes}</div>` : ''}
+                  </div>
+                `).join('')}
               </div>`;
             }).join('')}</div>` : ''}
         </div>`;
@@ -244,7 +249,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     .page { max-width:210mm; margin:0 auto; padding:20mm 18mm; }
     @media print {
       body { font-size:11px; }
-      .no-print { display:none; }
+      .no-print { display:none !important; }
       .page-break { page-break-before:auto; }
       @page { margin:15mm 12mm; size:A4; }
     }
@@ -269,10 +274,19 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     .fv { color:#475569; font-size:12px; flex:1; }
     .page-break { margin-bottom:24px; }
     .footer { margin-top:30px; padding-top:12px; border-top:1px solid #e2e8f0; text-align:center; color:#94a3b8; font-size:11px; }
-    .print-btn { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#2563eb; color:white; border:none; border-radius:12px; padding:12px 32px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Cairo',sans-serif; box-shadow:0 4px 20px rgba(37,99,235,0.4); z-index:999; }
+    .print-toolbar { position:fixed; top:0; left:0; right:0; background:#1e3a8a; color:white; padding:10px 20px; display:flex; align-items:center; justify-content:space-between; z-index:9999; font-family:'Cairo',sans-serif; }
+    .print-toolbar button { background:#2563eb; color:white; border:none; border-radius:8px; padding:8px 20px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Cairo',sans-serif; }
+    .print-toolbar .dl-btn { background:#10b981; }
+    body { padding-top: 50px; }
   </style>
 </head>
 <body>
+  <div class="print-toolbar no-print">
+    <span style="font-weight:700;font-size:15px">📄 ملف ${patientName}</span>
+    <div style="display:flex;gap:10px">
+      <button onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
+    </div>
+  </div>
   <div class="page">
     <div class="clinic-header">
       <img src="/logo.png" class="clinic-logo" onerror="this.style.display='none'" />
@@ -303,7 +317,6 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
       ${clinicName} — ${clinicSubtitle} — ${clinicPhone}
     </div>
   </div>
-  <button class="print-btn no-print" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
 </body>
 </html>`;
 }
@@ -321,10 +334,7 @@ export async function exportPatientPDF({ patient, sessions = [], ttt = {}, siteI
   }));
 
   const html = buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap });
-  const win = window.open('', '_blank');
-  if (!win) { alert('يرجى السماح بالنوافذ المنبثقة للمتصفح'); return; }
-  win.document.open();
-  win.document.write(html);
-  win.document.close();
-  return win;
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const blobUrl = URL.createObjectURL(blob);
+  return { blobUrl, html };
 }
