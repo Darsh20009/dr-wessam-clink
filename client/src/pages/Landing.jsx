@@ -44,8 +44,6 @@ const defaultSettings = {
 };
 
 const STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
-
   html, body { overflow-x: hidden !important; max-width: 100vw !important; }
   .landing-root { font-family: 'Cairo', sans-serif; direction: rtl; color: #0f172a; background: #fff; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
@@ -60,9 +58,7 @@ const STYLE = `
   /* NAV */
   .l-nav {
     position: sticky; top:0; z-index: 100;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(255,255,255,0.98);
     border-bottom: 1px solid #e2e8f0;
     padding: 0 6%;
     display: flex; align-items: center; justify-content: space-between;
@@ -112,9 +108,7 @@ const STYLE = `
 
   .l-hero-overlay {
     position: absolute; inset: 0;
-    background: rgba(255,255,255,0.35);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: rgba(255,255,255,0.55);
     pointer-events: none;
     z-index: 1;
   }
@@ -351,7 +345,6 @@ const STYLE = `
     border-radius: 20px;
     padding: 32px 28px;
     transition: all 0.3s;
-    backdrop-filter: blur(4px);
   }
   .l-mentor-card:hover {
     background: rgba(255,255,255,0.12);
@@ -463,8 +456,7 @@ const STYLE = `
 
   .l-mobile-menu {
     position: fixed; top: 68px; left: 0; right: 0; z-index: 99;
-    background: rgba(255,255,255,0.97); backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
     padding: 12px 5% 16px;
     display: flex; flex-direction: column; gap: 4px;
@@ -684,10 +676,10 @@ const WaveDivider = ({ from, to, variant = 'wave', flip = false, height = 70, an
   };
   if (animate) {
     return (
-      <div style={{ lineHeight: 0, background: to, overflow: 'hidden', position: 'relative' }}>
-        <svg viewBox="0 0 2880 90" preserveAspectRatio="none"
-          style={{ display: 'block', width: '200%', height: `${height}px`, animation: 'waveSlide 8s linear infinite' }}>
-          <path d="M0,45 C240,88 480,4 720,45 C960,88 1200,4 1440,45 C1680,88 1920,4 2160,45 C2400,88 2640,4 2880,45 L2880,0 L0,0 Z" fill={from} />
+      <div style={{ lineHeight: 0, background: to }}>
+        <svg viewBox="0 0 1440 90" preserveAspectRatio="none"
+          style={{ display: 'block', width: '100%', height: `${height}px` }}>
+          <path d="M0,45 C240,88 480,4 720,45 C960,88 1200,4 1440,45 L1440,0 L0,0 Z" fill={from} />
         </svg>
       </div>
     );

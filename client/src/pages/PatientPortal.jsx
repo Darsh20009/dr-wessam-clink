@@ -55,29 +55,26 @@ const STYLE = `
 
   /* ── Glassmorphism stat pills ── */
   .pp-glass-pill {
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
     border-radius: 14px;
     padding: 14px 18px;
     text-align: center;
     transition: all 0.25s;
   }
   .pp-glass-pill:hover {
-    background: rgba(255,255,255,0.17);
+    background: rgba(255,255,255,0.22);
     transform: translateY(-3px);
-    border-color: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.35);
   }
 
   /* ── Avatar ── */
   .pp-avatar {
     width: 76px; height: 76px; border-radius: 50%;
-    background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08));
-    border: 3px solid rgba(255,255,255,0.35);
+    background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.12));
+    border: 3px solid rgba(255,255,255,0.4);
     display: flex; align-items: center; justify-content: center;
     font-size: 28px; font-weight: 900; color: white;
-    backdrop-filter: blur(8px);
     flex-shrink: 0;
     animation: glowPulse 3s ease-in-out infinite;
   }

@@ -12,7 +12,7 @@ const STYLE = `
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.2)} }
   @keyframes slideLeft { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
 
-  .p-nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid #e2e8f0; padding: 0 6%; display: flex; align-items: center; justify-content: space-between; height: 64px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+  .p-nav { position: sticky; top: 0; z-index: 100; background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 0 6%; display: flex; align-items: center; justify-content: space-between; height: 64px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
   .p-section { padding: 72px 6%; }
   .p-section-inner { max-width: 1200px; margin: 0 auto; }
   .p-tag { display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 30px; padding: 4px 13px; font-size: 12.5px; font-weight: 700; margin-bottom: 12px; }

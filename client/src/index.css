@@ -12,15 +12,12 @@ html {
 }
 
 html, body {
-  touch-action: pan-x pan-y;
-  overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
 body {
-  overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -297,8 +294,7 @@ tbody tr:hover { background: var(--gray-50); }
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15,23,42,0.45);
-  backdrop-filter: blur(4px);
+  background: rgba(15,23,42,0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -486,8 +482,8 @@ tbody tr:hover { background: var(--gray-50); }
   border-radius: 8px;
 }
 
-/* ── GPU HINTS ── */
-.stat-card, .card, .btn, .modal { will-change: transform; }
+/* ── GPU HINTS (only on elements that actually animate) ── */
+.modal { will-change: transform; }
 .modal-overlay { will-change: opacity; }
 
 /* ── SCROLLBAR ── */

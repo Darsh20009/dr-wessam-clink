@@ -89,8 +89,6 @@ const STYLE = `
     background: rgba(0,0,0,0.52);
     opacity: 0; pointer-events: none;
     transition: opacity 0.3s;
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
   }
   .dl-mobile-backdrop.open { opacity: 1; pointer-events: all; }
 
@@ -113,13 +111,11 @@ const STYLE = `
   .dl-bottom-tabs {
     display: none;
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-    background: rgba(255,255,255,0.97);
+    background: #ffffff;
     border-top: 1px solid #e2e8f0;
     height: 64px;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
   }
   .dl-bottom-tab {
     flex: 1; display: flex; flex-direction: column;
