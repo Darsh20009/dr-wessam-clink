@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { FiDownload, FiAlertCircle } from 'react-icons/fi';
 import toast, { Toaster } from 'react-hot-toast';
+import { htmlToPdfBlob } from '../utils/pdfScreenshot';
 
 export default function ViewReport() {
   const { token } = useParams();
@@ -27,32 +28,14 @@ export default function ViewReport() {
     if (!html) return;
     setDownloading(true);
     try {
-      const { default: html2pdf } = await import('html2pdf.js');
-
-      const iframe = document.createElement('iframe');
-      iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:794px;height:1123px;border:none;visibility:hidden;';
-      document.body.appendChild(iframe);
-
-      try {
-        iframe.contentDocument.open();
-        iframe.contentDocument.write(html);
-        iframe.contentDocument.close();
-
-        await new Promise(r => setTimeout(r, 1800));
-
-        await html2pdf().set({
-          margin: [6, 6, 6, 6],
-          filename: `ملف-${patientName || 'المريض'}.pdf`,
-          image: { type: 'jpeg', quality: 0.92 },
-          html2canvas: { scale: 1.5, useCORS: true, allowTaint: true, logging: false, windowWidth: 794 },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: 'css' },
-        }).from(iframe.contentDocument.body).save();
-
-        toast.success('تم تحميل الملف');
-      } finally {
-        document.body.removeChild(iframe);
-      }
+      const blob = await htmlToPdfBlob(html, { filename: `ملف-${patientName || 'المريض'}.pdf` });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ملف-${patientName || 'المريض'}.pdf`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      toast.success('تم تحميل الملف ✅');
     } catch (e) {
       console.error(e);
       toast.error('فشل تحميل الملف');

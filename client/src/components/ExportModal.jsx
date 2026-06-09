@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FiX, FiDownload, FiMail, FiCheck, FiArrowRight, FiFileText, FiCamera, FiDollarSign, FiList, FiLink } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { exportPatientPDF } from '../utils/exportPDF';
+import { htmlToPdfBlob } from '../utils/pdfScreenshot';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -63,42 +64,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
   };
 
   const buildPdfBlob = async (htmlString) => {
-    const { default: html2pdf } = await import('html2pdf.js');
-
-    // Use iframe so <head> styles are properly applied
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:794px;height:1123px;border:none;visibility:hidden;';
-    document.body.appendChild(iframe);
-
-    try {
-      iframe.contentDocument.open();
-      iframe.contentDocument.write(htmlString);
-      iframe.contentDocument.close();
-
-      // Wait for fonts/images to render
-      await new Promise(r => setTimeout(r, 1800));
-
-      const blob = await html2pdf().set({
-        margin: [6, 6, 6, 6],
-        filename: `ملف-${patient.fullName}.pdf`,
-        image: { type: 'jpeg', quality: 0.92 },
-        html2canvas: {
-          scale: 1.5,
-          useCORS: true,
-          allowTaint: true,
-          logging: false,
-          windowWidth: 794,
-          scrollX: 0,
-          scrollY: 0,
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: 'css' },
-      }).from(iframe.contentDocument.body).outputPdf('blob');
-
-      return blob;
-    } finally {
-      document.body.removeChild(iframe);
-    }
+    return await htmlToPdfBlob(htmlString, { filename: `ملف-${patient.fullName}.pdf` });
   };
 
   const handleGenerate = async () => {
@@ -125,7 +91,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
         }
       }
 
-      setLoadingStep('جاري تحويل الملف إلى PDF...');
+      setLoadingStep('جاري تصوير الصفحات وإنشاء PDF...');
       const pdfBlob = await buildPdfBlob(html);
       setPdfFileBlob(pdfBlob);
       setPdfPreviewUrl(URL.createObjectURL(pdfBlob));
