@@ -15,7 +15,7 @@ export default function ViewReport() {
   const iframeRef = useRef(null);
 
   useEffect(() => {
-    axios.get(`/api/shared-reports/${token}`)
+    axios.get(`/shared-reports/${token}`)
       .then(r => {
         setHtml(r.data.htmlContent);
         setPatientName(r.data.patientName);
