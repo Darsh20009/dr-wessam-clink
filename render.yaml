@@ -4,8 +4,8 @@ services:
     env: node
     region: frankfurt
     plan: free
-    buildCommand: npm install --prefix server && npm install --prefix client && npm run build --prefix client
-    startCommand: cd server && NODE_ENV=production node index.js
+    buildCommand: cd server && npm install && cd ../client && npm install && npm run build
+    startCommand: node server/index.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -17,4 +17,6 @@ services:
       - key: VAPID_PUBLIC_KEY
         sync: false
       - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_EMAIL
         sync: false

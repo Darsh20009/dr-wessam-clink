@@ -97,47 +97,36 @@ app.use('/api/messages', messageRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Dr. Wessam Clinic API v3' }));
 
-// ─── Serve React build in production ──────────────────────────────
-if (process.env.NODE_ENV === 'production') {
-  const clientDist = path.join(__dirname, '..', 'client', 'dist');
-  const indexHtml = path.join(clientDist, 'index.html');
+// ─── Serve React build (whenever dist exists) ─────────────────────
+const clientDist = path.join(__dirname, '..', 'client', 'dist');
+const indexHtml  = path.join(clientDist, 'index.html');
 
-  console.log('📁 Client dist path:', clientDist);
-  console.log('📄 index.html exists:', fs.existsSync(indexHtml));
+console.log('📁 Client dist path:', clientDist);
+console.log('📄 index.html exists:', fs.existsSync(indexHtml));
 
-  if (!fs.existsSync(indexHtml)) {
-    console.error('❌ client/dist/index.html not found — frontend was not built!');
-    app.get('*', (req, res) => {
-      if (req.path.startsWith('/api')) return res.status(404).json({ message: 'Not found' });
-      res.status(503).send(`
-        <html><body style="font-family:sans-serif;text-align:center;padding:60px">
-          <h2>⚙️ الموقع قيد الإعداد</h2>
-          <p>يرجى المحاولة مرة أخرى خلال دقائق</p>
-          <p style="color:#999;font-size:12px">Build not found — please redeploy</p>
-        </body></html>
-      `);
-    });
-  } else {
-    app.use(express.static(clientDist, {
-      maxAge: '1y',
-      immutable: true,
-      setHeaders: (res, filePath) => {
-        if (filePath.endsWith('.html')) {
-          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        }
-      },
-    }));
+if (fs.existsSync(indexHtml)) {
+  app.use(express.static(clientDist, {
+    maxAge: '1y',
+    immutable: true,
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
+    },
+  }));
 
-    app.get('/sitemap.xml', (req, res) => res.sendFile(path.join(clientDist, 'sitemap.xml')));
-    app.get('/robots.txt', (req, res) => res.sendFile(path.join(clientDist, 'robots.txt')));
+  app.get('/sitemap.xml', (req, res) => res.sendFile(path.join(clientDist, 'sitemap.xml')));
+  app.get('/robots.txt',  (req, res) => res.sendFile(path.join(clientDist, 'robots.txt')));
 
-    app.get('*', (req, res) => {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.sendFile(indexHtml);
-    });
-  }
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api')) return res.status(404).json({ message: 'Not found' });
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.sendFile(indexHtml);
+  });
+} else {
+  console.warn('⚠️  client/dist not found — running API-only mode (run the frontend build first)');
 }
 
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on 0.0.0.0:${PORT} [${process.env.NODE_ENV || 'development'}]`);
 });
