@@ -3,7 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { PasskeyManager } from '../components/PasskeyButton';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import toast from 'react-hot-toast';
-import { FiKey, FiBell, FiShield, FiUser } from 'react-icons/fi';
+import { FiKey, FiBell, FiShield, FiUser, FiPrinter } from 'react-icons/fi';
+import { printTestPage } from '../utils/printInvoice';
 
 export default function Settings() {
   const { user } = useAuth();
@@ -113,6 +114,37 @@ export default function Settings() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Print Test */}
+        <div className="card">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ background: '#eff6ff', color: '#2563eb', borderRadius: '12px', padding: '12px', fontSize: '22px' }}>
+              <FiPrinter />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '16px' }}>إعدادات الطباعة</div>
+              <div style={{ fontSize: '13px', color: '#64748b' }}>اختبار الطابعة والتأكد من صحة الطباعة العربية</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ background: '#f0f9ff', borderRadius: 10, padding: '12px 14px', fontSize: 13, color: '#0369a1', lineHeight: 1.7 }}>
+              💡 وصّل الطابعة عبر <strong>USB</strong> أو شبكة Wi-Fi، ثم اضغط اختبار الطباعة. سيفتح نافذة بها صفحة اختبار كاملة بالعربي — اختر الطابعة المناسبة من نافذة الطباعة.
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <button
+                onClick={async () => { await printTestPage(); }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 16px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, fontFamily: 'Cairo, sans-serif', cursor: 'pointer' }}>
+                <FiPrinter size={16} /> اختبار الطباعة
+              </button>
+              <div style={{ background: '#f8fafc', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
+                <div style={{ fontWeight: 700, color: '#334155', marginBottom: 4 }}>أنواع الطابعات المدعومة:</div>
+                📄 طابعات A4 المكتبية (USB / شبكة)<br />
+                🧾 طابعات حرارية 72mm / 80mm<br />
+                🏥 طابعات المستشفيات والعيادات
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Security Info */}

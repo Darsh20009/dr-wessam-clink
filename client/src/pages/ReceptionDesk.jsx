@@ -3,12 +3,12 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiSearch, FiUser, FiPhone, FiPlus, FiPrinter, FiDollarSign, FiCalendar, FiLogOut, FiFileText } from 'react-icons/fi';
+import { FiSearch, FiUser, FiPhone, FiPlus, FiPrinter, FiDollarSign, FiCalendar, FiLogOut, FiFileText, FiX } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { printInvoice } from '../utils/printInvoice';
+import { printInvoice, printTestPage } from '../utils/printInvoice';
 
-const statusMap = { paid: '#10b981', partial: '#f59e0b', overdue: '#ef4444', pending: '#94a3b8' };
+const statusMap   = { paid: '#10b981', partial: '#f59e0b', overdue: '#ef4444', pending: '#94a3b8' };
 const statusLabel = { paid: 'مدفوع', partial: 'جزئي', overdue: 'متأخر', pending: 'معلق' };
 
 const STYLE = `
@@ -39,6 +39,13 @@ const STYLE = `
   .rd-form-input:focus { border-color: #2563eb; }
   .rd-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .rd-empty { text-align: center; padding: 48px 20px; color: #94a3b8; }
+  .rd-print-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .rd-print-modal { background: white; border-radius: 20px; padding: 28px; max-width: 420px; width: 100%; box-shadow: 0 24px 80px rgba(0,0,0,0.2); }
+  .rd-print-opt { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 20px 14px; border-radius: 14px; border: 2px solid #e2e8f0; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 15px; transition: all 0.2s; background: white; }
+  .rd-print-opt:hover { border-color: #2563eb; background: #eff6ff; color: #2563eb; }
+  .rd-print-opt .icon { font-size: 32px; }
+  .rd-print-opt .sub { font-size: 11px; color: #64748b; font-weight: 600; }
+  .rd-print-opt:hover .sub { color: #2563eb; }
   @media (max-width: 480px) {
     .rd-stats { grid-template-columns: repeat(3, 1fr); }
     .rd-actions { grid-template-columns: 1fr; }
@@ -49,13 +56,19 @@ const STYLE = `
 export default function ReceptionDesk() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [phone, setPhone] = useState('');
-  const [searching, setSearching] = useState(false);
-  const [patient, setPatient] = useState(null);
-  const [sessions, setSessions] = useState([]);
+  const [phone, setPhone]           = useState('');
+  const [searching, setSearching]   = useState(false);
+  const [patient, setPatient]       = useState(null);
+  const [sessions, setSessions]     = useState([]);
   const [showSessionForm, setShowSessionForm] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [sessionForm, setSessionForm] = useState({ sessionDate: new Date().toISOString().slice(0,10), notes: '', nextAppointment: '', amountPaid: '', remainingAmount: '' });
+  const [saving, setSaving]         = useState(false);
+  const [printing, setPrinting]     = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [lastSession, setLastSession] = useState(null);
+  const [sessionForm, setSessionForm] = useState({
+    sessionDate: new Date().toISOString().slice(0, 10),
+    notes: '', nextAppointment: '', amountPaid: '', remainingAmount: '',
+  });
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -85,16 +98,21 @@ export default function ReceptionDesk() {
     if (!sessionForm.sessionDate) return toast.error('يرجى إدخال تاريخ الجلسة');
     setSaving(true);
     try {
-      await axios.post('/sessions', {
+      const newSession = {
         patientId: patient._id,
         sessionDate: sessionForm.sessionDate,
         notes: sessionForm.notes,
         nextAppointment: sessionForm.nextAppointment || undefined,
         amountPaid: parseFloat(sessionForm.amountPaid) || 0,
         remainingAmount: parseFloat(sessionForm.remainingAmount) || 0,
-      });
+      };
+      await axios.post('/sessions', newSession);
       if (parseFloat(sessionForm.amountPaid) > 0) {
-        await axios.post('/payments', { patientId: patient._id, patientName: patient.fullName, amount: parseFloat(sessionForm.amountPaid), type: 'session', method: 'cash', notes: `كشف - استقبال` });
+        await axios.post('/payments', {
+          patientId: patient._id, patientName: patient.fullName,
+          amount: parseFloat(sessionForm.amountPaid), type: 'session',
+          method: 'cash', notes: 'كشف - استقبال',
+        });
         const updatedPatient = await axios.get(`/patients/${patient._id}`);
         setPatient(updatedPatient.data);
       }
@@ -102,14 +120,18 @@ export default function ReceptionDesk() {
       setSessions(updatedSessions.data || []);
       toast.success('✅ تم إضافة الكشف بنجاح');
       setShowSessionForm(false);
-      if (parseFloat(sessionForm.amountPaid) > 0) {
-        setTimeout(() => {
-          printInvoice({ patient: { ...patient, financials: { ...patient.financials, totalPaid: (patient.financials?.totalPaid || 0) + parseFloat(sessionForm.amountPaid) } }, session: { sessionDate: sessionForm.sessionDate, notes: sessionForm.notes, amountPaid: parseFloat(sessionForm.amountPaid) } });
-        }, 300);
-      }
-      setSessionForm({ sessionDate: new Date().toISOString().slice(0,10), notes: '', nextAppointment: '', amountPaid: '', remainingAmount: '' });
+      setLastSession(newSession);
+      if (parseFloat(sessionForm.amountPaid) > 0) setShowPrintModal(true);
+      setSessionForm({ sessionDate: new Date().toISOString().slice(0, 10), notes: '', nextAppointment: '', amountPaid: '', remainingAmount: '' });
     } catch (err) { toast.error(err.response?.data?.message || 'خطأ في إضافة الكشف'); }
     setSaving(false);
+  };
+
+  const doPrint = async (type) => {
+    setShowPrintModal(false);
+    setPrinting(true);
+    await printInvoice({ patient, session: lastSession || sessions[sessions.length - 1], type });
+    setPrinting(false);
   };
 
   const handleLogout = () => { logout(); navigate('/'); };
@@ -120,12 +142,20 @@ export default function ReceptionDesk() {
     <>
       <style>{STYLE}</style>
       <div className="rd-wrap">
+
+        {/* Top Bar */}
         <div className="rd-topbar">
           <div>
             <h1>🏥 لوحة الاستقبال</h1>
             <div className="sub">مرحباً، {user?.name || 'موظف الاستقبال'}</div>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button
+              onClick={async () => { setPrinting(true); await printTestPage(); setPrinting(false); }}
+              disabled={printing}
+              style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', padding: '8px 14px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontFamily: 'Cairo, sans-serif', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <FiPrinter size={14} /> اختبار طباعة
+            </button>
             {user?.role === 'doctor' && (
               <button onClick={() => navigate('/doctor')} style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', padding: '8px 14px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontFamily: 'Cairo, sans-serif', fontWeight: 700 }}>
                 لوحة الطبيب
@@ -138,6 +168,8 @@ export default function ReceptionDesk() {
         </div>
 
         <div className="rd-body">
+
+          {/* Search */}
           <div className="rd-search-card">
             <h2 style={{ fontSize: 16, fontWeight: 800, color: '#0f172a', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
               <FiSearch size={18} color="#2563eb" /> البحث عن مريض
@@ -145,21 +177,20 @@ export default function ReceptionDesk() {
             <form onSubmit={handleSearch}>
               <div className="rd-input-row">
                 <input
-                  className="rd-input"
-                  type="tel"
+                  className="rd-input" type="tel"
                   placeholder="أدخل رقم الجوال (مثال: 01156798324)"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   autoFocus
                 />
                 <button type="submit" className="rd-btn" disabled={searching}>
-                  <FiSearch size={16} />
-                  {searching ? 'جاري البحث...' : 'بحث'}
+                  <FiSearch size={16} /> {searching ? 'جاري البحث...' : 'بحث'}
                 </button>
               </div>
             </form>
           </div>
 
+          {/* Empty state */}
           {!patient && !searching && (
             <div className="rd-empty">
               <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
@@ -168,13 +199,14 @@ export default function ReceptionDesk() {
             </div>
           )}
 
+          {/* Patient card */}
           {patient && (
             <div className="rd-patient-card">
               <div className="rd-patient-header">
                 <div className="rd-avatar">
-                  {patient.user?.avatar ? (
-                    <img src={patient.user.avatar} alt={patient.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-                  ) : patient.fullName?.[0]}
+                  {patient.user?.avatar
+                    ? <img src={patient.user.avatar} alt={patient.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                    : patient.fullName?.[0]}
                 </div>
                 <div style={{ flex: 1 }}>
                   <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', margin: 0 }}>{patient.fullName}</h2>
@@ -195,6 +227,7 @@ export default function ReceptionDesk() {
                 )}
               </div>
 
+              {/* Stats */}
               <div className="rd-stats">
                 <div className="rd-stat">
                   <div className="val" style={{ color: '#1e293b' }}>{(patient.financials?.totalCost || 0).toLocaleString()}</div>
@@ -210,6 +243,7 @@ export default function ReceptionDesk() {
                 </div>
               </div>
 
+              {/* Last session */}
               {sessions.length > 0 && (
                 <div style={{ marginBottom: 14 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 6 }}>آخر جلسة:</div>
@@ -221,15 +255,17 @@ export default function ReceptionDesk() {
                 </div>
               )}
 
+              {/* Actions */}
               <div className="rd-actions">
                 <button className="rd-action-btn" style={{ background: '#eff6ff', color: '#2563eb', border: '1.5px solid #bfdbfe' }} onClick={() => setShowSessionForm(!showSessionForm)}>
                   <FiPlus size={16} /> {showSessionForm ? 'إلغاء' : 'كشف جديد'}
                 </button>
-                <button className="rd-action-btn" style={{ background: '#f0fdf4', color: '#16a34a', border: '1.5px solid #bbf7d0' }} onClick={() => printInvoice({ patient, session: sessions[sessions.length - 1] })}>
+                <button className="rd-action-btn" style={{ background: '#f0fdf4', color: '#16a34a', border: '1.5px solid #bbf7d0' }} onClick={() => { setLastSession(sessions[sessions.length - 1]); setShowPrintModal(true); }} disabled={sessions.length === 0}>
                   <FiPrinter size={16} /> طباعة إيصال
                 </button>
               </div>
 
+              {/* Session form */}
               {showSessionForm && (
                 <div className="rd-new-session-form">
                   <h3 style={{ fontSize: 15, fontWeight: 800, color: '#1e3a8a', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -268,6 +304,33 @@ export default function ReceptionDesk() {
           )}
         </div>
       </div>
+
+      {/* Print Type Modal */}
+      {showPrintModal && (
+        <div className="rd-print-modal-overlay" onClick={() => setShowPrintModal(false)}>
+          <div className="rd-print-modal" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h2 style={{ fontWeight: 900, fontSize: 17, color: '#0f172a', margin: 0 }}>🖨️ اختر نوع الطباعة</h2>
+              <button onClick={() => setShowPrintModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', display: 'flex' }}><FiX size={20} /></button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+              <button className="rd-print-opt" onClick={() => doPrint('full')}>
+                <span className="icon">📄</span>
+                <span>فاتورة A4</span>
+                <span className="sub">طابعة مكتبية / مستشفى</span>
+              </button>
+              <button className="rd-print-opt" onClick={() => doPrint('thermal')}>
+                <span className="icon">🧾</span>
+                <span>إيصال حراري</span>
+                <span className="sub">طابعة 72mm / إيصالات</span>
+              </button>
+            </div>
+            <div style={{ background: '#f0f9ff', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#0369a1', lineHeight: 1.7 }}>
+              💡 <strong>تلميح:</strong> وصّل الطابعة عبر USB ثم اختر نوع الطباعة. سيفتح نافذة الطباعة تلقائياً وتختار الطابعة المناسبة من النظام.
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

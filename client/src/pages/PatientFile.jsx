@@ -176,6 +176,8 @@ export default function PatientFile() {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState({});
   const [savingComment, setSavingComment] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printing, setPrinting] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -408,6 +410,12 @@ export default function PatientFile() {
       <div style={{ marginBottom: '24px' }}>
         <button className="btn btn-secondary btn-sm" style={{ marginBottom: '12px' }} onClick={() => navigate('/doctor/patients')}><FiArrowRight /> رجوع للمرضى</button>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg,#2563eb,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 22, fontWeight: 900, flexShrink: 0, overflow: 'hidden', border: '2.5px solid #bfdbfe' }}>
+              {patient.user?.avatar
+                ? <img src={patient.user.avatar} alt={patient.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : patient.fullName?.[0]}
+            </div>
           <div>
             <h1 className="page-title">{patient.fullName}</h1>
             <div style={{ display: 'flex', gap: '12px', marginTop: '6px', flexWrap: 'wrap' }}>
@@ -416,6 +424,7 @@ export default function PatientFile() {
               <span className={`badge ${statusMap[patient.financials?.status]}`}>{statusLabel[patient.financials?.status]}</span>
               {remaining > 0 && <span className="badge badge-danger">متبقي: {remaining.toLocaleString()} ج.م</span>}
             </div>
+          </div>
           </div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {!editMode ? (
@@ -426,7 +435,7 @@ export default function PatientFile() {
                 <button className="btn btn-primary" disabled={saving} onClick={handleSave}><FiSave /> {saving ? 'جاري...' : 'حفظ'}</button>
               </>
             )}
-            <button className="btn btn-secondary" onClick={() => printInvoice({ patient, session: sessions[sessions.length - 1] })} title="طباعة إيصال"><FiPrinter /> طباعة</button>
+            <button className="btn btn-secondary" onClick={() => setShowPrintModal(true)} title="طباعة إيصال" disabled={printing}><FiPrinter /> {printing ? 'جاري...' : 'طباعة'}</button>
             <button className="btn btn-success" onClick={() => setShowPayment(true)}><FiDollarSign /> تسجيل دفع</button>
             <button className="btn btn-primary" onClick={() => { setShowAddSession(true); setActiveTab('sessions'); }}><FiPlus /> جلسة جديدة</button>
           </div>
@@ -808,6 +817,42 @@ export default function PatientFile() {
                 <button type="submit" className="btn btn-success"><FiDollarSign /> تسجيل الدفع</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Print Type Modal ── */}
+      {showPrintModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setShowPrintModal(false)}>
+          <div style={{ background: 'white', borderRadius: 20, padding: 28, maxWidth: 400, width: '100%', boxShadow: '0 24px 80px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h2 style={{ fontWeight: 900, fontSize: 17, color: '#0f172a', margin: 0 }}>🖨️ اختر نوع الطباعة</h2>
+              <button onClick={() => setShowPrintModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 22 }}>×</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+              {[
+                { type: 'full',    icon: '📄', label: 'فاتورة A4',    sub: 'طابعة مكتبية / مستشفى' },
+                { type: 'thermal', icon: '🧾', label: 'إيصال حراري', sub: 'طابعة 72mm / إيصالات' },
+              ].map(opt => (
+                <button key={opt.type}
+                  onClick={async () => {
+                    setShowPrintModal(false);
+                    setPrinting(true);
+                    await printInvoice({ patient, session: sessions[sessions.length - 1], type: opt.type });
+                    setPrinting(false);
+                  }}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '20px 14px', borderRadius: 14, border: '2px solid #e2e8f0', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 800, fontSize: 15, background: 'white', color: '#0f172a', transition: 'all 0.2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor='#2563eb'; e.currentTarget.style.background='#eff6ff'; e.currentTarget.style.color='#2563eb'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor='#e2e8f0'; e.currentTarget.style.background='white'; e.currentTarget.style.color='#0f172a'; }}>
+                  <span style={{ fontSize: 32 }}>{opt.icon}</span>
+                  <span>{opt.label}</span>
+                  <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>{opt.sub}</span>
+                </button>
+              ))}
+            </div>
+            <div style={{ background: '#f0f9ff', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#0369a1', lineHeight: 1.7 }}>
+              💡 وصّل الطابعة عبر USB ثم اختر النوع المناسب. ستفتح نافذة الطباعة تلقائياً.
+            </div>
           </div>
         </div>
       )}
