@@ -12,7 +12,7 @@ const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
   html, body { overflow-x: hidden !important; max-width: 100vw !important; }
-  body { background: #0a1628 !important; }
+  body { background: white !important; }
   .login-root { font-family: 'Cairo', sans-serif; direction: rtl; -webkit-font-smoothing: antialiased; }
 
   @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
@@ -276,33 +276,32 @@ export default function Login() {
           </button>
         </div>
 
-        {/* Video background */}
-        <video ref={bgVideoRef} autoPlay muted loop playsInline
-          onCanPlay={() => { if (bgVideoRef.current) bgVideoRef.current.playbackRate = 4; }}
-          style={{
-            position: 'absolute', inset: 0, width: '100%', height: '100%',
-            objectFit: 'cover', zIndex: 0,
-          }}>
-          <source src="/bg-video.mp4" type="video/mp4" />
-        </video>
-        {/* Dark overlay */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(135deg, rgba(15,23,42,0.75) 0%, rgba(30,58,138,0.65) 50%, rgba(15,23,42,0.75) 100%)',
-          zIndex: 1,
-        }} />
-
-        {/* Floating geometric shapes */}
-        <div style={{ position: 'absolute', top: '12%', right: '42%', width: '64px', height: '64px', border: '2px solid rgba(37,99,235,0.15)', borderRadius: '16px', animation: 'float 8s ease-in-out infinite', transform: 'rotate(20deg)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '18%', right: '44%', width: '40px', height: '40px', border: '2px solid rgba(6,182,212,0.2)', borderRadius: '50%', animation: 'float 6s ease-in-out infinite 1s', pointerEvents: 'none' }} />
-
-        {/* ── LEFT BRAND PANEL ── */}
+        {/* ── LEFT BRAND PANEL — video fills this column naturally ── */}
         <div className="login-left-panel" style={{
           flex: 1, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           padding: '60px 48px', position: 'relative', zIndex: 2,
+          overflow: 'hidden',
           animation: 'fadeUp 0.6s ease-out',
         }}>
+          {/* Video fills left panel only */}
+          <video ref={bgVideoRef} autoPlay muted loop playsInline
+            onCanPlay={() => { if (bgVideoRef.current) bgVideoRef.current.playbackRate = 4; }}
+            style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'cover', zIndex: 0,
+            }}>
+            <source src="/bg-video.mp4" type="video/mp4" />
+          </video>
+          {/* Very subtle overlay — just enough for text readability */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(160deg, rgba(10,22,50,0.42) 0%, rgba(20,50,120,0.32) 60%, rgba(10,22,50,0.42) 100%)',
+            zIndex: 1,
+          }} />
+
+          {/* All content above video */}
+          <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '320px' }}>
 
           {/* Logo */}
           <div style={{
@@ -368,20 +367,22 @@ export default function Login() {
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.7)'; e.currentTarget.style.color = '#475569'; }}>
             <FiArrowRight size={14} /> العودة للموقع
           </button>
+          </div>{/* end content wrapper */}
         </div>
 
-        {/* ── RIGHT FORM ── */}
+        {/* ── RIGHT FORM — solid white, no video bleed ── */}
         <div className="login-right-panel" style={{
           width: '480px', display: 'flex', alignItems: 'center',
           justifyContent: 'center', padding: '40px',
           position: 'relative', zIndex: 2,
+          background: 'white',
           animation: 'fadeUp 0.6s ease-out 0.1s both',
         }}>
           <div style={{
             background: 'white',
             borderRadius: '20px', padding: '36px', width: '100%',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.05)',
-            border: '1px solid rgba(255,255,255,0.8)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
+            border: '1px solid #e2e8f0',
           }}>
 
             {/* Header */}
