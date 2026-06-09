@@ -53,18 +53,17 @@ router.get('/:id', auth, async (req, res) => {
 router.post('/', auth, doctorOnly, async (req, res) => {
   try {
     const { fullName, phone, dateOfBirth, age, address, diagnosis, treatmentPlan, financials } = req.body;
-    const existing = await Patient.findOne({ phone });
-    if (existing) return res.status(400).json({ message: 'رقم الجوال مسجل مسبقاً' });
     const patient = new Patient({ fullName, phone, dateOfBirth, age, address, diagnosis, treatmentPlan, financials: financials || {} });
     await patient.save();
-    let user = await User.findOne({ phone });
+    // Link to existing user or create a new one — never overwrite an existing patientId
+    let user = await User.findOne({ phone, role: 'patient' });
     if (!user) {
       user = new User({ name: fullName, phone, role: 'patient', patientId: patient._id });
       await user.save();
-    } else {
-      user.patientId = patient._id;
-      await user.save();
     }
+    // Link patient record back to its user
+    patient.userId = user._id;
+    await patient.save();
     res.status(201).json(patient);
   } catch (err) {
     res.status(500).json({ message: err.message });

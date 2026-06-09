@@ -21,7 +21,7 @@ const xraySchema = new mongoose.Schema({
 
 const patientSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
-  phone: { type: String, required: true, unique: true },
+  phone: { type: String, required: true },
   dateOfBirth: Date,
   age: Number,
   address: String,

@@ -69,7 +69,16 @@ if (!MONGODB_URI) {
   console.error('❌ MONGODB_URI environment variable is not set!');
 } else {
   mongoose.connect(MONGODB_URI)
-    .then(() => console.log('✅ Connected to MongoDB'))
+    .then(async () => {
+      console.log('✅ Connected to MongoDB');
+      // Drop the old unique index on phone in patients collection (allow duplicate phones)
+      try {
+        await mongoose.connection.collection('patients').dropIndex('phone_1');
+        console.log('✅ Dropped unique phone index on patients');
+      } catch (e) {
+        // Index may not exist or already dropped — safe to ignore
+      }
+    })
     .catch(err => console.error('❌ MongoDB connection error:', err));
 }
 
