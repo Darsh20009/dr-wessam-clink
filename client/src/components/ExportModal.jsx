@@ -30,11 +30,15 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
   const [loadingStep, setLoadingStep] = useState('');
   const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
   const [pdfFileBlob, setPdfFileBlob] = useState(null);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
   const iframeRef = useRef(null);
 
   useEffect(() => {
-    return () => { if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl); };
-  }, [pdfBlobUrl]);
+    return () => {
+      if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
+      if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
+    };
+  }, [pdfBlobUrl, pdfPreviewUrl]);
 
   const toggleDest = (k) => setDest(d => ({ ...d, [k]: !d[k] }));
   const toggleOpt = (k) => setOpts(o => ({ ...o, [k]: !o[k] }));
@@ -107,6 +111,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
       setLoadingStep('جاري تحويل الملف إلى PDF...');
       const pdfBlob = await buildPdfBlob(html);
       setPdfFileBlob(pdfBlob);
+      setPdfPreviewUrl(URL.createObjectURL(pdfBlob));
 
       setStep(2);
     } catch (e) {
@@ -163,9 +168,21 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
 
   const handleEmail = () => {
     if (!email) { toast.error('أدخل البريد الإلكتروني'); return; }
+
+    // Auto-download PDF first so user can attach it
+    if (pdfFileBlob) {
+      const url = URL.createObjectURL(pdfFileBlob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fileName; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+
     const subject = encodeURIComponent(`ملف المريض — ${patient.fullName}`);
-    const body = encodeURIComponent(`السلام عليكم ${patient.fullName}\n\nمرفق ملفك الطبي من عيادة د. وسام يوسف\n\nللاستفسار: ${siteInfo?.phone || '+20 115 679 8324'}`);
-    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    const body = encodeURIComponent(
+      `السلام عليكم ${patient.fullName}\n\nمرفق ملفك الطبي من عيادة د. وسام يوسف\n\n📎 تم تحميل ملف PDF — أرفقه في الرسالة\n\nللاستفسار: ${siteInfo?.phone || '+20 115 679 8324'}`
+    );
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+    toast.success('تم تحميل الملف وفتح تطبيق البريد ✅', { duration: 5000 });
   };
 
   const Toggle = ({ checked, onChange }) => (
@@ -205,7 +222,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
     </div>
   );
 
-  if (step === 2 && pdfBlobUrl) {
+  if (step === 2 && pdfPreviewUrl) {
     return (
       <div style={{ position: 'fixed', inset: 0, background: '#0f172a', zIndex: 99999, display: 'flex', flexDirection: 'column', direction: 'rtl' }}>
         <div style={{ background: '#1e3a8a', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
@@ -232,7 +249,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
             </button>
           </div>
         </div>
-        <iframe ref={iframeRef} src={pdfBlobUrl} style={{ flex: 1, border: 'none', background: 'white' }} title="معاينة الملف" />
+        <iframe ref={iframeRef} src={pdfPreviewUrl} style={{ flex: 1, border: 'none', background: 'white' }} title="معاينة الملف" />
       </div>
     );
   }
