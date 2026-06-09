@@ -82,16 +82,41 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
     toast.success('تم التحميل');
   };
 
-  const handleWhatsapp = () => {
+  const handleWhatsapp = async () => {
     const cleaned = normalizePhone(phone);
     if (!cleaned || cleaned.length < 10) {
       toast.error('أدخل رقم واتساب صحيح');
       return;
     }
-    const msg = encodeURIComponent(
-      `السلام عليكم ${patient.fullName} 😊\nتحية من عيادة د. وسام يوسف\nنرفق لكم ملفكم الطبي عبر بوابة المريض.`
-    );
-    window.open(`https://wa.me/${cleaned}?text=${msg}`, '_blank');
+
+    const fileName = `ملف-${patient.fullName}-${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.html`;
+    const msgText = `السلام عليكم ${patient.fullName} 😊\nتحية من عيادة د. وسام يوسف\nمرفق ملفك الطبي الكامل — يمكنك فتحه على أي متصفح.`;
+
+    try {
+      const blob = await fetch(pdfBlobUrl).then(r => r.blob());
+      const file = new File([blob], fileName, { type: 'text/html' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `ملف المريض — ${patient.fullName}`,
+          text: msgText,
+        });
+        return;
+      }
+    } catch {}
+
+    const a = document.createElement('a');
+    a.href = pdfBlobUrl;
+    a.download = fileName;
+    a.click();
+
+    setTimeout(() => {
+      const msg = encodeURIComponent(msgText + '\n\n📎 الملف تم تحميله على جهازك — أرفقه في المحادثة.');
+      window.open(`https://wa.me/${cleaned}?text=${msg}`, '_blank');
+    }, 800);
+
+    toast.success('تم تحميل الملف — أرفقه في محادثة واتساب', { duration: 5000 });
   };
 
   const handleEmail = () => {
@@ -187,7 +212,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
             <label style={{ fontWeight: 700, fontSize: 12, color: '#166534', display: 'block', marginBottom: 5 }}>رقم واتساب المريض</label>
             <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="01156798324 أو +20..." dir="ltr"
               style={{ width: '100%', padding: '7px 10px', border: '1.5px solid #bbf7d0', borderRadius: 8, fontSize: 13, fontFamily: 'Cairo, sans-serif', outline: 'none', boxSizing: 'border-box' }} />
-            <div style={{ fontSize: 11, color: '#16a34a', marginTop: 4 }}>سيُفتح واتساب برسالة جاهزة للمريض</div>
+            <div style={{ fontSize: 11, color: '#16a34a', marginTop: 4 }}>📎 سيُحمَّل الملف تلقائياً ثم يُفتح واتساب — أرفق الملف في المحادثة</div>
           </div>
         )}
 
