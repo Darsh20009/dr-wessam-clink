@@ -1,0 +1,123 @@
+aa65a79
+neww edit
+
+Rollback
+Exited with status 1 while running your code.
+Read our docs for common ways to troubleshoot your deploy.
+
+All logs
+Search
+Search
+
+Jun 9, 11:26 PM - 11:29 PM
+GMT+3
+
+
+
+==> Downloading cache...
+==> Cloning from https://github.com/Darsh20009/dr-wessam-clink
+==> Checking out commit aa65a7932f94681bcfb7ff748f3759dd5a2df864 in branch main
+==> Downloaded 59MB in 1s. Extraction took 0s.
+==> Requesting Node.js version >=18.0.0
+==> Using Node.js version 26.3.0 via /opt/render/project/src/package.json
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Installing Node.js version 26.3.0...
+==> Running build command 'cd server && npm install && cd ../client && npm install && npm run build'...
+added 162 packages, and audited 163 packages in 2s
+19 packages are looking for funding
+  run `npm fund` for details
+found 0 vulnerabilities
+added 160 packages, and audited 161 packages in 7s
+15 packages are looking for funding
+  run `npm fund` for details
+2 moderate severity vulnerabilities
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+Run `npm audit` for details.
+> dr-wessam-client@1.0.0 build
+> vite build
+vite v5.4.21 building for production...
+transforming...
+✓ 2178 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                   14.90 kB │ gzip:   4.02 kB
+dist/assets/index-BxeQhJf6.css                    13.97 kB │ gzip:   3.59 kB
+dist/assets/pdfScreenshot-DoDwgK7K.js              1.72 kB │ gzip:   0.96 kB
+dist/assets/addToCalendar-BQs2zY40.js              1.73 kB │ gzip:   0.98 kB
+dist/assets/usePushNotifications-CQrTUGjR.js       1.94 kB │ gzip:   0.97 kB
+dist/assets/ViewReport-0VTtYgMI.js                 3.58 kB │ gzip:   1.63 kB
+dist/assets/Reports-rVDTEDOd.js                    4.18 kB │ gzip:   1.77 kB
+dist/assets/Patients-DNIn-_dO.js                   4.20 kB │ gzip:   1.81 kB
+dist/assets/PasskeyButton-DFGAm-Pm.js              4.27 kB │ gzip:   2.03 kB
+dist/assets/NewPatient-6ndUt84F.js                 4.73 kB │ gzip:   1.66 kB
+dist/assets/Notifications-DUWLvsTG.js              5.82 kB │ gzip:   2.23 kB
+dist/assets/Payments-CEzigDvm.js                   6.19 kB │ gzip:   2.42 kB
+dist/assets/Settings-BvVPh0g5.js                   7.34 kB │ gzip:   2.33 kB
+dist/assets/Appointments-Biak9CPw.js               7.46 kB │ gzip:   2.78 kB
+dist/assets/Employees-DohcMX7O.js                  8.01 kB │ gzip:   3.01 kB
+dist/assets/InternalMessages-v6v2aHTu.js           8.03 kB │ gzip:   2.96 kB
+dist/assets/webauthn-CQQtXU8a.js                   8.58 kB │ gzip:   2.83 kB
+dist/assets/DoctorDashboard-CCxeEv6r.js            8.92 kB │ gzip:   3.10 kB
+dist/assets/index-7w0ICtUs.js                      9.51 kB │ gzip:   3.38 kB
+dist/assets/Wallet-6ODDbJxc.js                     9.55 kB │ gzip:   2.85 kB
+dist/assets/DoctorPaymentRequests-C818Wnnr.js      9.72 kB │ gzip:   3.50 kB
+dist/assets/EmployeeCard-Le4qQZLV.js              10.62 kB │ gzip:   3.66 kB
+dist/assets/PatientCard-D3V8hzeJ.js               12.15 kB │ gzip:   3.89 kB
+dist/assets/SelfRegister-YP5LLh0i.js              12.17 kB │ gzip:   3.82 kB
+dist/assets/ForgotPassword-BOxwek6Z.js            12.18 kB │ gzip:   4.03 kB
+dist/assets/ReceptionDesk-BsitkGX6.js             16.06 kB │ gzip:   4.89 kB
+dist/assets/exportPDF-CeDPlCQE.js                 16.76 kB │ gzip:   4.93 kB
+dist/assets/SiteManager---sqquK_.js               21.44 kB │ gzip:   4.92 kB
+dist/assets/Login-C_QWF3NV.js                     21.96 kB │ gzip:   6.55 kB
+dist/assets/Presentation-D--8JqkX.js              24.60 kB │ gzip:   7.24 kB
+dist/assets/printInvoice-2SskL12O.js              25.69 kB │ gzip:   6.28 kB
+dist/assets/DoctorLayout-DlmYeRWY.js              26.94 kB │ gzip:   7.65 kB
+dist/assets/date-utils-BrB-CsNN.js                27.14 kB │ gzip:   7.62 kB
+dist/assets/icons-DzSkXyEU.js                     30.49 kB │ gzip:   5.58 kB
+dist/assets/http-BjtuyMK1.js                      43.37 kB │ gzip:  16.99 kB
+dist/assets/PatientPortal-MX3h3hmm.js             56.66 kB │ gzip:  13.68 kB
+dist/assets/Landing-CSPSDUS_.js                   73.17 kB │ gzip:  16.72 kB
+dist/assets/PatientFile-9eFoWg-0.js               83.43 kB │ gzip:  19.06 kB
+dist/assets/charts-Dhcf5KNN.js                   337.79 kB │ gzip:  85.09 kB
+dist/assets/qrcode-BWua3NX5.js                   391.90 kB │ gzip: 117.16 kB
+dist/assets/vendor-uczu9yoA.js                 1,026.39 kB │ gzip: 323.95 kB
+(!) Some chunks are larger than 800 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 6.86s
+==> Uploading build...
+==> Uploaded in 5.7s. Compression took 2.6s
+==> Build successful 🎉
+==> Deploying...
+==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+==> Running 'cd server && NODE_ENV=production node index.js'
+node:internal/modules/cjs/loader:1522
+  throw err;
+  ^
+Error: Cannot find module 'sharp'
+Require stack:
+- /opt/render/project/src/server/routes/uploads.js
+- /opt/render/project/src/server/index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1519:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1073:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1097:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1124:12)
+    at Module._load (node:internal/modules/cjs/loader:1296:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.require (node:internal/modules/cjs/loader:1619:12)
+    at require (node:internal/modules/helpers:191:16)
+    at Object.<anonymous> (/opt/render/project/src/server/routes/uploads.js:3:15)
+    at Module._compile (node:internal/modules/cjs/loader:1873:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/opt/render/project/src/server/routes/uploads.js',
+    '/opt/render/project/src/server/index.js'
+  ]
+}
+Node.js v26.3.0
+==> Exited with status 1
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Running 'cd server && NODE_ENV=production node index.js'
+Need better ways to work with logs? Try theRender CLI, Render MCP Server, or set up a log stream integration 
