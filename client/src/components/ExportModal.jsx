@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiX, FiDownload, FiMail, FiCheck, FiArrowRight, FiFileText, FiCamera, FiDollarSign, FiList } from 'react-icons/fi';
+import { FiX, FiDownload, FiMail, FiCheck, FiArrowRight, FiFileText, FiCamera, FiDollarSign, FiList, FiLink } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { exportPatientPDF } from '../utils/exportPDF';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import axios from 'axios';
 
 export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo = {}, onClose }) {
   const [step, setStep] = useState(1);
@@ -31,6 +32,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
   const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
   const [pdfFileBlob, setPdfFileBlob] = useState(null);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+  const [shareUrl, setShareUrl] = useState(null);
   const iframeRef = useRef(null);
 
   useEffect(() => {
@@ -108,6 +110,21 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
       const { blobUrl, html } = await exportPatientPDF({ patient, sessions, ttt, siteInfo, opts: finalOpts });
       setPdfBlobUrl(blobUrl);
 
+      // Generate share link for WhatsApp / Email
+      if (dest.whatsapp || dest.email) {
+        setLoadingStep('جاري إنشاء رابط المشاركة...');
+        try {
+          const { data } = await axios.post('/api/shared-reports', {
+            htmlContent: html,
+            patientName: patient.fullName,
+          });
+          const url = `${window.location.origin}/view/${data.token}`;
+          setShareUrl(url);
+        } catch (e) {
+          console.error('Share link error:', e);
+        }
+      }
+
       setLoadingStep('جاري تحويل الملف إلى PDF...');
       const pdfBlob = await buildPdfBlob(html);
       setPdfFileBlob(pdfBlob);
@@ -137,52 +154,28 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
     const cleaned = normalizePhone(phone);
     if (!cleaned || cleaned.length < 10) { toast.error('أدخل رقم واتساب صحيح'); return; }
 
-    const msgText = `السلام عليكم ${patient.fullName} 😊\nتحية من عيادة د. وسام يوسف\nمرفق ملفك الطبي الكامل.`;
+    const link = shareUrl || '';
+    const msgText = link
+      ? `السلام عليكم ${patient.fullName} 😊\nتحية من عيادة د. وسام يوسف 🦷\n\nيمكنك الاطلاع على ملفك الطبي الكامل من خلال الرابط التالي:\n\n${link}\n\n(الرابط صالح لمدة 30 يوماً)`
+      : `السلام عليكم ${patient.fullName} 😊\nتحية من عيادة د. وسام يوسف 🦷\nمرفق ملفك الطبي الكامل.`;
 
-    // Mobile: try Web Share API (share file directly)
-    if (pdfFileBlob && navigator.canShare) {
-      try {
-        const file = new File([pdfFileBlob], fileName, { type: 'application/pdf' });
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: `ملف المريض — ${patient.fullName}`, text: msgText });
-          return; // success — done
-        }
-      } catch (e) {
-        if (e.name === 'AbortError') return; // user cancelled share sheet
-        // any other error → fall through to wa.me
-      }
-    }
-
-    // Desktop / fallback: auto-download PDF then open WhatsApp
-    if (pdfFileBlob) {
-      const url = URL.createObjectURL(pdfFileBlob);
-      const a = document.createElement('a');
-      a.href = url; a.download = fileName; a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
-    }
-
-    const msg = encodeURIComponent(msgText + '\n\n📎 تم تحميل ملف PDF — أرفقه في المحادثة');
+    const msg = encodeURIComponent(msgText);
     window.open(`https://wa.me/${cleaned}?text=${msg}`, '_blank');
-    toast.success('تم تحميل الملف وفتح واتساب ✅', { duration: 5000 });
+    toast.success('تم فتح واتساب ✅', { duration: 4000 });
   };
 
   const handleEmail = () => {
     if (!email) { toast.error('أدخل البريد الإلكتروني'); return; }
 
-    // Auto-download PDF first so user can attach it
-    if (pdfFileBlob) {
-      const url = URL.createObjectURL(pdfFileBlob);
-      const a = document.createElement('a');
-      a.href = url; a.download = fileName; a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
-    }
-
-    const subject = encodeURIComponent(`ملف المريض — ${patient.fullName}`);
+    const link = shareUrl || '';
+    const subject = encodeURIComponent(`ملفك الطبي — عيادة د. وسام يوسف`);
     const body = encodeURIComponent(
-      `السلام عليكم ${patient.fullName}\n\nمرفق ملفك الطبي من عيادة د. وسام يوسف\n\n📎 تم تحميل ملف PDF — أرفقه في الرسالة\n\nللاستفسار: ${siteInfo?.phone || '+20 115 679 8324'}`
+      link
+        ? `السلام عليكم ${patient.fullName}\n\nيمكنك الاطلاع على ملفك الطبي الكامل وتحميله من خلال الرابط التالي:\n\n${link}\n\n(الرابط صالح لمدة 30 يوماً)\n\nللاستفسار: ${siteInfo?.phone || '+20 115 679 8324'}`
+        : `السلام عليكم ${patient.fullName}\n\nمرفق ملفك الطبي من عيادة د. وسام يوسف\n\nللاستفسار: ${siteInfo?.phone || '+20 115 679 8324'}`
     );
     window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
-    toast.success('تم تحميل الملف وفتح تطبيق البريد ✅', { duration: 5000 });
+    toast.success('تم فتح تطبيق البريد ✅', { duration: 4000 });
   };
 
   const Toggle = ({ checked, onChange }) => (
@@ -244,11 +237,29 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
                 <FiMail size={14}/> بريد
               </button>
             )}
+            {shareUrl && (
+              <button onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success('تم نسخ الرابط ✅'); }}
+                style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '7px 12px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <FiLink size={13}/> نسخ الرابط
+              </button>
+            )}
             <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '7px 10px', color: 'white', cursor: 'pointer' }}>
               <FiX size={16}/>
             </button>
           </div>
         </div>
+
+        {shareUrl && (
+          <div style={{ background: '#0c4a6e', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <FiLink size={13} color="#7dd3fc"/>
+            <span style={{ color: '#7dd3fc', fontSize: 11, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', direction: 'ltr' }}>{shareUrl}</span>
+            <button onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success('تم نسخ الرابط'); }}
+              style={{ background: '#0284c7', border: 'none', borderRadius: 6, padding: '4px 10px', color: 'white', fontSize: 11, fontFamily: 'Cairo, sans-serif', cursor: 'pointer', flexShrink: 0 }}>
+              نسخ
+            </button>
+          </div>
+        )}
+
         <iframe ref={iframeRef} src={pdfPreviewUrl} style={{ flex: 1, border: 'none', background: 'white' }} title="معاينة الملف" />
       </div>
     );

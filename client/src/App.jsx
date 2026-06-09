@@ -48,6 +48,7 @@ const DoctorPaymentRequests = lazy(() => import('./pages/DoctorPaymentRequests')
 const ReceptionDesk = lazy(() => import('./pages/ReceptionDesk'));
 const Employees = lazy(() => import('./pages/Employees'));
 const InternalMessages = lazy(() => import('./pages/InternalMessages'));
+const ViewReport = lazy(() => import('./pages/ViewReport'));
 
 const PageLoader = () => (
   <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px', fontFamily: 'Cairo, sans-serif', background: '#f8fafc' }}>
@@ -80,6 +81,7 @@ const AppRoutes = () => {
         <Route path="/register" element={user ? <Navigate to="/portal" /> : <SelfRegister />} />
         <Route path="/presentation" element={<Presentation />} />
         <Route path="/guide" element={<Presentation />} />
+        <Route path="/view/:token" element={<ViewReport />} />
 
         <Route path="/doctor" element={
           <ProtectedRoute role="doctor"><DoctorLayout /></ProtectedRoute>
