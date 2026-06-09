@@ -139,6 +139,20 @@ router.delete('/:id/images/:category/:imageId', auth, doctorOnly, async (req, re
   }
 });
 
+router.patch('/:id/ttt', auth, doctorOnly, async (req, res) => {
+  try {
+    const patient = await Patient.findByIdAndUpdate(
+      req.params.id,
+      { $set: { tttFile: req.body } },
+      { new: true }
+    );
+    if (!patient) return res.status(404).json({ message: 'المريض غير موجود' });
+    res.json(patient);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.patch('/:id/visibility', auth, doctorOnly, async (req, res) => {
   try {
     const patient = await Patient.findByIdAndUpdate(

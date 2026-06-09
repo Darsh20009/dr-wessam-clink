@@ -8,9 +8,10 @@ import {
   FiArrowRight, FiSave, FiPlus, FiTrash2, FiUpload,
   FiDollarSign, FiCalendar, FiImage, FiFileText, FiActivity, FiEdit2,
   FiEye, FiEyeOff, FiChevronDown, FiChevronUp, FiX, FiMaximize2,
-  FiPrinter, FiMessageSquare, FiSend, FiUser,
+  FiPrinter, FiMessageSquare, FiSend, FiUser, FiShare2,
 } from 'react-icons/fi';
 import { printInvoice } from '../utils/printInvoice';
+import ExportModal from '../components/ExportModal';
 
 const FACE_SLOTS = [
   { type: 'frontal_rest', label: 'Frontal - Rest' },
@@ -53,10 +54,33 @@ const tabs = [
   { id: 'images', label: 'الصور', icon: <FiImage size={13}/> },
   { id: 'xrays', label: 'الأشعة', icon: <FiImage size={13}/> },
   { id: 'sessions', label: 'الجلسات', icon: <FiCalendar size={13}/> },
+  { id: 'ttt', label: 'TTT File', icon: <span style={{fontSize:12}}>📋</span> },
   { id: 'financial', label: 'المالية', icon: <FiDollarSign size={13}/> },
   { id: 'comments', label: 'التعليقات', icon: <FiMessageSquare size={13}/> },
   { id: 'visibility', label: 'الظهور', icon: <FiEye size={13}/> },
 ];
+
+const DEFAULT_TTT = {
+  oh:'', skeletalAP:'', skeletalV:'', skeletalT:'',
+  dentalAP:'', dentalV:'', dentalT:'', st:'', habit:'',
+  obj1:'', obj2:'',
+  obj3:'Align and level both arches.',
+  obj4:'Maintain/ Correct OJ.',
+  obj5:'Maintain/ Correct OB.',
+  obj6:'Maintain/ Correct Midline',
+  obj7:'Achieve Class I Canine and Incisors.',
+  obj8:'Achieve Class I Molar Relationship',
+  obj9:'Coordinate both arches with good Buccal Interdigitation.',
+  obj10:'Retention.',
+  boltonAnterior:'', boltonOverall:'',
+  upperArchLength:'', upperToothSize:'', upperDiscrepancy:'',
+  lowerArchLength:'', lowerToothSize:'', lowerDiscrepancy:'',
+  srCrowding:'', srLevelling:'', srArchWidth:'', srIncisorSagittal:'', srIncisorInclination:'',
+  upperArchLengthening:false, upperTransverse:false, upperIER:false, upperExtractions:false,
+  upperTimingExtr:'', upperTeethExtr:'', upperTimingBond:'', upperTeethBond:'', upperTeethSkip:'',
+  lowerArchLengthening:false, lowerTransverse:false, lowerIER:false, lowerExtractions:false,
+  lowerTimingExtr:'', lowerTeethExtr:'', lowerTimingBond:'', lowerTeethBond:'', lowerTeethSkip:'',
+};
 const statusMap = { paid: 'badge-success', partial: 'badge-warning', overdue: 'badge-danger', pending: 'badge-gray' };
 const statusLabel = { paid: 'مدفوع', partial: 'جزئي', overdue: 'متأخر', pending: 'معلق' };
 
@@ -189,6 +213,9 @@ export default function PatientFile() {
   const [savingComment, setSavingComment] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [printing, setPrinting] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [tttData, setTttData] = useState(DEFAULT_TTT);
+  const [tttSaving, setTttSaving] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -201,9 +228,23 @@ export default function PatientFile() {
       setForm({ ...pRes.data, financials: { ...pRes.data.financials } });
       setSessions(sRes.data);
       setComments(cRes.data || []);
+      if (pRes.data.tttFile && Object.keys(pRes.data.tttFile).length > 0) {
+        setTttData({ ...DEFAULT_TTT, ...pRes.data.tttFile });
+      }
     } catch { toast.error('خطأ في تحميل الملف'); navigate('/doctor/patients'); }
     setLoading(false);
   };
+
+  const handleSaveTTT = async () => {
+    setTttSaving(true);
+    try {
+      await axios.patch(`/patients/${id}/ttt`, tttData);
+      toast.success('تم حفظ TTT File بنجاح ✓');
+    } catch { toast.error('خطأ في الحفظ'); }
+    setTttSaving(false);
+  };
+
+  const setT = (k, v) => setTttData(d => ({ ...d, [k]: v }));
 
   const handleAddComment = async (e) => {
     e.preventDefault();
@@ -640,6 +681,7 @@ export default function PatientFile() {
             )}
             <button className="btn btn-secondary" onClick={() => setShowPrintModal(true)} title="طباعة إيصال" disabled={printing}><FiPrinter /> {printing ? 'جاري...' : 'طباعة'}</button>
             <button className="btn btn-secondary" onClick={() => navigate(`/doctor/patients/${id}/card`)} title="بطاقة المريض" style={{ background: 'linear-gradient(135deg,#064e3b,#047857)', color: 'white', border: 'none' }}>🪪 بطاقة</button>
+            <button className="btn btn-secondary" onClick={() => setShowExport(true)} title="تصدير ملف المريض" style={{ background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: 'white', border: 'none' }}><FiShare2 /> تصدير</button>
             <button className="btn btn-success" onClick={() => setShowPayment(true)}><FiDollarSign /> تسجيل دفع</button>
             <button className="btn btn-primary" onClick={() => { setShowAddSession(true); setActiveTab('sessions'); }}><FiPlus /> جلسة جديدة</button>
           </div>
@@ -793,6 +835,161 @@ export default function PatientFile() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── TTT File Tab ── */}
+      {activeTab === 'ttt' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* Problem List */}
+          <div className="card">
+            <h3 className="section-title" style={{ marginBottom: 16, borderRight: '4px solid #2563eb', paddingRight: 12 }}>Problem List</h3>
+            <div className="form-group"><label>1. OH</label><textarea className="form-control" rows={2} value={tttData.oh} onChange={e => setT('oh', e.target.value)} placeholder="Oral hygiene status..." /></div>
+            <div style={{ marginBottom: 8, fontWeight: 700, fontSize: 13, color: '#334155' }}>2. Skeletal</div>
+            <div className="grid-3" style={{ gap: 10, marginBottom: 12 }}>
+              <div className="form-group" style={{ margin: 0 }}><label>AP</label><input className="form-control" value={tttData.skeletalAP} onChange={e => setT('skeletalAP', e.target.value)} placeholder="Class I / II / III" /></div>
+              <div className="form-group" style={{ margin: 0 }}><label>V (Vertical)</label><input className="form-control" value={tttData.skeletalV} onChange={e => setT('skeletalV', e.target.value)} placeholder="Normo / Hyper / Hypo" /></div>
+              <div className="form-group" style={{ margin: 0 }}><label>T (Transverse)</label><input className="form-control" value={tttData.skeletalT} onChange={e => setT('skeletalT', e.target.value)} placeholder="Normal / Narrow / Wide" /></div>
+            </div>
+            <div style={{ marginBottom: 8, fontWeight: 700, fontSize: 13, color: '#334155' }}>3. Dental</div>
+            <div className="grid-3" style={{ gap: 10, marginBottom: 12 }}>
+              <div className="form-group" style={{ margin: 0 }}><label>AP</label><input className="form-control" value={tttData.dentalAP} onChange={e => setT('dentalAP', e.target.value)} placeholder="Class I / II / III" /></div>
+              <div className="form-group" style={{ margin: 0 }}><label>V (Vertical)</label><input className="form-control" value={tttData.dentalV} onChange={e => setT('dentalV', e.target.value)} placeholder="Normal / Deep / Open" /></div>
+              <div className="form-group" style={{ margin: 0 }}><label>T (Transverse)</label><input className="form-control" value={tttData.dentalT} onChange={e => setT('dentalT', e.target.value)} placeholder="Normal / Crossbite" /></div>
+            </div>
+            <div className="grid-2" style={{ gap: 10 }}>
+              <div className="form-group"><label>4. S.T (Soft Tissue)</label><textarea className="form-control" rows={2} value={tttData.st} onChange={e => setT('st', e.target.value)} placeholder="Soft tissue profile..." /></div>
+              <div className="form-group"><label>5. Habit</label><textarea className="form-control" rows={2} value={tttData.habit} onChange={e => setT('habit', e.target.value)} placeholder="Thumb sucking, mouth breathing..." /></div>
+            </div>
+          </div>
+
+          {/* TTT Objectives */}
+          <div className="card">
+            <h3 className="section-title" style={{ marginBottom: 16, borderRight: '4px solid #2563eb', paddingRight: 12 }}>TTT Objectives</h3>
+            <div className="grid-2" style={{ gap: 10 }}>
+              <div className="form-group"><label>1. OH Objective</label><input className="form-control" value={tttData.obj1} onChange={e => setT('obj1', e.target.value)} placeholder="Oral hygiene improvement..." /></div>
+              <div className="form-group"><label>2. Skeletal Objective</label><input className="form-control" value={tttData.obj2} onChange={e => setT('obj2', e.target.value)} placeholder="Growth modification..." /></div>
+            </div>
+            {[
+              ['obj3', '3. Align & Level'], ['obj4', '4. OJ'], ['obj5', '5. OB'],
+              ['obj6', '6. Midline'], ['obj7', '7. Canine/Incisors Class'],
+              ['obj8', '8. Molar Relationship'], ['obj9', '9. Buccal Interdigitation'], ['obj10', '10. Retention'],
+            ].map(([k, l]) => (
+              <div className="form-group" key={k}><label>{l}</label><input className="form-control" value={tttData[k]} onChange={e => setT(k, e.target.value)} /></div>
+            ))}
+          </div>
+
+          {/* Bolton Analysis */}
+          <div className="card">
+            <h3 className="section-title" style={{ marginBottom: 16, borderRight: '4px solid #2563eb', paddingRight: 12 }}>Bolton Analysis</h3>
+            <div style={{ background: '#f0f9ff', borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 12, color: '#334155', border: '1px solid #bae6fd', lineHeight: 1.8 }}>
+              <div><strong>Anterior Ratio (%) =</strong> Sum M-D (#33–#43) ÷ Sum M-D (#13–#23) × 100</div>
+              <div><strong>Overall Ratio (%) =</strong> Sum M-D (#36–#46) ÷ Sum M-D (#16–#26) × 100</div>
+            </div>
+            <div className="grid-2" style={{ gap: 12 }}>
+              <div className="form-group"><label>Anterior Ratio (%)</label><input className="form-control" type="number" step="0.01" value={tttData.boltonAnterior} onChange={e => setT('boltonAnterior', e.target.value)} placeholder="77.2" /></div>
+              <div className="form-group"><label>Overall Ratio (%)</label><input className="form-control" type="number" step="0.01" value={tttData.boltonOverall} onChange={e => setT('boltonOverall', e.target.value)} placeholder="91.3" /></div>
+            </div>
+          </div>
+
+          {/* Arch Length Analysis */}
+          <div className="card">
+            <h3 className="section-title" style={{ marginBottom: 16, borderRight: '4px solid #2563eb', paddingRight: 12 }}>Tooth Size & Arch Length Analysis</h3>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ background: '#1e3a8a', color: 'white' }}>
+                    {['', 'Total Arch Length', 'Total Tooth Size', 'Discrepancy'].map((h, i) => (
+                      <th key={i} style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 700 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[['Upper (U)', 'upperArchLength', 'upperToothSize', 'upperDiscrepancy'], ['Lower (L)', 'lowerArchLength', 'lowerToothSize', 'lowerDiscrepancy']].map(([row, k1, k2, k3]) => (
+                    <tr key={row} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '8px 14px', fontWeight: 700, background: '#f8fafc', whiteSpace: 'nowrap' }}>{row}</td>
+                      {[k1, k2, k3].map(k => (
+                        <td key={k} style={{ padding: '6px 8px' }}>
+                          <input className="form-control" type="number" step="0.1" value={tttData[k]} onChange={e => setT(k, e.target.value)} placeholder="0.0" style={{ margin: 0 }} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Space Requirements Summary */}
+          <div className="card">
+            <h3 className="section-title" style={{ marginBottom: 16, borderRight: '4px solid #2563eb', paddingRight: 12 }}>Summary of Space Requirements</h3>
+            {[
+              ['srCrowding', 'Crowding and spacing'],
+              ['srLevelling', 'Levelling occlusal curve'],
+              ['srArchWidth', 'Arch width change'],
+              ['srIncisorSagittal', 'Incisor sagittal position change (bodily retraction or protraction)'],
+              ['srIncisorInclination', 'Incisor inclination'],
+            ].map(([k, l]) => (
+              <div className="form-group" key={k}>
+                <label style={{ fontFamily: 'monospace, sans-serif', fontSize: 12 }}>{l}</label>
+                <input className="form-control" value={tttData[k]} onChange={e => setT(k, e.target.value)} placeholder="— mm" />
+              </div>
+            ))}
+          </div>
+
+          {/* Space Gaining Methods */}
+          {[
+            {
+              title: 'Space Gaining Method — Upper Arch',
+              prefix: 'upper',
+              color: '#1d4ed8',
+              bg: '#eff6ff',
+              border: '#bfdbfe',
+            },
+            {
+              title: 'Space Gaining Method — Lower Arch',
+              prefix: 'lower',
+              color: '#065f46',
+              bg: '#ecfdf5',
+              border: '#a7f3d0',
+            },
+          ].map(({ title, prefix, color, bg, border }) => {
+            const p = prefix;
+            return (
+              <div className="card" key={p}>
+                <h3 className="section-title" style={{ marginBottom: 16, borderRight: `4px solid ${color}`, paddingRight: 12, color }}>{title}</h3>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+                  {[
+                    [`${p}ArchLengthening`, 'Arch lengthening'],
+                    [`${p}Transverse`, 'Transverse arch expansion'],
+                    [`${p}IER`, 'Interdental enamel reduction'],
+                    [`${p}Extractions`, 'Dental extractions'],
+                  ].map(([k, l]) => (
+                    <label key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', border: `1.5px solid ${tttData[k] ? color : '#e2e8f0'}`, borderRadius: 10, background: tttData[k] ? bg : 'white', cursor: 'pointer', fontWeight: 600, fontSize: 13, color: tttData[k] ? color : '#64748b', userSelect: 'none', transition: 'all 0.15s' }}>
+                      <input type="checkbox" checked={!!tttData[k]} onChange={e => setT(k, e.target.checked)} style={{ accentColor: color }} />
+                      {l}
+                    </label>
+                  ))}
+                </div>
+                <div className="grid-2" style={{ gap: 10 }}>
+                  <div className="form-group"><label style={{ fontFamily: 'monospace,sans-serif', fontSize: 12 }}>TIMING OF EXTRACTIONS</label><input className="form-control" value={tttData[`${p}TimingExtr`]} onChange={e => setT(`${p}TimingExtr`, e.target.value)} placeholder="e.g. Before bonding" /></div>
+                  <div className="form-group"><label style={{ fontFamily: 'monospace,sans-serif', fontSize: 12 }}>TEETH OF EXTRACTIONS</label><input className="form-control" value={tttData[`${p}TeethExtr`]} onChange={e => setT(`${p}TeethExtr`, e.target.value)} placeholder="e.g. #14, #24" /></div>
+                  <div className="form-group"><label style={{ fontFamily: 'monospace,sans-serif', fontSize: 12 }}>TIMING OF BONDING</label><input className="form-control" value={tttData[`${p}TimingBond`]} onChange={e => setT(`${p}TimingBond`, e.target.value)} placeholder="e.g. After extractions" /></div>
+                  <div className="form-group"></div>
+                  <div className="form-group"><label style={{ fontFamily: 'monospace,sans-serif', fontSize: 12, color: '#166534' }}>BOND</label><input className="form-control" value={tttData[`${p}TeethBond`]} onChange={e => setT(`${p}TeethBond`, e.target.value)} placeholder="e.g. All except #18,28" /></div>
+                  <div className="form-group"><label style={{ fontFamily: 'monospace,sans-serif', fontSize: 12, color: '#991b1b' }}>SKIP</label><input className="form-control" value={tttData[`${p}TeethSkip`]} onChange={e => setT(`${p}TeethSkip`, e.target.value)} placeholder="e.g. #18, #28" /></div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Save Button */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: 24 }}>
+            <button className="btn btn-primary" style={{ padding: '12px 32px', fontSize: 15, fontWeight: 800 }} onClick={handleSaveTTT} disabled={tttSaving}>
+              {tttSaving ? '⏳ جاري الحفظ...' : <><FiSave /> حفظ TTT File</>}
+            </button>
+          </div>
         </div>
       )}
 
@@ -1021,6 +1218,16 @@ export default function PatientFile() {
             </div>
           </div>
         </div>
+      )}
+
+      {showExport && patient && (
+        <ExportModal
+          patient={patient}
+          sessions={sessions}
+          ttt={tttData}
+          siteInfo={{}}
+          onClose={() => setShowExport(false)}
+        />
       )}
     </div>
   );

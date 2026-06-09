@@ -51,6 +51,7 @@ const patientSchema = new mongoose.Schema({
     sessions: { type: Boolean, default: true },
     financials: { type: Boolean, default: true },
   },
+  tttFile: { type: mongoose.Schema.Types.Mixed, default: {} },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
