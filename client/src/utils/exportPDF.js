@@ -305,9 +305,6 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
 <body>
   <div class="print-toolbar no-print">
     <span style="font-weight:700;font-size:15px">📄 ملف ${patientName}</span>
-    <div style="display:flex;gap:10px">
-      <button onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
-    </div>
   </div>
   <div class="page">
     ${o.includeClinicHeader ? `
