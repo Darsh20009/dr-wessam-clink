@@ -85,7 +85,22 @@ const DEFAULT_TTT = {
 const statusMap = { paid: 'badge-success', partial: 'badge-warning', overdue: 'badge-danger', pending: 'badge-gray' };
 const statusLabel = { paid: 'مدفوع', partial: 'جزئي', overdue: 'متأخر', pending: 'معلق' };
 
-function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, toggleVis, deleteImg, openEdit, openLightbox }) {
+function ImgNote({ initialNote, onSave }) {
+  const [val, setVal] = React.useState(initialNote || '');
+  React.useEffect(() => { setVal(initialNote || ''); }, [initialNote]);
+  return (
+    <textarea
+      rows={2}
+      value={val}
+      onChange={e => setVal(e.target.value)}
+      onBlur={() => { if (val !== (initialNote || '')) onSave(val); }}
+      placeholder="ملاحظة..."
+      style={{ width: '100%', fontSize: 10, border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 5px', resize: 'none', fontFamily: 'inherit', direction: 'rtl', boxSizing: 'border-box', marginTop: 4, color: '#475569' }}
+    />
+  );
+}
+
+function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, toggleVis, deleteImg, patchImage, openLightbox }) {
   const slotImages = (images || []).filter(img => img.type === slotType);
   return (
     <div style={{ border: '1.5px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', background: 'white' }}>
@@ -94,24 +109,21 @@ function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, toggleVis,
         <span style={{ fontSize: 11, color: '#94a3b8', background: '#e2e8f0', borderRadius: 99, padding: '1px 8px' }}>{slotImages.length}</span>
       </div>
       {slotImages.length > 0 && (
-        <div style={{ padding: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ padding: 10, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {slotImages.map(img => (
-            <div key={img._id} style={{ width: 90 }}>
+            <div key={img._id} style={{ width: 110 }}>
               <div style={{ position: 'relative' }}>
-                <img src={img.url} alt={slotLabel} style={{ width: 90, height: 70, objectFit: 'cover', borderRadius: 8, border: '1.5px solid #e2e8f0', cursor: 'pointer', display: 'block' }} onClick={() => openLightbox(img.url)} />
+                <img src={img.url} alt={slotLabel} style={{ width: 110, height: 82, objectFit: 'cover', borderRadius: 8, border: '1.5px solid #e2e8f0', cursor: 'pointer', display: 'block' }} onClick={() => openLightbox(img.url)} />
                 <button onClick={() => openLightbox(img.url)} style={{ position: 'absolute', top: 3, left: 3, background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 4, padding: '2px 4px', cursor: 'pointer', color: 'white', lineHeight: 1 }}><FiMaximize2 size={10}/></button>
               </div>
-              {(img.description1 || img.notes) && (
-                <div style={{ fontSize: 10, color: '#475569', marginTop: 3, lineHeight: 1.4, wordBreak: 'break-word' }}>
-                  {img.description1 && <div style={{ fontWeight: 700, color: '#1e293b' }}>{img.description1}</div>}
-                  {img.notes && <div style={{ color: '#64748b' }}>{img.notes}</div>}
-                </div>
-              )}
+              <ImgNote
+                initialNote={img.notes || ''}
+                onSave={val => patchImage(cat, img._id, { notes: val })}
+              />
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
                 <button title={img.isVisibleToPatient !== false ? 'ظاهر - اضغط للإخفاء' : 'مخفي - اضغط للإظهار'} onClick={() => toggleVis(cat, img._id, img.isVisibleToPatient !== false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: img.isVisibleToPatient !== false ? '#10b981' : '#cbd5e1' }}>
                   {img.isVisibleToPatient !== false ? <FiEye size={13}/> : <FiEyeOff size={13}/>}
                 </button>
-                <button onClick={() => openEdit(cat, img)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#2563eb' }} title="تعديل العنوان والملاحظات"><FiEdit2 size={12}/></button>
                 <button onClick={() => deleteImg(cat, img._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#ef4444' }}><FiTrash2 size={12}/></button>
               </div>
             </div>
@@ -190,11 +202,11 @@ export default function PatientFile() {
   const [sessionForm, setSessionForm] = useState({ sessionDate: '', notes: '', nextStep: '', nextAppointment: '', amountPaid: '' });
 
   const INTRAORAL_SLOTS = [
-    { key: 'frontal',     label: 'صورة أمامية' },
-    { key: 'right',       label: 'جانبية يمين' },
-    { key: 'left',        label: 'جانبية يسار' },
-    { key: 'upper',       label: 'علوية' },
-    { key: 'lower',       label: 'سفلية' },
+    { key: 'frontal', label: 'Frontal' },
+    { key: 'right',   label: 'Right Lateral' },
+    { key: 'left',    label: 'Left Lateral' },
+    { key: 'upper',   label: 'Upper Jaw' },
+    { key: 'lower',   label: 'Lower Jaw' },
   ];
   const emptyIntraoral = () => INTRAORAL_SLOTS.map(s => ({ key: s.key, file: null, preview: null, note: '' }));
   const [sessionIntraoral, setSessionIntraoral] = useState(emptyIntraoral);
@@ -392,6 +404,11 @@ export default function PatientFile() {
   const togglePatientImageVis = async (category, imageId, current) => {
     try { await axios.patch(`/patients/${id}/images/${category}/${imageId}`, { isVisibleToPatient: !current }); fetchData(); }
     catch { toast.error('خطأ'); }
+  };
+
+  const patchPatientImage = async (category, imageId, updates) => {
+    try { await axios.patch(`/patients/${id}/images/${category}/${imageId}`, updates); fetchData(); }
+    catch { toast.error('خطأ في الحفظ'); }
   };
 
   const openImgEdit = (cat, img) => {
@@ -780,7 +797,7 @@ export default function PatientFile() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, opacity: vis.faceImages === false ? 0.55 : 1 }}>
               {FACE_SLOTS.map(slot => (
-                <ImageSlot key={slot.type} cat="face" slotType={slot.type} slotLabel={slot.label} images={patient.faceImages} triggerUpload={triggerUpload} toggleVis={togglePatientImageVis} deleteImg={deletePatientImage} openEdit={openImgEdit} openLightbox={setLightbox} />
+                <ImageSlot key={slot.type} cat="face" slotType={slot.type} slotLabel={slot.label} images={patient.faceImages} triggerUpload={triggerUpload} toggleVis={togglePatientImageVis} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} />
               ))}
             </div>
           </div>
@@ -791,7 +808,7 @@ export default function PatientFile() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, opacity: vis.intraOralImages === false ? 0.55 : 1 }}>
               {INTRAORAL_SLOTS.map(slot => (
-                <ImageSlot key={slot.type} cat="intraoral" slotType={slot.type} slotLabel={slot.label} images={patient.intraOralImages} triggerUpload={triggerUpload} toggleVis={togglePatientImageVis} deleteImg={deletePatientImage} openEdit={openImgEdit} openLightbox={setLightbox} />
+                <ImageSlot key={slot.type} cat="intraoral" slotType={slot.type} slotLabel={slot.label} images={patient.intraOralImages} triggerUpload={triggerUpload} toggleVis={togglePatientImageVis} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} />
               ))}
             </div>
           </div>
