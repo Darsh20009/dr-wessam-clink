@@ -202,11 +202,11 @@ export default function PatientFile() {
   const [sessionForm, setSessionForm] = useState({ sessionDate: '', notes: '', nextStep: '', nextAppointment: '', amountPaid: '' });
 
   const INTRAORAL_SLOTS = [
-    { key: 'frontal', label: 'Frontal' },
-    { key: 'right',   label: 'Right Lateral' },
-    { key: 'left',    label: 'Left Lateral' },
-    { key: 'upper',   label: 'Upper Jaw' },
-    { key: 'lower',   label: 'Lower Jaw' },
+    { key: 'frontal_occlusion', label: 'Frontal Occlusion' },
+    { key: 'right_lateral',     label: 'Right Lateral' },
+    { key: 'left_lateral',      label: 'Left Lateral' },
+    { key: 'upper_jaw',         label: 'Upper Jaw' },
+    { key: 'lower_jaw',         label: 'Lower Jaw' },
   ];
   const emptyIntraoral = () => INTRAORAL_SLOTS.map(s => ({ key: s.key, file: null, preview: null, note: '' }));
   const [sessionIntraoral, setSessionIntraoral] = useState(emptyIntraoral);
@@ -339,7 +339,7 @@ export default function PatientFile() {
         const fd = new FormData();
         fd.append('file', slot.file);
         const { data: uploaded } = await axios.post('/uploads', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-        await axios.post(`/sessions/${newSession._id}/images`, { url: uploaded.url, type: `intraoral_${slot.key}`, notes: slot.note });
+        await axios.post(`/sessions/${newSession._id}/images`, { url: uploaded.url, type: slot.key, notes: slot.note });
       }
       toast.success('تم إضافة الجلسة');
       setShowAddSession(false);
@@ -600,7 +600,7 @@ export default function PatientFile() {
               <h3 style={{ fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>📷 صور الجلسة</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
                 {SESSION_SLOTS.map(slot => {
-                  const slotImgs = (selectedSession.images || []).filter(img => img.type === slot.type);
+                  const slotImgs = (selectedSession.images || []).filter(img => img.type === slot.type || img.type === `intraoral_${slot.type.split('_')[0]}`);
                   return (
                     <div key={slot.type} style={{ border: '1.5px solid #e2e8f0', borderRadius: 10, overflow: 'hidden', background: 'white' }}>
                       <div style={{ background: '#0f172a', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
