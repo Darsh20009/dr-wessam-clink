@@ -17,11 +17,11 @@ router.get('/', auth, async (req, res) => {
 
 router.post('/', auth, doctorOnly, async (req, res) => {
   try {
-    const { name, phone, employeeRole, password } = req.body;
+    const { name, phone, employeeRole, password, permissions } = req.body;
     if (!name || !phone || !password) return res.status(400).json({ message: 'الاسم والهاتف وكلمة المرور مطلوبة' });
     const exists = await User.findOne({ phone });
     if (exists) return res.status(400).json({ message: 'رقم الهاتف مسجّل مسبقاً' });
-    const employee = await User.create({ name, phone, password, role: 'employee', employeeRole: employeeRole || 'receptionist', isFirstLogin: false });
+    const employee = await User.create({ name, phone, password, role: 'employee', employeeRole: employeeRole || 'receptionist', permissions: permissions || ['reception'], isFirstLogin: false });
     const result = employee.toObject();
     delete result.password;
     res.status(201).json(result);
@@ -30,12 +30,13 @@ router.post('/', auth, doctorOnly, async (req, res) => {
 
 router.patch('/:id', auth, doctorOnly, async (req, res) => {
   try {
-    const { name, phone, employeeRole, password } = req.body;
+    const { name, phone, employeeRole, password, permissions } = req.body;
     const updates = {};
     if (name) updates.name = name;
     if (phone) updates.phone = phone;
     if (employeeRole) updates.employeeRole = employeeRole;
     if (password) updates.password = password;
+    if (permissions !== undefined) updates.permissions = permissions;
     const employee = await User.findOneAndUpdate({ _id: req.params.id, role: 'employee' }, updates, { new: true }).select('-password');
     if (!employee) return res.status(404).json({ message: 'الموظف غير موجود' });
     res.json(employee);

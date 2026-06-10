@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String },
   role: { type: String, enum: ['doctor', 'patient', 'employee'], default: 'patient' },
   employeeRole: { type: String, default: 'receptionist' },
+  permissions: { type: [String], default: ['reception'] },
   isFirstLogin: { type: Boolean, default: true },
   patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
   qrToken: { type: String },
