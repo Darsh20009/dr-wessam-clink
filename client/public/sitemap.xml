@@ -3,22 +3,87 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
-  <!-- الصفحة الرئيسية - Landing Page -->
+  <!-- ════════════════════════════════════════════
+       الصفحة الرئيسية — أعلى أولوية
+  ════════════════════════════════════════════ -->
   <url>
-    <loc>https://dr-wessam-clinic.onrender.com/</loc>
-    <lastmod>2026-06-08</lastmod>
+    <loc>https://dr-wessam.online/</loc>
+    <lastmod>2026-06-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://dr-wessam-clinic.onrender.com/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://dr-wessam.online/"/>
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://dr-wessam.online/"/>
+
+    <!-- صورة 1: صورة الطبيب الرئيسية -->
     <image:image>
-      <image:loc>https://dr-wessam-clinic.onrender.com/doctor-photo.png</image:loc>
+      <image:loc>https://dr-wessam.online/doctor-photo.png</image:loc>
       <image:title>د. وسام يوسف أخصائي تقويم الأسنان بني مزار المنيا</image:title>
-      <image:caption>الدكتور وسام يوسف أخصائي تقويم الأسنان في بني مزار، المنيا، مصر</image:caption>
+      <image:caption>الدكتور وسام يوسف أخصائي تقويم الأسنان في بني مزار، محافظة المنيا، مصر — خبرة أكثر من 10 سنوات وأكثر من 1000 حالة ناجحة</image:caption>
+      <image:geo_location>بني مزار، المنيا، مصر</image:geo_location>
     </image:image>
+
+    <!-- صورة 2: الـ OG Image — رئيسية للشبكات الاجتماعية -->
     <image:image>
-      <image:loc>https://dr-wessam-clinic.onrender.com/logo.png</image:loc>
-      <image:title>شعار عيادة د. وسام يوسف لتقويم الأسنان</image:title>
+      <image:loc>https://dr-wessam.online/og-image.png</image:loc>
+      <image:title>عيادة د. وسام يوسف لتقويم الأسنان — بني مزار المنيا</image:title>
+      <image:caption>عيادة دكتور وسام يوسف لتقويم الأسنان في بني مزار، المنيا — أفضل عيادة تقويم أسنان في محافظة المنيا</image:caption>
+      <image:geo_location>بني مزار، المنيا، مصر</image:geo_location>
     </image:image>
+
+    <!-- صورة 3: صورة الطبيب الثانية -->
+    <image:image>
+      <image:loc>https://dr-wessam.online/dr-wessam.png</image:loc>
+      <image:title>دكتور وسام يوسف — أخصائي تقويم الأسنان</image:title>
+      <image:caption>دكتور وسام يوسف أخصائي تقويم الأسنان والماجستير — عيادة بني مزار المنيا مصر</image:caption>
+      <image:geo_location>بني مزار، المنيا، مصر</image:geo_location>
+    </image:image>
+
+    <!-- صورة 4: صورة زيارة الأساتذة -->
+    <image:image>
+      <image:loc>https://dr-wessam.online/dr-visit.png</image:loc>
+      <image:title>زيارة أساتذة تقويم الأسنان لعيادة د. وسام يوسف</image:title>
+      <image:caption>زيارة كريمة من الدكتورة بسمة نبيل والبروفيسور د. فادي حسين أساتذة تقويم الأسنان لعيادة د. وسام يوسف في بني مزار، المنيا</image:caption>
+      <image:geo_location>بني مزار، المنيا، مصر</image:geo_location>
+    </image:image>
+
+    <!-- صورة 5: شعار العيادة -->
+    <image:image>
+      <image:loc>https://dr-wessam.online/logo.png</image:loc>
+      <image:title>شعار عيادة د. وسام يوسف لتقويم الأسنان</image:title>
+      <image:caption>الشعار الرسمي لعيادة د. وسام يوسف لتقويم الأسنان — بني مزار، المنيا، مصر</image:caption>
+    </image:image>
+
+    <!-- صورة 6: شعار شفاف -->
+    <image:image>
+      <image:loc>https://dr-wessam.online/logo-transparent.png</image:loc>
+      <image:title>شعار عيادة د. وسام يوسف — شفاف</image:title>
+      <image:caption>شعار عيادة تقويم الأسنان د. وسام يوسف — بني مزار المنيا</image:caption>
+    </image:image>
+
+    <!-- صورة 7: أيقونة PWA كبيرة -->
+    <image:image>
+      <image:loc>https://dr-wessam.online/icon-512.png</image:loc>
+      <image:title>أيقونة عيادة د. وسام يوسف لتقويم الأسنان</image:title>
+      <image:caption>أيقونة التطبيق الرسمي لعيادة د. وسام يوسف — تقويم الأسنان بني مزار</image:caption>
+    </image:image>
+
+    <!-- صورة 8: Apple Touch Icon -->
+    <image:image>
+      <image:loc>https://dr-wessam.online/apple-touch-icon.png</image:loc>
+      <image:title>أيقونة عيادة د. وسام يوسف لنظام iOS</image:title>
+      <image:caption>عيادة تقويم الأسنان د. وسام يوسف — بني مزار المنيا مصر</image:caption>
+    </image:image>
+  </url>
+
+  <!-- ════════════════════════════════════════════
+       صفحة بوابة المريض
+  ════════════════════════════════════════════ -->
+  <url>
+    <loc>https://dr-wessam.online/portal</loc>
+    <lastmod>2026-06-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://dr-wessam.online/portal"/>
   </url>
 
 </urlset>

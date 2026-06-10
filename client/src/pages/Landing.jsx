@@ -746,7 +746,7 @@ export default function Landing() {
               border: '1.5px solid #e2e8f0', overflow: 'hidden',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <img src="/logo-transparent.png" alt="شعار العيادة" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
+              <img src="/logo-transparent.png" alt="شعار عيادة د. وسام يوسف لتقويم الأسنان - بني مزار المنيا" title="عيادة د. وسام يوسف لتقويم الأسنان" width="44" height="44" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
             </div>
             <div>
               <div style={{ fontWeight: 900, fontSize: '16px', color: '#0f172a' }}>{settings.doctorName}</div>
@@ -847,7 +847,10 @@ export default function Landing() {
                     }}>
                       <img
                         src="/doctor-photo.png"
-                        alt="د. وسام يوسف"
+                        alt="د. وسام يوسف أخصائي تقويم الأسنان بني مزار المنيا"
+                        title="دكتور وسام يوسف - أخصائي تقويم الأسنان في بني مزار، المنيا"
+                        width="76"
+                        height="76"
                         style={{
                           width: '100%', height: '100%',
                           borderRadius: '50%', objectFit: 'cover',
@@ -996,7 +999,9 @@ export default function Landing() {
             }}>
               {/* compact circular photo */}
               <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '3px solid rgba(255,255,255,0.25)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
-                <img src="/doctor-photo.png" alt="د. وسام يوسف"
+                <img src="/doctor-photo.png" alt="د. وسام يوسف أخصائي تقويم الأسنان - بني مزار المنيا"
+                  title="دكتور وسام يوسف - أخصائي تقويم الأسنان"
+                  width="72" height="72"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '60% top' }} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -1061,7 +1066,10 @@ export default function Landing() {
                     }}>
                       <img
                         src="/doctor-photo.png"
-                        alt="د. وسام يوسف"
+                        alt="د. وسام يوسف أخصائي تقويم الأسنان في بني مزار المنيا مصر"
+                        title="دكتور وسام يوسف - ماجستير تقويم الأسنان - بني مزار، المنيا"
+                        width="340"
+                        height="340"
                         style={{
                           width: '100%',
                           maxWidth: '340px',
@@ -1327,7 +1335,10 @@ export default function Landing() {
                   }}>
                     <img
                       src="/dr-visit.png"
-                      alt="زيارة د. بسمة و د. فادي للعيادة"
+                      alt="زيارة الدكتورة بسمة نبيل والبروفيسور د. فادي حسين لعيادة د. وسام يوسف بني مزار المنيا"
+                      title="زيارة أساتذة تقويم الأسنان لعيادة د. وسام يوسف - بني مزار المنيا"
+                      width="420"
+                      height="340"
                       style={{
                         width: '100%', maxWidth: '420px',
                         height: '340px', objectFit: 'cover',
@@ -1804,8 +1815,28 @@ export default function Landing() {
         )}
 
         <button className="l-tooth-btn" onClick={() => setWaOpen(o => !o)} title="تواصل عبر واتساب">
-          <img src="/logo-transparent.png" alt="شعار العيادة" style={{ width: '34px', height: '34px', objectFit: 'contain' }} />
+          <img src="/logo-transparent.png" alt="عيادة د. وسام يوسف - تقويم الأسنان بني مزار" title="احجز موعدك عبر واتساب" width="34" height="34" style={{ width: '34px', height: '34px', objectFit: 'contain' }} />
         </button>
+
+        {/* ════════════════════════════════════════════════════
+            قسم SEO مخفي — يساعد جوجل على الفهرسة الكاملة
+            للصور والكلمات البحثية بدون تأثير على التصميم
+        ════════════════════════════════════════════════════ */}
+        <div aria-hidden="true" style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', opacity: 0, pointerEvents: 'none', top: 0, right: 0 }}>
+          <h1>د. وسام يوسف أخصائي تقويم الأسنان بني مزار المنيا</h1>
+          <h2>عيادة دكتور وسام يوسف — عيادة تقويم الأسنان — بني مزار المنيا مصر</h2>
+          <h3>عيادة اسنان تاقويمك — تقويم الأسنان بني مزار — المنيا</h3>
+          <p>د. وسام يوسف أخصائي تقويم الأسنان في بني مزار، محافظة المنيا. خبرة أكثر من 10 سنوات وأكثر من 1000 حالة تقويم ناجحة.</p>
+          <p>دكتور وسام يوسف ماجستير تقويم الأسنان — أفضل دكتور تقويم أسنان في المنيا — عيادة تقويم الأسنان بني مزار</p>
+          <p>تقويم الأسنان الشفاف — تصميم الابتسامة — تقويم أطفال — علاج مشاكل الفك — بني مزار المنيا</p>
+          <address>بني مزار، المنيا، شرق المحطة، ميدان 25 يناير، فوق مكتبة الأهرام — هاتف: 01156798324</address>
+          <img src="/doctor-photo.png" alt="د. وسام يوسف أخصائي تقويم الأسنان بني مزار المنيا مصر" width="1" height="1" />
+          <img src="/dr-wessam.png" alt="دكتور وسام يوسف طبيب تقويم اسنان بني مزار المنيا" width="1" height="1" />
+          <img src="/dr-visit.png" alt="عيادة د. وسام يوسف تقويم الأسنان بني مزار — زيارة أساتذة التقويم" width="1" height="1" />
+          <img src="/og-image.png" alt="عيادة د. وسام يوسف لتقويم الأسنان في بني مزار المنيا — أفضل عيادة تقويم" width="1" height="1" />
+          <img src="/logo.png" alt="شعار عيادة د. وسام يوسف لتقويم الأسنان بني مزار" width="1" height="1" />
+        </div>
+
       </div>
     </>
   );

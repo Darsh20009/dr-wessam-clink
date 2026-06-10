@@ -1,17 +1,51 @@
 User-agent: *
 Allow: /
+Allow: /portal
+Allow: /login
 
-# Block system/admin pages from indexing
+# Block internal system pages from indexing
 Disallow: /doctor/
-Disallow: /portal/
-Disallow: /login
 Disallow: /api/
+Disallow: /reception/
+Disallow: /employees/
 
-# Allow landing and public pages
-Allow: /$
+# Allow all public assets and images explicitly
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.webp$
+Allow: /*.svg$
+Allow: /*.gif$
+Allow: /sitemap.xml
+Allow: /manifest.json
 
-# Sitemap
-Sitemap: https://dr-wessam-clinic.onrender.com/sitemap.xml
+# Sitemap locations
+Sitemap: https://dr-wessam.online/sitemap.xml
+Sitemap: https://dr-wessam.online/sitemap.xml
 
-# Crawl delay
-Crawl-delay: 5
+# Google Image Bot — allow all images
+User-agent: Googlebot-Image
+Allow: /
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.webp$
+Allow: /*.gif$
+
+# Google News
+User-agent: Googlebot-News
+Allow: /
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 3
+
+# Yandex
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 3
+
+# General crawl delay for all others
+User-agent: *
+Crawl-delay: 2
