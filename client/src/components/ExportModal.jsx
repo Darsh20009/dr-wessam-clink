@@ -386,9 +386,9 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
                   {expandedSections.photos && (
                     <div>
                       <ContentRow checked={opts.includeFacePhotos} onChange={() => toggleOpt('includeFacePhotos')} indent
-                        icon={<FiImage size={14}/>} label="صور الوجه الخارجية" sublabel="Frontal Rest, Smile, Lateral"/>
+                        icon={<FiImage size={14}/>} label="Extraoral Examination" sublabel="Frontal Rest, Smile, Lateral"/>
                       <ContentRow checked={opts.includeIntraOralPhotos} onChange={() => toggleOpt('includeIntraOralPhotos')} indent
-                        icon={<FiImage size={14}/>} label="صور الفم الداخلية" sublabel="Frontal, Upper/Lower Jaw, Laterals"/>
+                        icon={<FiImage size={14}/>} label="Intraoral Examination" sublabel="Frontal, Upper/Lower Jaw, Laterals"/>
                       <ContentRow checked={opts.includeXrays} onChange={() => toggleOpt('includeXrays')} indent
                         icon={<span style={{ fontSize: 12 }}>🩻</span>} label="الأشعة" sublabel="Panoramic, Lateral Ceph, CBCT"/>
                     </div>

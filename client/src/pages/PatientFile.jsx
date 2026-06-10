@@ -43,7 +43,7 @@ const VIS_LABELS = {
   treatmentStages: 'مراحل العلاج',
   instructions: 'التعليمات والملاحظات',
   faceImages: 'صور الوجه',
-  intraOralImages: 'صور الفم الداخلية',
+  intraOralImages: 'Intraoral Examination',
   xrays: 'الأشعة',
   sessions: 'الجلسات',
   financials: 'البيانات المالية',
@@ -775,7 +775,7 @@ export default function PatientFile() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <h3 className="section-title" style={{ margin: 0 }}>📸 صور الوجه الخارجية</h3>
+              <h3 className="section-title" style={{ margin: 0 }}>📸 Extraoral Examination</h3>
               <VisToggleBtn isVisible={vis.faceImages !== false} label="صور الوجه" onClick={() => saveVisibility('faceImages', !(vis.faceImages !== false))} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, opacity: vis.faceImages === false ? 0.55 : 1 }}>
@@ -786,7 +786,7 @@ export default function PatientFile() {
           </div>
           <div className="card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <h3 className="section-title" style={{ margin: 0 }}>🦷 صور الفم الداخلية</h3>
+              <h3 className="section-title" style={{ margin: 0 }}>🦷 Intraoral Examination</h3>
               <VisToggleBtn isVisible={vis.intraOralImages !== false} label="صور الفم" onClick={() => saveVisibility('intraOralImages', !(vis.intraOralImages !== false))} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, opacity: vis.intraOralImages === false ? 0.55 : 1 }}>

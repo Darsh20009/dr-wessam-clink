@@ -811,7 +811,7 @@ export default function PatientPortal() {
               <h2 style={{ fontWeight: 800, fontSize: '18px', color: '#0f172a', marginBottom: '20px' }}>الصور والأشعة</h2>
               {patient.faceImages?.length > 0 && (
                 <div className="pp-card" style={{ marginBottom: '16px' }}>
-                  <h3 style={{ fontWeight: 800, fontSize: '15px', color: '#0f172a', marginBottom: '14px' }}>🖼️ صور الوجه الخارجية</h3>
+                  <h3 style={{ fontWeight: 800, fontSize: '15px', color: '#0f172a', marginBottom: '14px' }}>🖼️ Extraoral Examination</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
                     {patient.faceImages.map((img, i) => (
                       <a key={i} href={img.url} target="_blank" rel="noreferrer" style={{ borderRadius: '10px', overflow: 'hidden', border: '1.5px solid #e2e8f0', display: 'block', transition: 'all 0.2s', textDecoration: 'none' }}
