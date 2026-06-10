@@ -188,6 +188,17 @@ export default function PatientFile() {
 
   const [showAddSession, setShowAddSession] = useState(false);
   const [sessionForm, setSessionForm] = useState({ sessionDate: '', notes: '', nextStep: '', nextAppointment: '', amountPaid: '' });
+
+  const INTRAORAL_SLOTS = [
+    { key: 'frontal',     label: 'صورة أمامية' },
+    { key: 'right',       label: 'جانبية يمين' },
+    { key: 'left',        label: 'جانبية يسار' },
+    { key: 'upper',       label: 'علوية' },
+    { key: 'lower',       label: 'سفلية' },
+  ];
+  const emptyIntraoral = () => INTRAORAL_SLOTS.map(s => ({ key: s.key, file: null, preview: null, note: '' }));
+  const [sessionIntraoral, setSessionIntraoral] = useState(emptyIntraoral);
+  const intraoralRefs = useRef(INTRAORAL_SLOTS.map(() => React.createRef()));
   const [showPayment, setShowPayment] = useState(false);
   const [payForm, setPayForm] = useState({ amount: '', method: 'cash', notes: '' });
 
@@ -307,13 +318,21 @@ export default function PatientFile() {
     e.preventDefault();
     if (!sessionForm.sessionDate) return toast.error('يرجى إدخال تاريخ الجلسة');
     try {
-      await axios.post('/sessions', { patientId: id, sessionDate: sessionForm.sessionDate, notes: sessionForm.notes, nextStep: sessionForm.nextStep, nextAppointment: sessionForm.nextAppointment || undefined, amountPaid: parseFloat(sessionForm.amountPaid) || 0 });
+      const { data: newSession } = await axios.post('/sessions', { patientId: id, sessionDate: sessionForm.sessionDate, notes: sessionForm.notes, nextStep: sessionForm.nextStep, nextAppointment: sessionForm.nextAppointment || undefined, amountPaid: parseFloat(sessionForm.amountPaid) || 0 });
       if (parseFloat(sessionForm.amountPaid) > 0) {
         await axios.post('/payments', { patientId: id, patientName: patient.fullName, amount: parseFloat(sessionForm.amountPaid), type: 'session', method: 'cash', notes: `جلسة ${format(new Date(sessionForm.sessionDate), 'd/M/yyyy')}` });
+      }
+      const slotsWithFiles = sessionIntraoral.filter(s => s.file);
+      for (const slot of slotsWithFiles) {
+        const fd = new FormData();
+        fd.append('file', slot.file);
+        const { data: uploaded } = await axios.post('/uploads', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await axios.post(`/sessions/${newSession._id}/images`, { url: uploaded.url, type: `intraoral_${slot.key}`, notes: slot.note });
       }
       toast.success('تم إضافة الجلسة');
       setShowAddSession(false);
       setSessionForm({ sessionDate: '', notes: '', nextStep: '', nextAppointment: '', amountPaid: '' });
+      setSessionIntraoral(emptyIntraoral());
       fetchData();
     } catch { toast.error('خطأ في إضافة الجلسة'); }
   };
@@ -1181,6 +1200,67 @@ export default function PatientFile() {
                   {sessionForm.amountPaid > 0 && <span> → بعد الدفع: <strong style={{ color: '#10b981' }}>{Math.max(0, remaining - parseFloat(sessionForm.amountPaid || 0)).toLocaleString()} ج.م</strong></span>}
                 </div>
               </div>
+
+              {/* ── Intraoral Photos ── */}
+              <div className="form-group">
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                  <FiImage /> صور Intraoral Examination
+                  <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 400 }}>(اختياري)</span>
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
+                  {INTRAORAL_SLOTS.map((slot, idx) => {
+                    const slotData = sessionIntraoral[idx];
+                    return (
+                      <div key={slot.key} style={{ border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden', background: '#f8fafc' }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          ref={intraoralRefs.current[idx]}
+                          onChange={e => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            const preview = URL.createObjectURL(file);
+                            setSessionIntraoral(prev => prev.map((s, i) => i === idx ? { ...s, file, preview } : s));
+                            e.target.value = '';
+                          }}
+                        />
+                        <div
+                          onClick={() => intraoralRefs.current[idx].current.click()}
+                          style={{ cursor: 'pointer', height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: slotData.preview ? 'transparent' : '#f1f5f9', position: 'relative', overflow: 'hidden' }}
+                        >
+                          {slotData.preview ? (
+                            <>
+                              <img src={slotData.preview} alt={slot.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <button
+                                type="button"
+                                onClick={e => { e.stopPropagation(); setSessionIntraoral(prev => prev.map((s, i) => i === idx ? { ...s, file: null, preview: null } : s)); }}
+                                style={{ position: 'absolute', top: 4, left: 4, background: 'rgba(239,68,68,0.85)', border: 'none', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}
+                              ><FiX size={12} /></button>
+                            </>
+                          ) : (
+                            <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+                              <FiUpload size={20} />
+                              <div style={{ fontSize: 11, marginTop: 4 }}>اضغط للرفع</div>
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ padding: '8px 8px 4px', borderTop: '1px solid #e2e8f0', background: '#fff' }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: '#475569', marginBottom: 4 }}>{slot.label}</div>
+                          <textarea
+                            rows={2}
+                            placeholder="ملاحظة..."
+                            value={slotData.note}
+                            onChange={e => setSessionIntraoral(prev => prev.map((s, i) => i === idx ? { ...s, note: e.target.value } : s))}
+                            style={{ width: '100%', fontSize: 11, border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 6px', resize: 'none', fontFamily: 'inherit', direction: 'rtl', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '8px' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowAddSession(false)}>إلغاء</button>
                 <button type="submit" className="btn btn-primary"><FiPlus /> إضافة الجلسة</button>
