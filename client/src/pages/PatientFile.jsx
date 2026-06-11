@@ -423,7 +423,7 @@ export default function PatientFile() {
   };
 
   const openDrawingModal = (category, imageId, imageUrl, existingNote, sessionId = null) => {
-    setDrawingModal({ category, imageId, imageUrl, existingNote: existingNote || null, sessionId, allNotes: getAllPenNotes() });
+    setDrawingModal({ category, imageId, imageUrl: null, existingNote: existingNote || null, sessionId, allNotes: getAllPenNotes() });
   };
 
   const openPenNoteModal = (existingNote = null) => {
@@ -1463,7 +1463,7 @@ export default function PatientFile() {
       )}
       {drawingModal && (
         <DrawingCanvas
-          imageUrl={drawingModal.imageUrl}
+          blankMode={true}
           existingNote={drawingModal.existingNote}
           allNotes={drawingModal.allNotes}
           onSave={saveDrawingNote}
