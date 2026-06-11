@@ -201,14 +201,7 @@ export default function PatientFile() {
   const [showAddSession, setShowAddSession] = useState(false);
   const [sessionForm, setSessionForm] = useState({ sessionDate: '', notes: '', nextStep: '', nextAppointment: '', amountPaid: '' });
 
-  const INTRAORAL_SLOTS = [
-    { key: 'frontal_occlusion', label: 'Frontal Occlusion' },
-    { key: 'right_lateral',     label: 'Right Lateral' },
-    { key: 'left_lateral',      label: 'Left Lateral' },
-    { key: 'upper_jaw',         label: 'Upper Jaw' },
-    { key: 'lower_jaw',         label: 'Lower Jaw' },
-  ];
-  const emptyIntraoral = () => INTRAORAL_SLOTS.map(s => ({ key: s.key, file: null, preview: null, note: '' }));
+  const emptyIntraoral = () => INTRAORAL_SLOTS.map(s => ({ key: s.type, file: null, preview: null, note: '' }));
   const [sessionIntraoral, setSessionIntraoral] = useState(emptyIntraoral);
   const intraoralRefs = useRef(INTRAORAL_SLOTS.map(() => React.createRef()));
   const [showPayment, setShowPayment] = useState(false);
@@ -1228,7 +1221,7 @@ export default function PatientFile() {
                   {INTRAORAL_SLOTS.map((slot, idx) => {
                     const slotData = sessionIntraoral[idx];
                     return (
-                      <div key={slot.key} style={{ border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden', background: '#f8fafc' }}>
+                      <div key={slot.type} style={{ border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden', background: '#f8fafc' }}>
                         <input
                           type="file"
                           accept="image/*"
