@@ -4,6 +4,7 @@ const sessionImageSchema = new mongoose.Schema({
   type: String,
   url: String,
   notes: String,
+  penNote: String,
   isVisibleToPatient: { type: Boolean, default: true },
   uploadedAt: { type: Date, default: Date.now }
 });

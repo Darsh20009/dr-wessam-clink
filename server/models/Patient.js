@@ -7,6 +7,7 @@ const medicalImageSchema = new mongoose.Schema({
   description2: String,
   description3: String,
   notes: String,
+  penNote: String,
   isVisibleToPatient: { type: Boolean, default: true },
   uploadedAt: { type: Date, default: Date.now }
 });

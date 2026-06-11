@@ -87,6 +87,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
           ${imgTag(i.url, 'width:100px;height:78px;object-fit:cover;display:block;margin:0 auto')}
           ${i.description1 ? `<div style="font-size:9px;font-weight:700;color:#1e293b;margin-top:2px">${i.description1}</div>` : ''}
           ${i.notes ? `<div style="font-size:9px;color:#475569;margin-top:1px">${i.notes}</div>` : ''}
+          ${i.penNote ? `<div style="margin-top:5px;text-align:center"><div style="font-size:8px;color:#2563eb;font-weight:700;margin-bottom:2px;font-family:Cairo,sans-serif">&#9998; نوت القلم</div><img src="${i.penNote}" style="max-width:100%;border-radius:3px;border:1px solid #bfdbfe;display:block;margin:0 auto" onerror="this.style.display='none'"/></div>` : ''}
         </div>
       `).join('')}
     </div>`;
@@ -237,6 +238,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
                   <div style="margin-bottom:6px;text-align:center">
                     ${imgTag(im.url, 'width:100px;height:78px;object-fit:cover;display:block;margin:0 auto')}
                     ${im.notes ? `<div style="font-size:9px;color:#475569;margin-top:2px;padding:0 4px">${im.notes}</div>` : ''}
+                    ${im.penNote ? `<div style="margin-top:5px;text-align:center"><div style="font-size:8px;color:#2563eb;font-weight:700;margin-bottom:2px;font-family:Cairo,sans-serif">&#9998; نوت القلم</div><img src="${im.penNote}" style="max-width:100%;border-radius:3px;border:1px solid #bfdbfe;display:block;margin:0 auto" onerror="this.style.display='none'"/></div>` : ''}
                   </div>
                 `).join('')}
               </div>`;

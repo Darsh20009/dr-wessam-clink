@@ -6,12 +6,13 @@ import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import {
   FiArrowRight, FiSave, FiPlus, FiTrash2, FiUpload,
-  FiDollarSign, FiCalendar, FiImage, FiFileText, FiActivity, FiEdit2,
+  FiDollarSign, FiCalendar, FiImage, FiFileText, FiActivity, FiEdit2, FiEdit3,
   FiEye, FiEyeOff, FiChevronDown, FiChevronUp, FiX, FiMaximize2,
   FiPrinter, FiMessageSquare, FiSend, FiUser, FiShare2,
 } from 'react-icons/fi';
 import { printInvoice } from '../utils/printInvoice';
 import ExportModal from '../components/ExportModal';
+import DrawingCanvas from '../components/DrawingCanvas';
 
 const FACE_SLOTS = [
   { type: 'frontal_rest', label: 'Frontal - Rest' },
@@ -100,7 +101,7 @@ function ImgNote({ initialNote, onSave }) {
   );
 }
 
-function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, toggleVis, deleteImg, patchImage, openLightbox }) {
+function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, toggleVis, deleteImg, patchImage, openLightbox, onPenClick }) {
   const slotImages = (images || []).filter(img => img.type === slotType);
   return (
     <div style={{ border: '1.5px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', background: 'white' }}>
@@ -124,6 +125,7 @@ function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, toggleVis,
                 <button title={img.isVisibleToPatient !== false ? 'ظاهر - اضغط للإخفاء' : 'مخفي - اضغط للإظهار'} onClick={() => toggleVis(cat, img._id, img.isVisibleToPatient !== false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: img.isVisibleToPatient !== false ? '#10b981' : '#cbd5e1' }}>
                   {img.isVisibleToPatient !== false ? <FiEye size={13}/> : <FiEyeOff size={13}/>}
                 </button>
+                <button onClick={() => onPenClick && onPenClick(cat, img._id, img.url, img.penNote)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: img.penNote ? '#2563eb' : '#94a3b8' }} title={img.penNote ? 'تعديل نوت القلم' : 'إضافة نوت القلم'}><FiEdit3 size={12}/></button>
                 <button onClick={() => deleteImg(cat, img._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#ef4444' }}><FiTrash2 size={12}/></button>
               </div>
             </div>
@@ -231,6 +233,7 @@ export default function PatientFile() {
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [printing, setPrinting] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [drawingModal, setDrawingModal] = useState(null);
   const [tttData, setTttData] = useState(DEFAULT_TTT);
   const [tttSaving, setTttSaving] = useState(false);
 
@@ -402,6 +405,38 @@ export default function PatientFile() {
   const patchPatientImage = async (category, imageId, updates) => {
     try { await axios.patch(`/patients/${id}/images/${category}/${imageId}`, updates); fetchData(); }
     catch { toast.error('خطأ في الحفظ'); }
+  };
+
+  const getAllPenNotes = () => {
+    const notes = [];
+    [...(patient?.faceImages || []), ...(patient?.intraOralImages || [])].forEach(img => {
+      if (img.penNote) notes.push({ data: img.penNote, label: img.type?.replace(/_/g, ' ') || 'صورة' });
+    });
+    (sessions || []).forEach(s => {
+      (s.images || []).forEach(img => {
+        if (img.penNote) notes.push({ data: img.penNote, label: img.type?.replace(/_/g, ' ') || 'جلسة' });
+      });
+    });
+    return notes;
+  };
+
+  const openDrawingModal = (category, imageId, imageUrl, existingNote, sessionId = null) => {
+    setDrawingModal({ category, imageId, imageUrl, existingNote: existingNote || null, sessionId, allNotes: getAllPenNotes() });
+  };
+
+  const saveDrawingNote = async (base64) => {
+    if (!drawingModal) return;
+    const { category, imageId, sessionId } = drawingModal;
+    try {
+      if (sessionId) {
+        await axios.patch(`/sessions/${sessionId}/images/${imageId}`, { penNote: base64 });
+      } else {
+        await axios.patch(`/patients/${id}/images/${category}/${imageId}`, { penNote: base64 });
+      }
+      toast.success('✅ تم حفظ نوت القلم');
+      setDrawingModal(null);
+      fetchData();
+    } catch { toast.error('خطأ في حفظ نوت القلم'); }
   };
 
   const openImgEdit = (cat, img) => {
@@ -614,6 +649,7 @@ export default function PatientFile() {
                                   {img.isVisibleToPatient !== false ? <FiEye size={11}/> : <FiEyeOff size={11}/>}
                                 </button>
                                 <button onClick={() => openSessionImgEdit(selectedSession._id, img)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#2563eb' }} title="ملاحظات الصورة"><FiEdit2 size={10}/></button>
+                                <button onClick={() => openDrawingModal('session', img._id, img.url, img.penNote, selectedSession._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: img.penNote ? '#2563eb' : '#94a3b8' }} title="نوت القلم"><FiEdit3 size={10}/></button>
                                 <button onClick={() => deleteSessionImage(selectedSession._id, img._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><FiTrash2 size={11}/></button>
                               </div>
                             </div>
@@ -790,7 +826,7 @@ export default function PatientFile() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, opacity: vis.faceImages === false ? 0.55 : 1 }}>
               {FACE_SLOTS.map(slot => (
-                <ImageSlot key={slot.type} cat="face" slotType={slot.type} slotLabel={slot.label} images={patient.faceImages} triggerUpload={triggerUpload} toggleVis={togglePatientImageVis} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} />
+                <ImageSlot key={slot.type} cat="face" slotType={slot.type} slotLabel={slot.label} images={patient.faceImages} triggerUpload={triggerUpload} toggleVis={togglePatientImageVis} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} />
               ))}
             </div>
           </div>
@@ -801,7 +837,7 @@ export default function PatientFile() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, opacity: vis.intraOralImages === false ? 0.55 : 1 }}>
               {INTRAORAL_SLOTS.map(slot => (
-                <ImageSlot key={slot.type} cat="intraoral" slotType={slot.type} slotLabel={slot.label} images={patient.intraOralImages} triggerUpload={triggerUpload} toggleVis={togglePatientImageVis} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} />
+                <ImageSlot key={slot.type} cat="intraoral" slotType={slot.type} slotLabel={slot.label} images={patient.intraOralImages} triggerUpload={triggerUpload} toggleVis={togglePatientImageVis} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} />
               ))}
             </div>
           </div>
@@ -821,11 +857,14 @@ export default function PatientFile() {
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, paddingRight: 40 }}>
                       {s.images.map((img, idx) => (
-                        <div key={img._id || idx} onClick={() => setLightbox(img.url)} style={{ cursor: 'pointer', borderRadius: 10, overflow: 'hidden', border: '1.5px solid #e2e8f0', background: '#f8fafc', width: 120, flexShrink: 0 }}>
-                          <img src={img.url} alt={img.type} style={{ width: 120, height: 90, objectFit: 'cover', display: 'block' }} />
-                          <div style={{ padding: '4px 6px' }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', fontFamily: 'monospace, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.type?.replace(/_/g, ' ') || 'صورة'}</div>
-                            {img.notes && <div style={{ fontSize: 10, color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.notes}</div>}
+                        <div key={img._id || idx} style={{ borderRadius: 10, overflow: 'hidden', border: `1.5px solid ${img.penNote ? '#bfdbfe' : '#e2e8f0'}`, background: '#f8fafc', width: 120, flexShrink: 0 }}>
+                          <img src={img.url} alt={img.type} style={{ width: 120, height: 90, objectFit: 'cover', display: 'block', cursor: 'pointer' }} onClick={() => setLightbox(img.url)} />
+                          <div style={{ padding: '4px 6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', fontFamily: 'monospace, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.type?.replace(/_/g, ' ') || 'صورة'}</div>
+                              {img.notes && <div style={{ fontSize: 10, color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.notes}</div>}
+                            </div>
+                            <button onClick={e => { e.stopPropagation(); openDrawingModal('session', img._id, img.url, img.penNote, s._id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: img.penNote ? '#2563eb' : '#cbd5e1', flexShrink: 0 }} title="نوت القلم"><FiEdit3 size={11}/></button>
                           </div>
                         </div>
                       ))}
@@ -1348,6 +1387,15 @@ export default function PatientFile() {
           ttt={tttData}
           siteInfo={{}}
           onClose={() => setShowExport(false)}
+        />
+      )}
+      {drawingModal && (
+        <DrawingCanvas
+          imageUrl={drawingModal.imageUrl}
+          existingNote={drawingModal.existingNote}
+          allNotes={drawingModal.allNotes}
+          onSave={saveDrawingNote}
+          onClose={() => setDrawingModal(null)}
         />
       )}
     </div>
