@@ -14,7 +14,7 @@ const TOOLS = [
 ];
 const SIZES = [3, 6, 12, 22];
 
-export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], onSave, onClose }) {
+export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], onSave, onClose, blankMode = false }) {
   const canvasRef    = useRef(null);
   const containerRef = useRef(null);
   const historyRef   = useRef([]);
@@ -49,8 +49,18 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
     const container = containerRef.current;
     if (!canvas || !container) return;
     const ctx = canvas.getContext('2d');
-    const src = existingNote || imageUrl;
 
+    if (blankMode && !existingNote) {
+      const maxW = Math.min(container.clientWidth - 24, 860);
+      canvas.width  = maxW;
+      canvas.height = 520;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      saveHistory();
+      return;
+    }
+
+    const src = existingNote || imageUrl;
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
@@ -59,17 +69,17 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
       const s = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
       canvas.width  = Math.round(img.naturalWidth  * s);
       canvas.height = Math.round(img.naturalHeight * s);
+      if (blankMode) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       saveHistory();
     };
     img.onerror = () => {
       canvas.width = 700; canvas.height = 450;
-      ctx.fillStyle = '#f1f5f9';
+      ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.font = 'bold 16px Cairo,sans-serif';
-      ctx.fillStyle = '#94a3b8';
-      ctx.textAlign = 'center';
-      ctx.fillText('اضغط للرسم على هذه المنطقة', canvas.width / 2, canvas.height / 2);
       saveHistory();
     };
     const isData = typeof src === 'string' && src.startsWith('data:');
@@ -261,7 +271,7 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
 
         {/* ── Header ── */}
         <div className="modal-header" style={{ padding: '11px 16px', flexShrink: 0 }}>
-          <span className="modal-title">✏️ نوت القلم — تعليق على الصورة</span>
+          <span className="modal-title">{blankMode ? '✏️ ملاحظة بالقلم — لوحة حرة' : '✏️ نوت القلم — تعليق على الصورة'}</span>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
@@ -360,7 +370,7 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
 
         {/* ── Footer ── */}
         <div style={{ padding: '10px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', flexShrink: 0 }}>
-          <span style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'Cairo,sans-serif' }}>ارسم على الصورة ثم احفظ • ستظهر في الـ PDF تحت الصورة</span>
+          <span style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'Cairo,sans-serif' }}>{blankMode ? 'ارسم ملاحظتك على اللوحة البيضاء ثم احفظ' : 'ارسم على الصورة ثم احفظ • ستظهر في الـ PDF تحت الصورة'}</span>
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="btn btn-secondary" onClick={onClose}>إلغاء</button>
             <button className="btn btn-primary" onClick={handleSave}>💾 حفظ نوت القلم</button>

@@ -167,4 +167,42 @@ router.patch('/:id/visibility', auth, doctorOnly, async (req, res) => {
   }
 });
 
+router.post('/:id/pen-notes', auth, doctorOnly, async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.params.id);
+    if (!patient) return res.status(404).json({ message: 'المريض غير موجود' });
+    patient.penNotes.push({ data: req.body.data, label: req.body.label || 'ملاحظة' });
+    await patient.save();
+    res.json(patient.penNotes[patient.penNotes.length - 1]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.patch('/:id/pen-notes/:noteId', auth, doctorOnly, async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.params.id);
+    if (!patient) return res.status(404).json({ message: 'المريض غير موجود' });
+    const note = patient.penNotes.id(req.params.noteId);
+    if (!note) return res.status(404).json({ message: 'الملاحظة غير موجودة' });
+    Object.assign(note, req.body);
+    await patient.save();
+    res.json(note);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.delete('/:id/pen-notes/:noteId', auth, doctorOnly, async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.params.id);
+    if (!patient) return res.status(404).json({ message: 'المريض غير موجود' });
+    patient.penNotes = patient.penNotes.filter(n => n._id.toString() !== req.params.noteId);
+    await patient.save();
+    res.json({ message: 'تم الحذف' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

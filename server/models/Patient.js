@@ -20,6 +20,12 @@ const xraySchema = new mongoose.Schema({
   uploadedAt: { type: Date, default: Date.now }
 });
 
+const penNoteItemSchema = new mongoose.Schema({
+  data: String,
+  label: { type: String, default: 'ملاحظة' },
+  createdAt: { type: Date, default: Date.now }
+});
+
 const patientSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   phone: { type: String, required: true },
@@ -53,6 +59,7 @@ const patientSchema = new mongoose.Schema({
     financials: { type: Boolean, default: true },
     pdfDownload: { type: Boolean, default: false },
   },
+  penNotes: [penNoteItemSchema],
   tttFile: { type: mongoose.Schema.Types.Mixed, default: {} },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   isActive: { type: Boolean, default: true },

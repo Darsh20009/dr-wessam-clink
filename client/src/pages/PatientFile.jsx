@@ -58,6 +58,7 @@ const tabs = [
   { id: 'sessions', label: 'الجلسات', icon: <FiCalendar size={13}/> },
   { id: 'ttt', label: 'TTT File', icon: <span style={{fontSize:12}}>📋</span> },
   { id: 'financial', label: 'المالية', icon: <FiDollarSign size={13}/> },
+  { id: 'pennotes', label: 'ملاحظات القلم', icon: <FiEdit3 size={13}/> },
   { id: 'comments', label: 'التعليقات', icon: <FiMessageSquare size={13}/> },
   { id: 'visibility', label: 'الظهور', icon: <FiEye size={13}/> },
 ];
@@ -234,6 +235,7 @@ export default function PatientFile() {
   const [printing, setPrinting] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [drawingModal, setDrawingModal] = useState(null);
+  const [penNoteModal, setPenNoteModal] = useState(null);
   const [tttData, setTttData] = useState(DEFAULT_TTT);
   const [tttSaving, setTttSaving] = useState(false);
 
@@ -422,6 +424,35 @@ export default function PatientFile() {
 
   const openDrawingModal = (category, imageId, imageUrl, existingNote, sessionId = null) => {
     setDrawingModal({ category, imageId, imageUrl, existingNote: existingNote || null, sessionId, allNotes: getAllPenNotes() });
+  };
+
+  const openPenNoteModal = (existingNote = null) => {
+    setPenNoteModal({ noteId: existingNote?._id || null, existingData: existingNote?.data || null });
+  };
+
+  const savePenNote = async (base64) => {
+    if (!penNoteModal) return;
+    try {
+      if (penNoteModal.noteId) {
+        await axios.patch(`/patients/${id}/pen-notes/${penNoteModal.noteId}`, { data: base64 });
+      } else {
+        await axios.post(`/patients/${id}/pen-notes`, { data: base64, label: 'ملاحظة' });
+      }
+      setPenNoteModal(null);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const deletePenNote = async (noteId) => {
+    if (!window.confirm('حذف هذه الملاحظة نهائياً؟')) return;
+    try {
+      await axios.delete(`/patients/${id}/pen-notes/${noteId}`);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const saveDrawingNote = async (base64) => {
@@ -1229,6 +1260,47 @@ export default function PatientFile() {
         </div>
       )}
 
+      {/* ── Pen Notes Tab ── */}
+      {activeTab === 'pennotes' && (
+        <div className="card">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <h3 className="section-title" style={{ margin: 0 }}>✏️ ملاحظات القلم</h3>
+            <button className="btn btn-primary" onClick={() => openPenNoteModal(null)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <FiEdit3 size={14}/> ملاحظة جديدة
+            </button>
+          </div>
+          {(!patient.penNotes || patient.penNotes.length === 0) ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8' }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>✏️</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 }}>لا توجد ملاحظات بعد</div>
+              <div style={{ fontSize: 13 }}>اضغط "ملاحظة جديدة" للبدء بالرسم والكتابة على لوحة بيضاء</div>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+              {patient.penNotes.map((note, idx) => (
+                <div key={note._id} style={{ border: '1.5px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', background: '#f8fafc', transition: 'box-shadow 0.15s' }}>
+                  <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => openPenNoteModal(note)}>
+                    <img src={note.data} alt={`ملاحظة ${idx + 1}`} style={{ width: '100%', display: 'block', objectFit: 'cover', maxHeight: 140 }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(37,99,235,0)', transition: 'background 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(37,99,235,0.08)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(37,99,235,0)'}>
+                      <FiEdit3 size={24} color="#2563eb" style={{ opacity: 0.7 }} />
+                    </div>
+                  </div>
+                  <div style={{ padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'white', borderTop: '1px solid #e2e8f0' }}>
+                    <span style={{ fontSize: 11, color: '#64748b', fontFamily: 'Cairo,sans-serif' }}>
+                      {note.createdAt ? new Date(note.createdAt).toLocaleDateString('ar-EG') : `ملاحظة ${idx + 1}`}
+                    </span>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button onClick={() => openPenNoteModal(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', padding: 2 }} title="تعديل"><FiEdit3 size={13}/></button>
+                      <button onClick={() => deletePenNote(note._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 2 }} title="حذف">×</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Add Session Modal ── */}
       {showAddSession && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowAddSession(false)}>
@@ -1396,6 +1468,15 @@ export default function PatientFile() {
           allNotes={drawingModal.allNotes}
           onSave={saveDrawingNote}
           onClose={() => setDrawingModal(null)}
+        />
+      )}
+      {penNoteModal && (
+        <DrawingCanvas
+          blankMode={true}
+          existingNote={penNoteModal.existingData}
+          allNotes={(patient.penNotes || []).filter(n => n._id !== penNoteModal.noteId && n.data).map(n => ({ data: n.data, label: new Date(n.createdAt).toLocaleDateString('ar-EG') }))}
+          onSave={savePenNote}
+          onClose={() => setPenNoteModal(null)}
         />
       )}
     </div>
