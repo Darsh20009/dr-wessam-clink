@@ -832,7 +832,7 @@ export default function PatientFile() {
           </div>
           <div className="card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <h3 className="section-title" style={{ margin: 0 }}>🦷 Intraoral Examination</h3>
+              <h3 className="section-title" style={{ margin: 0 }}> Intraoral Examination</h3>
               <VisToggleBtn isVisible={vis.intraOralImages !== false} label="صور الفم" onClick={() => saveVisibility('intraOralImages', !(vis.intraOralImages !== false))} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, opacity: vis.intraOralImages === false ? 0.55 : 1 }}>
