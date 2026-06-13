@@ -402,7 +402,7 @@ export default function PatientFile() {
   };
 
   const openDrawingModal = (category, imageId, imageUrl, existingNote, sessionId = null) => {
-    setDrawingModal({ category, imageId, imageUrl: null, existingNote: existingNote || null, sessionId, allNotes: getAllPenNotes() });
+    setDrawingModal({ category, imageId, imageUrl: imageUrl || null, existingNote: existingNote || null, sessionId, allNotes: getAllPenNotes() });
   };
 
   const openPenNoteModal = (existingNote = null) => {
@@ -447,6 +447,21 @@ export default function PatientFile() {
       setDrawingModal(null);
       fetchData();
     } catch { toast.error('خطأ في حفظ نوت القلم'); }
+  };
+
+  const deleteDrawingNote = async () => {
+    if (!drawingModal) return;
+    const { category, imageId, sessionId } = drawingModal;
+    try {
+      if (sessionId) {
+        await axios.patch(`/sessions/${sessionId}/images/${imageId}`, { penNote: null });
+      } else {
+        await axios.patch(`/patients/${id}/images/${category}/${imageId}`, { penNote: null });
+      }
+      toast.success('تم حذف الملاحظة');
+      setDrawingModal(null);
+      fetchData();
+    } catch { toast.error('خطأ في حذف الملاحظة'); }
   };
 
   const openImgEdit = (cat, img) => {
@@ -1420,10 +1435,11 @@ export default function PatientFile() {
       )}
       {drawingModal && (
         <DrawingCanvas
-          blankMode={true}
+          imageUrl={drawingModal.imageUrl}
           existingNote={drawingModal.existingNote}
           allNotes={drawingModal.allNotes}
           onSave={saveDrawingNote}
+          onDeleteNote={drawingModal.existingNote ? deleteDrawingNote : undefined}
           onClose={() => setDrawingModal(null)}
         />
       )}

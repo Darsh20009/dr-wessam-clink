@@ -14,24 +14,25 @@ const TOOLS = [
 ];
 const SIZES = [3, 6, 12, 22];
 
-export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], onSave, onClose, blankMode = false }) {
-  const canvasRef     = useRef(null);
-  const containerRef  = useRef(null);
-  const historyRef    = useRef([]);
-  const historyIdxRef = useRef(-1);
-  const drawingRef    = useRef(false);
-  const lastPosRef    = useRef(null);
-  const startPosRef   = useRef(null);
-  const snapshotRef   = useRef(null);
-  const pointsRef     = useRef([]);
+export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], onSave, onClose, onDeleteNote, blankMode = false }) {
+  const canvasRef      = useRef(null);
+  const containerRef   = useRef(null);
+  const historyRef     = useRef([]);
+  const historyIdxRef  = useRef(-1);
+  const drawingRef     = useRef(false);
+  const lastPosRef     = useRef(null);
+  const startPosRef    = useRef(null);
+  const snapshotRef    = useRef(null);
+  const pointsRef      = useRef([]);
+  const originalIdxRef = useRef(0);
 
-  const [tool, setTool]           = useState('pen');
-  const [color, setColor]         = useState('#ef4444');
-  const [size, setSize]           = useState(6);
-  const [penOnly, setPenOnly]     = useState(false);
+  const [tool, setTool]             = useState('pen');
+  const [color, setColor]           = useState('#ef4444');
+  const [size, setSize]             = useState(6);
+  const [penOnly, setPenOnly]       = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [textInput, setTextInput] = useState(null);
-  const [textVal, setTextVal]     = useState('');
+  const [textInput, setTextInput]   = useState(null);
+  const [textVal, setTextVal]       = useState('');
   const [, tick] = useState(0);
 
   const saveHistory = useCallback(() => {
@@ -41,51 +42,101 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
     const h = historyRef.current.slice(0, historyIdxRef.current + 1);
     h.push(dataUrl);
     if (h.length > 25) h.shift();
-    historyRef.current = h;
+    historyRef.current   = h;
     historyIdxRef.current = h.length - 1;
     tick(n => n + 1);
   }, []);
 
-  useEffect(() => {
-    const canvas    = canvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !container) return;
-    const ctx = canvas.getContext('2d');
-
-    if (blankMode && !existingNote) {
-      const maxW = Math.min(container.clientWidth - 24, 860);
-      canvas.width  = maxW;
-      canvas.height = 520;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      saveHistory();
-      return;
-    }
-
-    const src = existingNote || imageUrl;
+  const drawImageOnCanvas = useCallback((src, canvas, ctx, onDone) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      const maxW = Math.min(container.clientWidth - 24, 860);
-      const maxH = 520;
-      const s = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
-      canvas.width  = Math.round(img.naturalWidth  * s);
-      canvas.height = Math.round(img.naturalHeight * s);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (blankMode) {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      saveHistory();
+      if (onDone) onDone();
     };
     img.onerror = () => {
-      canvas.width = 700; canvas.height = 450;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      saveHistory();
+      if (onDone) onDone();
     };
     const isData = typeof src === 'string' && src.startsWith('data:');
     img.src = isData ? src : (src + (src.includes('?') ? '&' : '?') + 't=' + Date.now());
+  }, [blankMode]);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      const canvas    = canvasRef.current;
+      const container = containerRef.current;
+      if (!canvas || !container) return;
+      const ctx = canvas.getContext('2d');
+
+      const maxW = Math.max(Math.min(container.clientWidth - 24, 860), 300);
+      const maxH = 520;
+
+      if (blankMode && !existingNote) {
+        canvas.width  = maxW;
+        canvas.height = maxH;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        saveHistory();
+        originalIdxRef.current = historyIdxRef.current;
+        return;
+      }
+
+      const loadBase = (baseSrc, then) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const s = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
+          canvas.width  = Math.max(Math.round(img.naturalWidth  * s), 100);
+          canvas.height = Math.max(Math.round(img.naturalHeight * s), 100);
+          if (blankMode) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          }
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          if (then) then();
+        };
+        img.onerror = () => {
+          canvas.width  = Math.max(maxW, 300);
+          canvas.height = 450;
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          if (then) then();
+        };
+        const isData = typeof baseSrc === 'string' && baseSrc.startsWith('data:');
+        img.src = isData ? baseSrc : (baseSrc + (baseSrc.includes('?') ? '&' : '?') + 't=' + Date.now());
+      };
+
+      if (existingNote) {
+        const base = imageUrl || null;
+        if (base) {
+          loadBase(base, () => {
+            saveHistory();
+            originalIdxRef.current = historyIdxRef.current;
+            drawImageOnCanvas(existingNote, canvas, ctx, () => {
+              saveHistory();
+            });
+          });
+        } else {
+          loadBase(existingNote, () => {
+            saveHistory();
+            originalIdxRef.current = 0;
+          });
+        }
+      } else {
+        const src = imageUrl;
+        loadBase(src, () => {
+          saveHistory();
+          originalIdxRef.current = historyIdxRef.current;
+        });
+      }
+    });
   }, []);
 
   const getPos = (e) => {
@@ -184,11 +235,6 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
     if (tool === 'pen') {
       pointsRef.current.push(pos);
       if (pointsRef.current.length > 80) pointsRef.current.shift();
-
-      ctx.clearRect(0, 0, 0, 0);
-      if (snapshotRef.current) {
-        ctx.putImageData(snapshotRef.current, 0, 0);
-      }
       drawSmoothPoints(ctx, pointsRef.current);
       lastPosRef.current = pos;
     } else if (tool === 'eraser') {
@@ -227,7 +273,7 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
       const ctx    = canvas.getContext('2d');
       const pts    = pointsRef.current;
       if (pts.length >= 2) drawSmoothPoints(ctx, pts);
-      pointsRef.current  = [];
+      pointsRef.current   = [];
       snapshotRef.current = null;
     } else if (['arrow', 'rect', 'circle'].includes(tool)) {
       const pos    = getPos(e);
@@ -252,8 +298,8 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
 
   const onPointerLeave = (e) => {
     if (drawingRef.current && !(penOnly && e.pointerType !== 'pen')) {
-      drawingRef.current = false;
-      pointsRef.current  = [];
+      drawingRef.current  = false;
+      pointsRef.current   = [];
       snapshotRef.current = null;
       saveHistory();
     }
@@ -288,6 +334,24 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
     tick(n => n + 1);
   };
 
+  const clearToOriginal = () => {
+    const origIdx = originalIdxRef.current;
+    const origData = historyRef.current[origIdx];
+    if (!origData) return;
+    const canvas = canvasRef.current;
+    const ctx    = canvas.getContext('2d');
+    const img    = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      const h = historyRef.current.slice(0, origIdx + 1);
+      historyRef.current    = h;
+      historyIdxRef.current = origIdx;
+      tick(n => n + 1);
+    };
+    img.src = origData;
+  };
+
   const handleImport = (data) => {
     const canvas = canvasRef.current;
     const ctx    = canvas.getContext('2d');
@@ -312,8 +376,15 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
     onSave(exp.toDataURL('image/jpeg', 0.9));
   };
 
-  const canUndo = historyIdxRef.current > 0;
-  const btnBase = { border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', outline: 'none', transition: 'all 0.12s' };
+  const handleDeleteNote = () => {
+    if (!onDeleteNote) return;
+    if (!window.confirm('هل تريد حذف هذه الملاحظة نهائياً؟')) return;
+    onDeleteNote();
+  };
+
+  const canUndo    = historyIdxRef.current > 0;
+  const canClear   = existingNote && historyIdxRef.current > originalIdxRef.current;
+  const btnBase    = { border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', outline: 'none', transition: 'all 0.12s' };
 
   return (
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -380,12 +451,23 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
           <div style={{ width: 1, height: 30, background: '#e2e8f0', flexShrink: 0 }} />
 
           {/* Undo */}
-          <button onClick={undo} disabled={!canUndo} title="تراجع" style={{ ...btnBase, width: 36, height: 36, borderRadius: 8, border: '1.5px solid #e2e8f0', background: canUndo ? 'white' : '#f8fafc', cursor: canUndo ? 'pointer' : 'not-allowed', color: canUndo ? '#334155' : '#cbd5e1', fontSize: 19 }}>↩</button>
+          <button onClick={undo} disabled={!canUndo} title="تراجع (Ctrl+Z)" style={{ ...btnBase, width: 36, height: 36, borderRadius: 8, border: '1.5px solid #e2e8f0', background: canUndo ? 'white' : '#f8fafc', cursor: canUndo ? 'pointer' : 'not-allowed', color: canUndo ? '#334155' : '#cbd5e1', fontSize: 19 }}>↩</button>
+
+          {/* Clear to original */}
+          {canClear && (
+            <button
+              onClick={clearToOriginal}
+              title="مسح كل الرسم والعودة للصورة الأصلية"
+              style={{ ...btnBase, padding: '5px 10px', borderRadius: 8, border: '1.5px solid #fca5a5', background: '#fef2f2', cursor: 'pointer', fontSize: 11, fontFamily: 'Cairo,sans-serif', fontWeight: 700, color: '#dc2626', whiteSpace: 'nowrap', gap: 4 }}
+            >
+              🔄 مسح الكل
+            </button>
+          )}
 
           {/* Import */}
           {allNotes.length > 0 && (
             <button onClick={() => setShowImport(v => !v)} style={{ ...btnBase, padding: '5px 10px', borderRadius: 8, border: `1.5px solid ${showImport ? '#2563eb' : '#e2e8f0'}`, background: showImport ? '#dbeafe' : 'white', cursor: 'pointer', fontSize: 12, fontFamily: 'Cairo,sans-serif', fontWeight: 600, color: showImport ? '#2563eb' : '#475569', whiteSpace: 'nowrap', gap: 4 }}>
-              📥 استيراد رسمة <span style={{ background: '#2563eb', color: 'white', borderRadius: 99, fontSize: 10, padding: '1px 5px' }}>{allNotes.length}</span>
+              📥 استيراد <span style={{ background: '#2563eb', color: 'white', borderRadius: 99, fontSize: 10, padding: '1px 5px' }}>{allNotes.length}</span>
             </button>
           )}
 
@@ -425,7 +507,7 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
           style={{
             flex: 1, overflow: 'auto', background: '#1e293b',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 14, minHeight: 280,
+            padding: 14, minHeight: 300,
             touchAction: penOnly ? 'none' : 'auto',
           }}
         >
@@ -464,11 +546,23 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
         )}
 
         {/* ── Footer ── */}
-        <div style={{ padding: '10px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', flexShrink: 0 }}>
-          <span style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'Cairo,sans-serif' }}>{blankMode ? 'ارسم ملاحظتك على اللوحة البيضاء ثم احفظ' : 'ارسم على الصورة ثم احفظ • ستظهر في الـ PDF تحت الصورة'}</span>
+        <div style={{ padding: '10px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', flexShrink: 0, gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {onDeleteNote && existingNote && (
+              <button
+                onClick={handleDeleteNote}
+                style={{ ...btnBase, padding: '7px 14px', borderRadius: 8, border: '1.5px solid #fca5a5', background: '#fef2f2', color: '#dc2626', fontFamily: 'Cairo,sans-serif', fontSize: 12, fontWeight: 700, gap: 5, cursor: 'pointer' }}
+              >
+                🗑️ حذف الملاحظة
+              </button>
+            )}
+            <span style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'Cairo,sans-serif' }}>
+              {blankMode ? 'ارسم ملاحظتك على اللوحة البيضاء ثم احفظ' : 'ارسم على الصورة ثم احفظ'}
+            </span>
+          </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="btn btn-secondary" onClick={onClose}>إلغاء</button>
-            <button className="btn btn-primary" onClick={handleSave}>💾 حفظ نوت القلم</button>
+            <button className="btn btn-primary" onClick={handleSave}>💾 حفظ</button>
           </div>
         </div>
       </div>
