@@ -7,7 +7,7 @@ import { ar } from 'date-fns/locale';
 import {
   FiArrowRight, FiSave, FiPlus, FiTrash2, FiUpload,
   FiDollarSign, FiCalendar, FiImage, FiFileText, FiActivity, FiEdit2, FiEdit3,
-  FiEye, FiEyeOff, FiChevronDown, FiChevronUp, FiX, FiMaximize2,
+  FiEye, FiChevronDown, FiChevronUp, FiX, FiMaximize2,
   FiPrinter, FiMessageSquare, FiSend, FiUser, FiShare2,
 } from 'react-icons/fi';
 import { printInvoice } from '../utils/printInvoice';
@@ -102,7 +102,7 @@ function ImgNote({ initialNote, onSave }) {
   );
 }
 
-function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, toggleVis, deleteImg, patchImage, openLightbox, onPenClick }) {
+function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, deleteImg, patchImage, openLightbox, onPenClick }) {
   const slotImages = (images || []).filter(img => img.type === slotType);
   return (
     <div style={{ border: '1.5px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', background: 'white' }}>
@@ -123,9 +123,6 @@ function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, toggleVis,
                 onSave={val => patchImage(cat, img._id, { notes: val })}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                <button title={img.isVisibleToPatient !== false ? 'ظاهر - اضغط للإخفاء' : 'مخفي - اضغط للإظهار'} onClick={() => toggleVis(cat, img._id, img.isVisibleToPatient !== false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: img.isVisibleToPatient !== false ? '#10b981' : '#cbd5e1' }}>
-                  {img.isVisibleToPatient !== false ? <FiEye size={13}/> : <FiEyeOff size={13}/>}
-                </button>
                 <button onClick={() => onPenClick && onPenClick(cat, img._id, img.url, img.penNote)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: img.penNote ? '#2563eb' : '#94a3b8' }} title={img.penNote ? 'تعديل نوت القلم' : 'إضافة نوت القلم'}><FiEdit3 size={12}/></button>
                 <button onClick={() => deleteImg(cat, img._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#ef4444' }}><FiTrash2 size={12}/></button>
               </div>
@@ -142,7 +139,7 @@ function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, toggleVis,
   );
 }
 
-function XraySlot({ xrayType, xrayLabel, xrays, triggerUpload, toggleVis, deleteImg, openLightbox }) {
+function XraySlot({ xrayType, xrayLabel, xrays, triggerUpload, deleteImg, openLightbox }) {
   const slotItems = (xrays || []).filter(x => x.type === xrayType);
   return (
     <div style={{ border: '1.5px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', background: 'white' }}>
@@ -160,12 +157,7 @@ function XraySlot({ xrayType, xrayLabel, xrays, triggerUpload, toggleVis, delete
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, padding: '0 2px' }}>
                 <span style={{ fontSize: 11, color: '#94a3b8' }}>{x.uploadedAt ? format(new Date(x.uploadedAt), 'd/M/yy') : ''}</span>
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <button title={x.isVisibleToPatient !== false ? 'ظاهر' : 'مخفي'} onClick={() => toggleVis('xray', x._id, x.isVisibleToPatient !== false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: x.isVisibleToPatient !== false ? '#10b981' : '#cbd5e1' }}>
-                    {x.isVisibleToPatient !== false ? <FiEye size={12}/> : <FiEyeOff size={12}/>}
-                  </button>
-                  <button onClick={() => deleteImg('xray', x._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><FiTrash2 size={12}/></button>
-                </div>
+                <button onClick={() => deleteImg('xray', x._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><FiTrash2 size={12}/></button>
               </div>
             </div>
           ))}
@@ -180,14 +172,6 @@ function XraySlot({ xrayType, xrayLabel, xrays, triggerUpload, toggleVis, delete
   );
 }
 
-function VisToggleBtn({ isVisible, label, onClick }) {
-  return (
-    <button onClick={onClick} title={isVisible ? 'ظاهر للمريض — اضغط لإخفائه' : 'مخفي — اضغط لإظهاره'} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, border: 'none', cursor: 'pointer', background: isVisible ? '#f0fdf4' : '#f8fafc', color: isVisible ? '#16a34a' : '#94a3b8', fontSize: 12, fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>
-      {isVisible ? <FiEye size={12}/> : <FiEyeOff size={12}/>}
-      {isVisible ? 'ظاهر للمريض' : 'مخفي'}
-    </button>
-  );
-}
 
 export default function PatientFile() {
   const { id } = useParams();
@@ -399,11 +383,6 @@ export default function PatientFile() {
     catch { toast.error('خطأ'); }
   };
 
-  const togglePatientImageVis = async (category, imageId, current) => {
-    try { await axios.patch(`/patients/${id}/images/${category}/${imageId}`, { isVisibleToPatient: !current }); fetchData(); }
-    catch { toast.error('خطأ'); }
-  };
-
   const patchPatientImage = async (category, imageId, updates) => {
     try { await axios.patch(`/patients/${id}/images/${category}/${imageId}`, updates); fetchData(); }
     catch { toast.error('خطأ في الحفظ'); }
@@ -485,16 +464,6 @@ export default function PatientFile() {
   const deleteSessionImage = async (sessionId, imageId) => {
     if (!window.confirm('حذف هذه الصورة؟')) return;
     try { await axios.delete(`/sessions/${sessionId}/images/${imageId}`); toast.success('تم الحذف'); fetchData(); }
-    catch { toast.error('خطأ'); }
-  };
-
-  const toggleSessionImageVis = async (sessionId, imageId, current) => {
-    try { await axios.patch(`/sessions/${sessionId}/images/${imageId}`, { isVisibleToPatient: !current }); fetchData(); }
-    catch { toast.error('خطأ'); }
-  };
-
-  const toggleSessionVis = async (sessionId, current) => {
-    try { await axios.patch(`/sessions/${sessionId}/visibility`, { isVisibleToPatient: !current }); fetchData(); }
     catch { toast.error('خطأ'); }
   };
 
@@ -676,9 +645,6 @@ export default function PatientFile() {
                               </div>
                               {img.notes && <div style={{ fontSize: 9, color: '#64748b', marginTop: 2, lineHeight: 1.3 }}>{img.notes}</div>}
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-                                <button onClick={() => toggleSessionImageVis(selectedSession._id, img._id, img.isVisibleToPatient !== false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: img.isVisibleToPatient !== false ? '#10b981' : '#cbd5e1' }}>
-                                  {img.isVisibleToPatient !== false ? <FiEye size={11}/> : <FiEyeOff size={11}/>}
-                                </button>
                                 <button onClick={() => openSessionImgEdit(selectedSession._id, img)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#2563eb' }} title="ملاحظات الصورة"><FiEdit2 size={10}/></button>
                                 <button onClick={() => openDrawingModal('session', img._id, img.url, img.penNote, selectedSession._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: img.penNote ? '#2563eb' : '#94a3b8' }} title="نوت القلم"><FiEdit3 size={10}/></button>
                                 <button onClick={() => deleteSessionImage(selectedSession._id, img._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><FiTrash2 size={11}/></button>
@@ -832,11 +798,10 @@ export default function PatientFile() {
             { key: 'instructions', label: 'التعليمات والملاحظات', placeholder: 'تعليمات للمريض...', rows: 4 },
           ].map(sec => (
             <div className="card" key={sec.key}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ marginBottom: 12 }}>
                 <h3 className="section-title" style={{ margin: 0 }}>{sec.label}</h3>
-                <VisToggleBtn isVisible={vis[sec.key] !== false} label={sec.label} onClick={() => saveVisibility(sec.key, !(vis[sec.key] !== false))} />
               </div>
-              <textarea className="form-control" rows={sec.rows} value={form[sec.key] || ''} onChange={e => setF(sec.key, e.target.value)} disabled={!editMode} placeholder={sec.placeholder} style={{ opacity: vis[sec.key] === false ? 0.5 : 1 }} />
+              <textarea className="form-control" rows={sec.rows} value={form[sec.key] || ''} onChange={e => setF(sec.key, e.target.value)} disabled={!editMode} placeholder={sec.placeholder} />
             </div>
           ))}
           {editMode && (
@@ -851,24 +816,22 @@ export default function PatientFile() {
       {activeTab === 'images' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ marginBottom: 16 }}>
               <h3 className="section-title" style={{ margin: 0 }}> Extraoral Examination</h3>
-              <VisToggleBtn isVisible={vis.faceImages !== false} label="صور الوجه" onClick={() => saveVisibility('faceImages', !(vis.faceImages !== false))} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, opacity: vis.faceImages === false ? 0.55 : 1 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
               {FACE_SLOTS.map(slot => (
-                <ImageSlot key={slot.type} cat="face" slotType={slot.type} slotLabel={slot.label} images={patient.faceImages} triggerUpload={triggerUpload} toggleVis={togglePatientImageVis} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} />
+                <ImageSlot key={slot.type} cat="face" slotType={slot.type} slotLabel={slot.label} images={patient.faceImages} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} />
               ))}
             </div>
           </div>
           <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ marginBottom: 16 }}>
               <h3 className="section-title" style={{ margin: 0 }}> Intraoral Examination</h3>
-              <VisToggleBtn isVisible={vis.intraOralImages !== false} label="صور الفم" onClick={() => saveVisibility('intraOralImages', !(vis.intraOralImages !== false))} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, opacity: vis.intraOralImages === false ? 0.55 : 1 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
               {INTRAORAL_SLOTS.map(slot => (
-                <ImageSlot key={slot.type} cat="intraoral" slotType={slot.type} slotLabel={slot.label} images={patient.intraOralImages} triggerUpload={triggerUpload} toggleVis={togglePatientImageVis} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} />
+                <ImageSlot key={slot.type} cat="intraoral" slotType={slot.type} slotLabel={slot.label} images={patient.intraOralImages} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} />
               ))}
             </div>
           </div>
@@ -911,13 +874,12 @@ export default function PatientFile() {
       {/* ── X-rays Tab ── */}
       {activeTab === 'xrays' && (
         <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ marginBottom: 16 }}>
             <h3 className="section-title" style={{ margin: 0 }}>☢️ الأشعة</h3>
-            <VisToggleBtn isVisible={vis.xrays !== false} label="الأشعة" onClick={() => saveVisibility('xrays', !(vis.xrays !== false))} />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14, opacity: vis.xrays === false ? 0.55 : 1 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
             {XRAY_TYPES.map(x => (
-              <XraySlot key={x.type} xrayType={x.type} xrayLabel={x.label} xrays={patient.xrays} triggerUpload={triggerUpload} toggleVis={togglePatientImageVis} deleteImg={deletePatientImage} openLightbox={setLightbox} />
+              <XraySlot key={x.type} xrayType={x.type} xrayLabel={x.label} xrays={patient.xrays} triggerUpload={triggerUpload} deleteImg={deletePatientImage} openLightbox={setLightbox} />
             ))}
           </div>
         </div>
@@ -929,7 +891,6 @@ export default function PatientFile() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <h3 style={{ fontWeight: 700, fontSize: '16px', margin: 0 }}>جلسات المتابعة ({sessions.length})</h3>
-              <VisToggleBtn isVisible={vis.sessions !== false} label="الجلسات" onClick={() => saveVisibility('sessions', !(vis.sessions !== false))} />
             </div>
             <button className="btn btn-primary btn-sm" onClick={() => setShowAddSession(true)}><FiPlus /> جلسة جديدة</button>
           </div>
@@ -955,9 +916,6 @@ export default function PatientFile() {
                       {s.amountPaid > 0 && <span className="badge badge-success">{s.amountPaid.toLocaleString()} ج.م</span>}
                       {s.images?.length > 0 && <span style={{ fontSize: 11, background: '#eff6ff', color: '#2563eb', borderRadius: 99, padding: '2px 8px', fontWeight: 600 }}>📷 {s.images.length}</span>}
                       {s.nextStep && <span style={{ fontSize: 11, background: '#fef3c7', color: '#92400e', borderRadius: 99, padding: '2px 8px', fontWeight: 600 }}>📋 خطوة</span>}
-                      <button title={s.isVisibleToPatient !== false ? 'ظاهر للمريض' : 'مخفي'} onClick={e => { e.stopPropagation(); toggleSessionVis(s._id, s.isVisibleToPatient !== false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: s.isVisibleToPatient !== false ? '#10b981' : '#cbd5e1', padding: 4 }}>
-                        {s.isVisibleToPatient !== false ? <FiEye size={15}/> : <FiEyeOff size={15}/>}
-                      </button>
                       <span style={{ color: '#94a3b8', fontSize: 13 }}>←</span>
                     </div>
                   </div>
@@ -1126,9 +1084,8 @@ export default function PatientFile() {
       {/* ── Financial Tab ── */}
       {activeTab === 'financial' && (
         <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ marginBottom: 16 }}>
             <h3 className="section-title" style={{ margin: 0 }}>الملخص المالي</h3>
-            <VisToggleBtn isVisible={vis.financials !== false} label="البيانات المالية" onClick={() => saveVisibility('financials', !(vis.financials !== false))} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', marginBottom: '20px' }}>
             {[{ label: 'التكلفة الكلية', val: patient.financials?.totalCost || 0, color: '#1e293b', bg: '#f8fafc' }, { label: 'المدفوع', val: patient.financials?.totalPaid || 0, color: '#10b981', bg: '#f0fdf4' }, { label: 'المتبقي', val: patient.financials?.remaining || 0, color: '#ef4444', bg: '#fef2f2' }].map((item, i) => (
