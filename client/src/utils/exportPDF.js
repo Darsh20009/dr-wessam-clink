@@ -323,9 +323,9 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     return `
       <div class="page-break">
         ${sectionTitle(t.photosSection)}
-        ${faceImgs.length  ? `<div class="subsec">${t.extraoral}</div><div class="img-grid">${slotGrid(slots.face, faceImgs)}</div>` : ''}
-        ${intraImgs.length ? `<div class="subsec">${t.intraoral}</div><div class="img-grid">${slotGrid(slots.intraoral, intraImgs)}</div>` : ''}
-        ${xrayImgs.length  ? `<div class="subsec">${t.radiographs}</div><div class="img-grid">${xrayGrid}</div>` : ''}
+        ${faceImgs.length  ? `<div class="img-group"><div class="subsec">${t.extraoral}</div><div class="img-grid">${slotGrid(slots.face, faceImgs)}</div></div>` : ''}
+        ${intraImgs.length ? `<div class="img-group"><div class="subsec">${t.intraoral}</div><div class="img-grid">${slotGrid(slots.intraoral, intraImgs)}</div></div>` : ''}
+        ${xrayImgs.length  ? `<div class="img-group"><div class="subsec">${t.radiographs}</div><div class="img-grid">${xrayGrid}</div></div>` : ''}
       </div>`;
   };
 
@@ -399,32 +399,34 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     body { font-family:${fontFamily}; color:#0f172a; background:white; direction:ltr; font-size:13px; line-height:1.6; }
     .page { max-width:210mm; margin:0 auto; padding:14mm 16mm 20mm; }
     @media print {
-      body { font-size:11px; }
+      body { font-size:11px; padding-top:0 !important; }
       .no-print { display:none !important; }
-      .page-break { page-break-inside:avoid; break-inside:avoid; }
       @page { margin:12mm 10mm; size:A4; }
     }
-    .clinic-header { display:flex; align-items:center; gap:18px; padding-bottom:16px; border-bottom:3px solid #2563eb; margin-bottom:20px; }
+    .clinic-header { display:flex; align-items:center; gap:18px; padding-bottom:16px; border-bottom:3px solid #2563eb; margin-bottom:20px; page-break-inside:avoid; break-inside:avoid; }
     .clinic-logo { width:72px; height:72px; object-fit:contain; border-radius:12px; }
     .clinic-info h1 { font-size:20px; font-weight:900; color:#1e3a8a; }
     .clinic-info p { font-size:12px; color:#64748b; margin-top:2px; }
-    .patient-card { background:#eff6ff; border-radius:10px; padding:14px 18px; margin-bottom:20px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; border:1px solid #bfdbfe; }
+    .patient-card { background:#eff6ff; border-radius:10px; padding:14px 18px; margin-bottom:20px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; border:1px solid #bfdbfe; page-break-inside:avoid; break-inside:avoid; }
     .patient-card .pf { font-size:11px; color:#64748b; }
     .patient-card .pv { font-weight:700; color:#1e293b; font-size:13px; }
-    .sec-title { font-size:15px; font-weight:900; color:#1e40af; border-left:4px solid #2563eb; padding-left:10px; margin:18px 0 12px; text-align:left; }
-    .subsec { font-size:12px; font-weight:700; color:#475569; margin:10px 0 6px; text-align:left; }
-    .ttt-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .sec-title { font-size:15px; font-weight:900; color:#1e40af; border-left:4px solid #2563eb; padding-left:10px; margin:18px 0 12px; text-align:left; page-break-after:avoid; break-after:avoid; }
+    .subsec { font-size:12px; font-weight:700; color:#475569; margin:10px 0 6px; text-align:left; page-break-after:avoid; break-after:avoid; }
+    .ttt-table { width:100%; border-collapse:collapse; font-size:12px; page-break-inside:avoid; break-inside:avoid; }
     .ttt-table td, .ttt-table th { border:1px solid #e2e8f0; padding:7px 10px; text-align:left; }
+    .ttt-table tr { page-break-inside:avoid; break-inside:avoid; }
     .ttt-table .label { background:#f8fafc; font-weight:700; color:#334155; width:38%; text-align:left; }
     .ttt-table .th-head { background:#1e3a8a; color:white; font-weight:900; font-size:13px; text-align:center; }
+    .img-group { page-break-inside:avoid; break-inside:avoid; margin-bottom:16px; }
     .img-grid { display:flex; flex-wrap:wrap; gap:12px; margin:8px 0; justify-content:flex-start; }
-    .img-slot { display:flex; flex-direction:column; align-items:center; }
+    .img-slot { display:flex; flex-direction:column; align-items:center; page-break-inside:avoid; break-inside:avoid; }
+    .img-slot img { page-break-inside:avoid; break-inside:avoid; display:block; }
     .slot-label { font-size:10px; font-weight:700; color:#334155; margin-bottom:4px; font-family:monospace; text-align:center; }
-    .field-row { display:flex; gap:12px; margin-bottom:8px; align-items:flex-start; text-align:left; }
+    .field-row { display:flex; gap:12px; margin-bottom:8px; align-items:flex-start; text-align:left; page-break-inside:avoid; break-inside:avoid; }
     .fl { font-weight:700; color:#334155; min-width:160px; font-size:12px; text-align:left; }
     .fv { color:#475569; font-size:12px; flex:1; text-align:left; }
-    .page-break { margin-bottom:28px; padding-bottom:8px; }
-    .footer { margin-top:30px; padding-top:12px; border-top:1px solid #e2e8f0; text-align:center; color:#94a3b8; font-size:11px; }
+    .page-break { margin-bottom:28px; padding-bottom:8px; page-break-inside:avoid; break-inside:avoid; }
+    .footer { margin-top:30px; padding-top:12px; border-top:1px solid #e2e8f0; text-align:center; color:#94a3b8; font-size:11px; page-break-inside:avoid; break-inside:avoid; }
     .print-toolbar { position:fixed; top:0; left:0; right:0; background:#1e3a8a; color:white; padding:10px 20px; display:flex; align-items:center; justify-content:space-between; z-index:9999; font-family:${fontFamily}; direction:ltr; }
     .print-toolbar button { background:#2563eb; color:white; border:none; border-radius:8px; padding:8px 20px; font-size:14px; font-weight:700; cursor:pointer; }
     body { padding-top: 50px; }
