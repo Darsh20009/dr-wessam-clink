@@ -66,6 +66,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
   const [opts, setOpts] = useState({
     includeClinicHeader: true,
     includePatientCard: true,
+    includeDiagnosis: true,
     includeTTT: true,
     includeTTTObjectives: true,
     includeTTTBolton: true,
@@ -336,6 +337,9 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
               icon={<span style={{ fontSize: 15 }}>🏥</span>} label="ترويسة العيادة" sublabel="اسم العيادة والشعار والتاريخ"/>
             <ContentRow checked={opts.includePatientCard} onChange={() => toggleOpt('includePatientCard')}
               icon={<FiFileText size={16}/>} label="بيانات المريض الأساسية" sublabel="الاسم والجوال والعنوان"/>
+
+            <ContentRow checked={opts.includeDiagnosis} onChange={() => toggleOpt('includeDiagnosis')}
+              icon={<span style={{ fontSize: 15 }}>🩺</span>} label="التشخيص وخطة العلاج" sublabel="التشخيص، خطة العلاج، المراحل، التعليمات"/>
 
             {/* TTT File */}
             <div style={{ border: `1.5px solid ${opts.includeTTT ? '#bfdbfe' : '#e2e8f0'}`, borderRadius: 10, overflow: 'hidden', marginBottom: 6 }}>

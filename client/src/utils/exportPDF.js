@@ -64,6 +64,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     includeFinancials: false,
     includeClinicHeader: true,
     includePatientCard: true,
+    includeDiagnosis: true,
     includeTTTObjectives: true,
     includeTTTBolton: true,
     includeTTTSpace: true,
@@ -92,6 +93,23 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
       `).join('')}
     </div>`;
   }).join('');
+
+  const diagnosisSection = () => {
+    if (!o.includeDiagnosis) return '';
+    const hasAny = patient.diagnosis || patient.treatmentPlan || patient.treatmentStages || patient.instructions || patient.treatmentNotes;
+    if (!hasAny) return '';
+    return `
+      <div class="page-break">
+        ${sectionTitle('🩺 التشخيص وخطة العلاج')}
+        <table class="ttt-table">
+          ${patient.diagnosis ? `<tr><td class="label" style="width:30%">التشخيص</td><td style="white-space:pre-wrap">${patient.diagnosis}</td></tr>` : ''}
+          ${patient.treatmentPlan ? `<tr><td class="label">خطة العلاج</td><td style="white-space:pre-wrap">${patient.treatmentPlan}</td></tr>` : ''}
+          ${patient.treatmentStages ? `<tr><td class="label">مراحل العلاج</td><td style="white-space:pre-wrap">${patient.treatmentStages}</td></tr>` : ''}
+          ${patient.instructions ? `<tr><td class="label">التعليمات</td><td style="white-space:pre-wrap">${patient.instructions}</td></tr>` : ''}
+          ${patient.treatmentNotes ? `<tr><td class="label">ملاحظات العلاج</td><td style="white-space:pre-wrap">${patient.treatmentNotes}</td></tr>` : ''}
+        </table>
+      </div>`;
+  };
 
   const tttSection = () => {
     if (!o.includeTTT || !ttt) return '';
@@ -328,9 +346,9 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
       <div><div class="pf">رقم الجوال</div><div class="pv" style="direction:ltr">${patient.phone || '—'}</div></div>
       ${patient.age ? `<div><div class="pf">العمر</div><div class="pv">${patient.age} سنة</div></div>` : '<div></div>'}
       ${patient.address ? `<div><div class="pf">العنوان</div><div class="pv">${patient.address}</div></div>` : ''}
-      ${patient.diagnosis ? `<div style="grid-column:1/-1"><div class="pf">التشخيص</div><div class="pv">${patient.diagnosis}</div></div>` : ''}
     </div>` : ''}
 
+    ${diagnosisSection()}
     ${tttSection()}
     ${photosSection()}
     ${sessionsSection()}
