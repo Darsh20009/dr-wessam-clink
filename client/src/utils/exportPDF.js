@@ -460,9 +460,9 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
       ${patient.address ? `<div><div class="pf">${t.address}</div><div class="pv">${patient.address}</div></div>` : ''}
     </div>` : ''}
 
-    ${diagnosisSection()}
-    ${tttSection()}
     ${photosSection()}
+    ${tttSection()}
+    ${diagnosisSection()}
     ${sessionsSection()}
     ${financialSection()}
 
