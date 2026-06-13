@@ -52,7 +52,6 @@ const ContentRow = ({ checked, onChange, icon, label, sublabel, indent = false }
 
 export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo = {}, onClose }) {
   const [step, setStep] = useState(1);
-  const [lang, setLang] = useState('en');
   const [dest, setDest] = useState({ download: true, whatsapp: false, email: false });
   const initPhone = () => {
     let p = (patient?.phone || '').replace(/\D/g, '');
@@ -65,6 +64,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
   const [email, setEmail] = useState('');
 
   const [opts, setOpts] = useState({
+    lang: 'en',
     includeClinicHeader: true,
     includePatientCard: true,
     includeDiagnosis: true,
@@ -121,7 +121,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
     setLoading(true);
     try {
       setLoadingStep('جاري تجهيز البيانات والصور...');
-      const finalOpts = { ...opts, lang, sessionIds: allSessions ? [] : opts.sessionIds };
+      const finalOpts = { ...opts, sessionIds: allSessions ? [] : opts.sessionIds };
       const { blobUrl, html } = await exportPatientPDF({ patient, sessions, ttt, siteInfo, opts: finalOpts });
       setHtmlBlobUrl(blobUrl);
 
@@ -336,25 +336,28 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
               {[
                 { val: 'en', flag: '🇬🇧', label: 'English', sub: 'English labels & layout' },
                 { val: 'ar', flag: '🇸🇦', label: 'العربية', sub: 'مسميات وتخطيط عربي' },
-              ].map(({ val, flag, label, sub }) => (
-                <button key={val} onClick={() => setLang(val)}
-                  style={{
-                    padding: '12px 10px', borderRadius: 12, cursor: 'pointer',
-                    border: `2px solid ${lang === val ? '#2563eb' : '#e2e8f0'}`,
-                    background: lang === val ? '#eff6ff' : 'white',
-                    fontFamily: 'Cairo, sans-serif', display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', gap: 5, transition: 'all 0.15s', position: 'relative',
-                  }}>
-                  {lang === val && (
-                    <div style={{ position: 'absolute', top: 5, right: 5, width: 16, height: 16, borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <FiCheck size={9} color="white" strokeWidth={3}/>
-                    </div>
-                  )}
-                  <span style={{ fontSize: 22 }}>{flag}</span>
-                  <span style={{ fontWeight: 800, fontSize: 13, color: lang === val ? '#1e3a8a' : '#475569' }}>{label}</span>
-                  <span style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>{sub}</span>
-                </button>
-              ))}
+              ].map(({ val, flag, label, sub }) => {
+                const selected = opts.lang === val;
+                return (
+                  <button key={val} onClick={() => setOpts(o => ({ ...o, lang: val }))}
+                    style={{
+                      padding: '12px 10px', borderRadius: 12, cursor: 'pointer',
+                      border: `2px solid ${selected ? '#2563eb' : '#e2e8f0'}`,
+                      background: selected ? '#eff6ff' : 'white',
+                      fontFamily: 'Cairo, sans-serif', display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', gap: 5, transition: 'all 0.15s', position: 'relative',
+                    }}>
+                    {selected && (
+                      <div style={{ position: 'absolute', top: 5, right: 5, width: 16, height: 16, borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <FiCheck size={9} color="white" strokeWidth={3}/>
+                      </div>
+                    )}
+                    <span style={{ fontSize: 22 }}>{flag}</span>
+                    <span style={{ fontWeight: 800, fontSize: 13, color: selected ? '#1e3a8a' : '#475569' }}>{label}</span>
+                    <span style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>{sub}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
