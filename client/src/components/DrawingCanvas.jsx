@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 
 const COLORS = [
   '#ef4444', '#f97316', '#eab308', '#22c55e',
@@ -15,24 +15,26 @@ const TOOLS = [
 const SIZES = [3, 6, 12, 22];
 
 export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], onSave, onClose, blankMode = false }) {
-  const canvasRef    = useRef(null);
-  const containerRef = useRef(null);
-  const historyRef   = useRef([]);
+  const canvasRef     = useRef(null);
+  const containerRef  = useRef(null);
+  const historyRef    = useRef([]);
   const historyIdxRef = useRef(-1);
-  const drawingRef   = useRef(false);
-  const lastPosRef   = useRef(null);
-  const startPosRef  = useRef(null);
-  const snapshotRef  = useRef(null);
+  const drawingRef    = useRef(false);
+  const lastPosRef    = useRef(null);
+  const startPosRef   = useRef(null);
+  const snapshotRef   = useRef(null);
+  const pointsRef     = useRef([]);
 
   const [tool, setTool]           = useState('pen');
   const [color, setColor]         = useState('#ef4444');
   const [size, setSize]           = useState(6);
+  const [penOnly, setPenOnly]     = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [textInput, setTextInput] = useState(null);
   const [textVal, setTextVal]     = useState('');
   const [, tick] = useState(0);
 
-  const saveHistory = () => {
+  const saveHistory = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const dataUrl = canvas.toDataURL('image/png');
@@ -42,7 +44,7 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
     historyRef.current = h;
     historyIdxRef.current = h.length - 1;
     tick(n => n + 1);
-  };
+  }, []);
 
   useEffect(() => {
     const canvas    = canvasRef.current;
@@ -88,12 +90,14 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
 
   const getPos = (e) => {
     const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
+    const rect   = canvas.getBoundingClientRect();
     const sx = canvas.width  / rect.width;
     const sy = canvas.height / rect.height;
-    const cx = e.touches ? e.touches[0].clientX : e.clientX;
-    const cy = e.touches ? e.touches[0].clientY : e.clientY;
-    return { x: (cx - rect.left) * sx, y: (cy - rect.top) * sy, sx: cx, sy: cy };
+    return {
+      x: (e.clientX - rect.left) * sx,
+      y: (e.clientY - rect.top)  * sy,
+      pressure: e.pressure > 0 ? e.pressure : 0.5,
+    };
   };
 
   const drawArrow = (ctx, x1, y1, x2, y2) => {
@@ -108,8 +112,29 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
     ctx.closePath(); ctx.fillStyle = color; ctx.fill();
   };
 
-  const onMouseDown = (e) => {
+  const drawSmoothPoints = (ctx, pts) => {
+    if (pts.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length - 1; i++) {
+      const mx = (pts[i].x + pts[i + 1].x) / 2;
+      const my = (pts[i].y + pts[i + 1].y) / 2;
+      ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+    }
+    const last = pts[pts.length - 1];
+    ctx.lineTo(last.x, last.y);
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = size;
+    ctx.lineCap     = 'round';
+    ctx.lineJoin    = 'round';
+    ctx.stroke();
+  };
+
+  const onPointerDown = (e) => {
+    if (penOnly && e.pointerType !== 'pen') return;
     e.preventDefault();
+    canvasRef.current.setPointerCapture(e.pointerId);
+
     const pos = getPos(e);
     startPosRef.current = pos;
     lastPosRef.current  = pos;
@@ -134,6 +159,7 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
     }
 
     if (tool === 'pen') {
+      pointsRef.current = [pos];
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, size / 2, 0, Math.PI * 2);
       ctx.fillStyle = color; ctx.fill();
@@ -146,19 +172,24 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
     }
   };
 
-  const onMouseMove = (e) => {
+  const onPointerMove = (e) => {
     if (!drawingRef.current) return;
+    if (penOnly && e.pointerType !== 'pen') return;
     e.preventDefault();
+
     const pos    = getPos(e);
     const canvas = canvasRef.current;
     const ctx    = canvas.getContext('2d');
 
     if (tool === 'pen') {
-      ctx.beginPath();
-      ctx.moveTo(lastPosRef.current.x, lastPosRef.current.y);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.strokeStyle = color; ctx.lineWidth = size;
-      ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+      pointsRef.current.push(pos);
+      if (pointsRef.current.length > 80) pointsRef.current.shift();
+
+      ctx.clearRect(0, 0, 0, 0);
+      if (snapshotRef.current) {
+        ctx.putImageData(snapshotRef.current, 0, 0);
+      }
+      drawSmoothPoints(ctx, pointsRef.current);
       lastPosRef.current = pos;
     } else if (tool === 'eraser') {
       ctx.globalCompositeOperation = 'destination-out';
@@ -186,10 +217,19 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
     }
   };
 
-  const onMouseUp = (e) => {
+  const onPointerUp = (e) => {
     if (!drawingRef.current) return;
+    if (penOnly && e.pointerType !== 'pen') return;
     drawingRef.current = false;
-    if (['arrow', 'rect', 'circle'].includes(tool)) {
+
+    if (tool === 'pen') {
+      const canvas = canvasRef.current;
+      const ctx    = canvas.getContext('2d');
+      const pts    = pointsRef.current;
+      if (pts.length >= 2) drawSmoothPoints(ctx, pts);
+      pointsRef.current  = [];
+      snapshotRef.current = null;
+    } else if (['arrow', 'rect', 'circle'].includes(tool)) {
       const pos    = getPos(e);
       const canvas = canvasRef.current;
       const ctx    = canvas.getContext('2d');
@@ -205,8 +245,18 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
         ctx.ellipse(s.x + rx, s.y + ry, Math.abs(rx), Math.abs(ry), 0, 0, Math.PI * 2);
         ctx.stroke();
       }
+      snapshotRef.current = null;
     }
     saveHistory();
+  };
+
+  const onPointerLeave = (e) => {
+    if (drawingRef.current && !(penOnly && e.pointerType !== 'pen')) {
+      drawingRef.current = false;
+      pointsRef.current  = [];
+      snapshotRef.current = null;
+      saveHistory();
+    }
   };
 
   const commitText = () => {
@@ -309,6 +359,26 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
 
           <div style={{ width: 1, height: 30, background: '#e2e8f0', flexShrink: 0 }} />
 
+          {/* Pen-only toggle */}
+          <button
+            onClick={() => setPenOnly(v => !v)}
+            title={penOnly ? 'وضع القلم فقط — مفعّل' : 'وضع القلم فقط — معطّل'}
+            style={{
+              ...btnBase,
+              padding: '5px 10px', borderRadius: 8, gap: 5,
+              border: `2px solid ${penOnly ? '#7c3aed' : '#e2e8f0'}`,
+              background: penOnly ? '#ede9fe' : 'white',
+              color: penOnly ? '#7c3aed' : '#94a3b8',
+              fontFamily: 'Cairo,sans-serif', fontSize: 11, fontWeight: 700,
+              whiteSpace: 'nowrap', flexShrink: 0,
+            }}
+          >
+            <span style={{ fontSize: 15 }}>🖊️</span>
+            {penOnly ? 'قلم فقط ✓' : 'قلم فقط'}
+          </button>
+
+          <div style={{ width: 1, height: 30, background: '#e2e8f0', flexShrink: 0 }} />
+
           {/* Undo */}
           <button onClick={undo} disabled={!canUndo} title="تراجع" style={{ ...btnBase, width: 36, height: 36, borderRadius: 8, border: '1.5px solid #e2e8f0', background: canUndo ? 'white' : '#f8fafc', cursor: canUndo ? 'pointer' : 'not-allowed', color: canUndo ? '#334155' : '#cbd5e1', fontSize: 19 }}>↩</button>
 
@@ -326,6 +396,16 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
           </div>
         </div>
 
+        {/* ── Pen-only hint ── */}
+        {penOnly && (
+          <div style={{ padding: '6px 16px', background: '#ede9fe', borderBottom: '1px solid #c4b5fd', display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+            <span style={{ fontSize: 14 }}>🖊️</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#5b21b6', fontFamily: 'Cairo,sans-serif' }}>
+              وضع القلم فقط مفعّل — اللمس باليد لن يرسم ولن يحرّك الشاشة
+            </span>
+          </div>
+        )}
+
         {/* ── Import panel ── */}
         {showImport && (
           <div style={{ padding: '10px 14px', background: '#f0f9ff', borderBottom: '1px solid #bfdbfe', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', flexShrink: 0 }}>
@@ -340,21 +420,36 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
         )}
 
         {/* ── Canvas area ── */}
-        <div ref={containerRef} style={{ flex: 1, overflow: 'auto', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 14, minHeight: 280 }}>
+        <div
+          ref={containerRef}
+          style={{
+            flex: 1, overflow: 'auto', background: '#1e293b',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 14, minHeight: 280,
+            touchAction: penOnly ? 'none' : 'auto',
+          }}
+        >
           <canvas
             ref={canvasRef}
-            style={{ display: 'block', cursor: tool === 'eraser' ? 'cell' : tool === 'text' ? 'text' : 'crosshair', borderRadius: 4, boxShadow: '0 4px 28px rgba(0,0,0,0.55)', maxWidth: '100%' }}
-            onMouseDown={onMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onMouseLeave={() => { if (drawingRef.current) { drawingRef.current = false; saveHistory(); } }}
-            onTouchStart={e => { e.preventDefault(); onMouseDown(e); }}
-            onTouchMove={e => { e.preventDefault(); onMouseMove(e); }}
-            onTouchEnd={e => { onMouseUp(e); }}
+            style={{
+              display: 'block',
+              cursor: tool === 'eraser' ? 'cell' : tool === 'text' ? 'text' : 'crosshair',
+              borderRadius: 4,
+              boxShadow: '0 4px 28px rgba(0,0,0,0.55)',
+              maxWidth: '100%',
+              touchAction: 'none',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+            }}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerLeave={onPointerLeave}
+            onPointerCancel={onPointerLeave}
           />
         </div>
 
-        {/* ── Text input overlay (fixed) ── */}
+        {/* ── Text input overlay ── */}
         {textInput && (
           <input
             autoFocus
