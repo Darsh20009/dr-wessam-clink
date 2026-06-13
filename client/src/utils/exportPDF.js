@@ -190,10 +190,10 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     return imgs.map(i => `
       <div class="img-slot">
         ${i.penNote
-          ? `<img src="${i.penNote}" style="width:220px;height:auto;display:block;margin:0 auto;border-radius:6px;border:1px solid #e2e8f0;" onerror="this.style.display='none'" />`
-          : imgTag(i.url, 'width:220px;display:block;margin:0 auto')
+          ? `<img src="${i.penNote}" style="border-radius:6px;" onerror="this.style.display='none'" />`
+          : imgTag(i.url, '')
         }
-        ${i.notes ? `<div style="font-size:9px;color:#475569;margin-top:3px;text-align:center;max-width:220px">${i.notes}</div>` : ''}
+        ${i.notes ? `<div style="font-size:9px;color:#475569;margin-top:3px;">${i.notes}</div>` : ''}
       </div>
     `).join('');
   }).join('');
@@ -314,8 +314,8 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
       return imgs.map(i => `
         <div class="img-slot">
           ${i.penNote
-            ? `<img src="${i.penNote}" style="width:280px;height:auto;display:block;margin:0 auto;border-radius:6px;border:1px solid #e2e8f0;" onerror="this.style.display='none'" />`
-            : imgTag(i.url, 'width:280px;display:block;margin:0 auto')
+            ? `<img src="${i.penNote}" style="border-radius:6px;" onerror="this.style.display='none'" />`
+            : imgTag(i.url, '')
           }
         </div>
       `);
@@ -326,7 +326,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
         ${sectionTitle(t.photosSection)}
         ${faceImgs.length  ? `<div class="img-group"><div class="subsec">${t.extraoral}</div><div class="img-grid">${slotGrid(slots.face, faceImgs)}</div></div>` : ''}
         ${intraImgs.length ? `<div class="img-group"><div class="subsec">${t.intraoral}</div><div class="img-grid">${slotGrid(slots.intraoral, intraImgs)}</div></div>` : ''}
-        ${xrayImgs.length  ? `<div class="img-group"><div class="subsec">${t.radiographs}</div><div class="img-grid">${xrayGrid}</div></div>` : ''}
+        ${xrayImgs.length  ? `<div class="img-group"><div class="subsec">${t.radiographs}</div><div class="img-grid-xray">${xrayGrid}</div></div>` : ''}
       </div>`;
   };
 
@@ -358,10 +358,10 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
               return slotImgs.map(im => `
                 <div class="img-slot">
                   ${im.penNote
-                    ? `<img src="${im.penNote}" style="width:200px;height:auto;display:block;margin:0 auto;border-radius:6px;border:1px solid #e2e8f0;" onerror="this.style.display='none'" />`
-                    : imgTag(im.url, 'width:200px;display:block;margin:0 auto')
+                    ? `<img src="${im.penNote}" style="border-radius:6px;" onerror="this.style.display='none'" />`
+                    : imgTag(im.url, '')
                   }
-                  ${im.notes ? `<div style="font-size:9px;color:#475569;margin-top:3px;text-align:center;max-width:200px">${im.notes}</div>` : ''}
+                  ${im.notes ? `<div style="font-size:9px;color:#475569;margin-top:3px;">${im.notes}</div>` : ''}
                 </div>
               `);
             }).join('')}</div>` : ''}
@@ -418,11 +418,11 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     .ttt-table tr { page-break-inside:avoid; break-inside:avoid; }
     .ttt-table .label { background:#f8fafc; font-weight:700; color:#334155; width:38%; text-align:left; }
     .ttt-table .th-head { background:#1e3a8a; color:white; font-weight:900; font-size:13px; text-align:center; }
-    .img-group { margin-bottom:20px; }
-    .img-grid { display:block; overflow:hidden; margin:8px 0; }
-    .img-slot { display:inline-block; vertical-align:top; margin:6px; page-break-inside:avoid; break-inside:avoid; }
-    .img-slot img { display:block; page-break-inside:avoid; break-inside:avoid; }
-    .img-card { page-break-inside:avoid; break-inside:avoid; display:inline-block; vertical-align:top; }
+    .img-group { margin-bottom:24px; }
+    .img-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,220px)); gap:14px; margin:10px 0; }
+    .img-grid-xray { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,300px)); gap:14px; margin:10px 0; }
+    .img-slot { break-inside:avoid; page-break-inside:avoid; display:block; }
+    .img-slot img { display:block; width:100%; height:auto; max-height:400px; object-fit:contain; }
     .slot-label { font-size:10px; font-weight:700; color:#334155; margin-bottom:4px; font-family:monospace; text-align:center; }
     .field-row { display:flex; gap:12px; margin-bottom:8px; align-items:flex-start; text-align:left; page-break-inside:avoid; break-inside:avoid; }
     .fl { font-weight:700; color:#334155; min-width:160px; font-size:12px; text-align:left; }
