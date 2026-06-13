@@ -187,15 +187,15 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
   const slotGrid = (slotDefs, images) => slotDefs.map(slot => {
     const imgs = images.filter(i => i.type === slot.type);
     if (!imgs.length) return '';
-    return `<div class="img-slot">
-      ${imgs.map(i => `
-        <div style="margin-bottom:6px;text-align:center">
-          ${imgTag(i.url, 'width:220px;display:block;margin:0 auto')}
-          ${i.notes ? `<div style="font-size:9px;color:#475569;margin-top:1px">${i.notes}</div>` : ''}
-          ${i.penNote ? `<div style="margin-top:5px;text-align:center"><div style="font-size:8px;color:#2563eb;font-weight:700;margin-bottom:2px">${t.penNote}</div><img src="${i.penNote}" style="max-width:100%;border-radius:3px;border:1px solid #bfdbfe;display:block;margin:0 auto" onerror="this.style.display='none'"/></div>` : ''}
-        </div>
-      `).join('')}
-    </div>`;
+    return imgs.map(i => `
+      <div class="img-slot">
+        ${i.penNote
+          ? `<img src="${i.penNote}" style="width:220px;height:auto;display:block;margin:0 auto;border-radius:6px;border:1px solid #e2e8f0;" onerror="this.style.display='none'" />`
+          : imgTag(i.url, 'width:220px;display:block;margin:0 auto')
+        }
+        ${i.notes ? `<div style="font-size:9px;color:#475569;margin-top:3px;text-align:center;max-width:220px">${i.notes}</div>` : ''}
+      </div>
+    `).join('');
   }).join('');
 
   const diagnosisSection = () => {
@@ -308,16 +308,17 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     const xrayImgs  = o.includeXrays           ? (patient.xrays || [])          : [];
     if (!faceImgs.length && !intraImgs.length && !xrayImgs.length) return '';
 
-    const xrayGrid = slots.xray.map(slot => {
+    const xrayGrid = slots.xray.flatMap(slot => {
       const imgs = xrayImgs.filter(i => i.type === slot.type);
-      if (!imgs.length) return '';
-      return `<div class="img-slot">
-        ${imgs.map(i => `
-          <div style="margin-bottom:6px;text-align:center">
-            ${imgTag(i.url, 'width:280px;display:block;margin:0 auto')}
-          </div>
-        `).join('')}
-      </div>`;
+      if (!imgs.length) return [];
+      return imgs.map(i => `
+        <div class="img-slot">
+          ${i.penNote
+            ? `<img src="${i.penNote}" style="width:280px;height:auto;display:block;margin:0 auto;border-radius:6px;border:1px solid #e2e8f0;" onerror="this.style.display='none'" />`
+            : imgTag(i.url, 'width:280px;display:block;margin:0 auto')
+          }
+        </div>
+      `);
     }).join('');
 
     return `
@@ -351,18 +352,18 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
           ${s.amountPaid > 0  ? `<div class="field-row"><span class="fl">${t.amountPaid}:</span><span class="fv" style="color:#10b981;font-weight:700">${s.amountPaid.toLocaleString()} ${t.currency}</span></div>` : ''}
           ${imgs.length ? `
             <div class="subsec" style="margin-top:12px">${t.sessionPhotos}</div>
-            <div class="img-grid">${slots.session.map(slot => {
+            <div class="img-grid">${slots.session.flatMap(slot => {
               const slotImgs = imgs.filter(im => im.type === slot.type);
-              if (!slotImgs.length) return '';
-              return `<div class="img-slot">
-                ${slotImgs.map(im => `
-                  <div style="margin-bottom:6px;text-align:center">
-                    ${imgTag(im.url, 'width:200px;display:block;margin:0 auto')}
-                    ${im.notes ? `<div style="font-size:9px;color:#475569;margin-top:2px;padding:0 4px">${im.notes}</div>` : ''}
-                    ${im.penNote ? `<div style="margin-top:5px;text-align:center"><div style="font-size:8px;color:#2563eb;font-weight:700;margin-bottom:2px">${t.penNote}</div><img src="${im.penNote}" style="max-width:100%;border-radius:3px;border:1px solid #bfdbfe;display:block;margin:0 auto" onerror="this.style.display='none'"/></div>` : ''}
-                  </div>
-                `).join('')}
-              </div>`;
+              if (!slotImgs.length) return [];
+              return slotImgs.map(im => `
+                <div class="img-slot">
+                  ${im.penNote
+                    ? `<img src="${im.penNote}" style="width:200px;height:auto;display:block;margin:0 auto;border-radius:6px;border:1px solid #e2e8f0;" onerror="this.style.display='none'" />`
+                    : imgTag(im.url, 'width:200px;display:block;margin:0 auto')
+                  }
+                  ${im.notes ? `<div style="font-size:9px;color:#475569;margin-top:3px;text-align:center;max-width:200px">${im.notes}</div>` : ''}
+                </div>
+              `);
             }).join('')}</div>` : ''}
         </div>`;
     }).join('');
@@ -417,10 +418,11 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     .ttt-table tr { page-break-inside:avoid; break-inside:avoid; }
     .ttt-table .label { background:#f8fafc; font-weight:700; color:#334155; width:38%; text-align:left; }
     .ttt-table .th-head { background:#1e3a8a; color:white; font-weight:900; font-size:13px; text-align:center; }
-    .img-group { page-break-inside:avoid; break-inside:avoid; margin-bottom:16px; }
-    .img-grid { display:flex; flex-wrap:wrap; gap:12px; margin:8px 0; justify-content:flex-start; }
-    .img-slot { display:flex; flex-direction:column; align-items:center; page-break-inside:avoid; break-inside:avoid; }
-    .img-slot img { page-break-inside:avoid; break-inside:avoid; display:block; }
+    .img-group { margin-bottom:20px; }
+    .img-grid { display:block; overflow:hidden; margin:8px 0; }
+    .img-slot { display:inline-block; vertical-align:top; margin:6px; page-break-inside:avoid; break-inside:avoid; }
+    .img-slot img { display:block; page-break-inside:avoid; break-inside:avoid; }
+    .img-card { page-break-inside:avoid; break-inside:avoid; display:inline-block; vertical-align:top; }
     .slot-label { font-size:10px; font-weight:700; color:#334155; margin-bottom:4px; font-family:monospace; text-align:center; }
     .field-row { display:flex; gap:12px; margin-bottom:8px; align-items:flex-start; text-align:left; page-break-inside:avoid; break-inside:avoid; }
     .fl { font-weight:700; color:#334155; min-width:160px; font-size:12px; text-align:left; }
