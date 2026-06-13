@@ -188,11 +188,9 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     const imgs = images.filter(i => i.type === slot.type);
     if (!imgs.length) return '';
     return `<div class="img-slot">
-      <div class="slot-label">${slot.label}</div>
       ${imgs.map(i => `
         <div style="margin-bottom:6px;text-align:center">
-          ${imgTag(i.url, 'width:170px;display:block;margin:0 auto')}
-          ${i.description1 ? `<div style="font-size:9px;font-weight:700;color:#1e293b;margin-top:2px">${i.description1}</div>` : ''}
+          ${imgTag(i.url, 'width:220px;display:block;margin:0 auto')}
           ${i.notes ? `<div style="font-size:9px;color:#475569;margin-top:1px">${i.notes}</div>` : ''}
           ${i.penNote ? `<div style="margin-top:5px;text-align:center"><div style="font-size:8px;color:#2563eb;font-weight:700;margin-bottom:2px">${t.penNote}</div><img src="${i.penNote}" style="max-width:100%;border-radius:3px;border:1px solid #bfdbfe;display:block;margin:0 auto" onerror="this.style.display='none'"/></div>` : ''}
         </div>
@@ -314,10 +312,9 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
       const imgs = xrayImgs.filter(i => i.type === slot.type);
       if (!imgs.length) return '';
       return `<div class="img-slot">
-        <div class="slot-label">${slot.label}</div>
         ${imgs.map(i => `
           <div style="margin-bottom:6px;text-align:center">
-            ${imgTag(i.url, 'width:220px;display:block;margin:0 auto')}
+            ${imgTag(i.url, 'width:280px;display:block;margin:0 auto')}
           </div>
         `).join('')}
       </div>`;
@@ -358,10 +355,9 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
               const slotImgs = imgs.filter(im => im.type === slot.type);
               if (!slotImgs.length) return '';
               return `<div class="img-slot">
-                <div class="slot-label">${slot.label}</div>
                 ${slotImgs.map(im => `
                   <div style="margin-bottom:6px;text-align:center">
-                    ${imgTag(im.url, 'width:150px;display:block;margin:0 auto')}
+                    ${imgTag(im.url, 'width:200px;display:block;margin:0 auto')}
                     ${im.notes ? `<div style="font-size:9px;color:#475569;margin-top:2px;padding:0 4px">${im.notes}</div>` : ''}
                     ${im.penNote ? `<div style="margin-top:5px;text-align:center"><div style="font-size:8px;color:#2563eb;font-weight:700;margin-bottom:2px">${t.penNote}</div><img src="${im.penNote}" style="max-width:100%;border-radius:3px;border:1px solid #bfdbfe;display:block;margin:0 auto" onerror="this.style.display='none'"/></div>` : ''}
                   </div>
