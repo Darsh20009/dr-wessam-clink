@@ -197,7 +197,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
           <button onClick={() => setStep(1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '7px 14px', color: 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
             <FiArrowRight size={14}/> رجوع
           </button>
-          <span style={{ color: 'white', fontWeight: 800, fontSize: 14, flex: 1 }}> معاينة ملف {patient.fullName}</span>
+          <span style={{ color: 'white', fontWeight: 800, fontSize: 14, flex: 1 }}> معاينة  ملف {patient.fullName}</span>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button onClick={handleDownload} disabled={!pdfFileBlob}
               style={{ background: pdfFileBlob ? '#0ea5e9' : '#475569', border: 'none', borderRadius: 8, padding: '7px 16px', color: 'white', cursor: pdfFileBlob ? 'pointer' : 'not-allowed', fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
