@@ -264,14 +264,14 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
           <tr><th colspan="2" class="th-head">TTT Objectives</th></tr>
           <tr><td class="label">1. OH</td><td>${v('obj1') || '—'}</td></tr>
           <tr><td class="label">2. Skeletal</td><td>${v('obj2') || '—'}</td></tr>
-          <tr><td class="label">3.</td><td>${v('obj3') || 'Align and level both arches.'}</td></tr>
-          <tr><td class="label">4.</td><td>${v('obj4') || 'Maintain/ Correct OJ.'}</td></tr>
-          <tr><td class="label">5.</td><td>${v('obj5') || 'Maintain/ Correct OB.'}</td></tr>
-          <tr><td class="label">6.</td><td>${v('obj6') || 'Maintain/ Correct Midline'}</td></tr>
-          <tr><td class="label">7.</td><td>${v('obj7') || 'Achieve Class I Canine and Incisors.'}</td></tr>
-          <tr><td class="label">8.</td><td>${v('obj8') || 'Achieve Class I Molar Relationship'}</td></tr>
-          <tr><td class="label">9.</td><td>${v('obj9') || 'Coordinate both arches with good Buccal Interdigitation.'}</td></tr>
-          <tr><td class="label">10.</td><td>${v('obj10') || 'Retention.'}</td></tr>
+          <tr><td class="label">3. Align &amp; Level</td><td>${v('obj3') || 'Align and level both arches.'}</td></tr>
+          <tr><td class="label">4. OJ</td><td>${v('obj4') || 'Maintain/ Correct OJ.'}</td></tr>
+          <tr><td class="label">5. OB</td><td>${v('obj5') || 'Maintain/ Correct OB.'}</td></tr>
+          <tr><td class="label">6. Midline</td><td>${v('obj6') || 'Maintain/ Correct Midline'}</td></tr>
+          <tr><td class="label">7. Canine / Incisors</td><td>${v('obj7') || 'Achieve Class I Canine and Incisors.'}</td></tr>
+          <tr><td class="label">8. Molar Relationship</td><td>${v('obj8') || 'Achieve Class I Molar Relationship'}</td></tr>
+          <tr><td class="label">9. Buccal Interdigitation</td><td>${v('obj9') || 'Coordinate both arches with good Buccal Interdigitation.'}</td></tr>
+          <tr><td class="label">10. Retention</td><td>${v('obj10') || 'Retention.'}</td></tr>
         </table>` : ''}
 
         ${o.includeTTTBolton ? `
