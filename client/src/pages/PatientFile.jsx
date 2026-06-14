@@ -562,17 +562,19 @@ export default function PatientFile() {
         await axios.post('/payments', { patientId: id, patientName: patient.fullName, amount: parseFloat(sessionForm.amountPaid), type: 'session', method: 'cash', notes: `جلسة ${format(new Date(sessionForm.sessionDate), 'd/M/yyyy')}` });
       }
       const slotsWithFiles = sessionIntraoral.filter(s => s.file);
+      let latestSession = newSession;
       for (const slot of slotsWithFiles) {
         const fd = new FormData();
         fd.append('file', slot.file);
         const { data: uploaded } = await axios.post('/uploads', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-        await axios.post(`/sessions/${newSession._id}/images`, { url: uploaded.url, type: slot.key, notes: slot.note });
+        const { data: updated } = await axios.post(`/sessions/${newSession._id}/images`, { url: uploaded.url, type: slot.key, notes: slot.note });
+        latestSession = updated;
       }
       toast.success('تم إضافة الجلسة');
       setShowAddSession(false);
       setSessionForm({ sessionDate: '', notes: '', nextStep: '', nextAppointment: '', amountPaid: '' });
       setSessionIntraoral(emptyIntraoral());
-      fetchData();
+      setSessions(prev => [latestSession, ...prev]);
     } catch { toast.error('خطأ في إضافة الجلسة'); }
     finally { setSubmittingSession(false); }
   };
@@ -583,7 +585,9 @@ export default function PatientFile() {
     try {
       await axios.post('/payments', { patientId: id, patientName: patient.fullName, amount: parseFloat(payForm.amount), type: 'partial', method: payForm.method, notes: payForm.notes });
       toast.success('تم تسجيل الدفع'); setShowPayment(false);
-      setPayForm({ amount: '', method: 'cash', notes: '' }); fetchData();
+      setPayForm({ amount: '', method: 'cash', notes: '' });
+      const { data: pUpd } = await axios.get(`/patients/${id}`);
+      setPatient(pUpd); setForm(f => ({ ...f, financials: { ...pUpd.financials } }));
     } catch { toast.error('خطأ'); }
   };
 
@@ -595,8 +599,8 @@ export default function PatientFile() {
     formData.append('file', file);
     try {
       const res = await axios.post('/uploads', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      await axios.post(`/patients/${id}/images`, { category: uploadCategory, imageData: { type: uploadType, url: res.data.url } });
-      toast.success('تم رفع الصورة'); fetchData();
+      const { data: p } = await axios.post(`/patients/${id}/images`, { category: uploadCategory, imageData: { type: uploadType, url: res.data.url } });
+      applyPatient(p); toast.success('تم رفع الصورة');
     } catch { toast.error('فشل رفع الصورة'); }
   };
 
@@ -605,33 +609,49 @@ export default function PatientFile() {
     fileInputRef.current?.click();
   };
 
+  const uploadingRef = React.useRef(false);
+
+  const applyPatient = (p) => { setPatient(p); setForm(f => ({ ...f, faceImages: p.faceImages, intraOralImages: p.intraOralImages, xrays: p.xrays })); };
+  const applySession = (s) => setSessions(prev => prev.map(x => x._id === s._id ? s : x));
+
   const handleSessionFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !sessionUpload) return;
     e.target.value = '';
+    if (uploadingRef.current) return;
+    const upload = { ...sessionUpload };
+    setSessionUpload(null);
+    uploadingRef.current = true;
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await axios.post('/uploads', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      await axios.post(`/sessions/${sessionUpload.sessionId}/images`, { type: sessionUpload.type, url: res.data.url, notes: '' });
-      toast.success('تم رفع الصورة'); fetchData();
+      const { data: uploaded } = await axios.post('/uploads', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const { data: updatedSession } = await axios.post(`/sessions/${upload.sessionId}/images`, { type: upload.type, url: uploaded.url, notes: '' });
+      applySession(updatedSession);
+      toast.success('تم رفع الصورة');
     } catch { toast.error('فشل رفع الصورة'); }
+    finally { uploadingRef.current = false; }
   };
 
   const triggerSessionUpload = (sessionId, type) => {
+    if (uploadingRef.current) return;
     setSessionUpload({ sessionId, type });
     sessionFileInputRef.current?.click();
   };
 
   const deletePatientImage = async (category, imageId) => {
     if (!window.confirm('حذف هذه الصورة نهائياً؟')) return;
-    try { await axios.delete(`/patients/${id}/images/${category}/${imageId}`); toast.success('تم الحذف'); fetchData(); }
-    catch { toast.error('خطأ'); }
+    try {
+      const { data: p } = await axios.delete(`/patients/${id}/images/${category}/${imageId}`);
+      applyPatient(p); toast.success('تم الحذف');
+    } catch { toast.error('خطأ'); }
   };
 
   const patchPatientImage = async (category, imageId, updates) => {
-    try { await axios.patch(`/patients/${id}/images/${category}/${imageId}`, updates); fetchData(); }
-    catch { toast.error('خطأ في الحفظ'); }
+    try {
+      const { data: p } = await axios.patch(`/patients/${id}/images/${category}/${imageId}`, updates);
+      applyPatient(p);
+    } catch { toast.error('خطأ في الحفظ'); }
   };
 
   const getAllPenNotes = () => {
@@ -659,12 +679,13 @@ export default function PatientFile() {
     if (!penNoteModal) return;
     try {
       if (penNoteModal.noteId) {
-        await axios.patch(`/patients/${id}/pen-notes/${penNoteModal.noteId}`, { data: base64 });
+        const { data: updatedNote } = await axios.patch(`/patients/${id}/pen-notes/${penNoteModal.noteId}`, { data: base64 });
+        setPatient(prev => ({ ...prev, penNotes: (prev.penNotes || []).map(n => n._id === updatedNote._id ? updatedNote : n) }));
       } else {
-        await axios.post(`/patients/${id}/pen-notes`, { data: base64, label: 'ملاحظة' });
+        const { data: newNote } = await axios.post(`/patients/${id}/pen-notes`, { data: base64, label: 'ملاحظة' });
+        setPatient(prev => ({ ...prev, penNotes: [...(prev.penNotes || []), newNote] }));
       }
       setPenNoteModal(null);
-      fetchData();
     } catch (err) {
       console.error(err);
     }
@@ -674,7 +695,7 @@ export default function PatientFile() {
     if (!window.confirm('حذف هذه الملاحظة نهائياً؟')) return;
     try {
       await axios.delete(`/patients/${id}/pen-notes/${noteId}`);
-      fetchData();
+      setPatient(prev => ({ ...prev, penNotes: (prev.penNotes || []).filter(n => n._id !== noteId) }));
     } catch (err) {
       console.error(err);
     }
@@ -685,13 +706,14 @@ export default function PatientFile() {
     const { category, imageId, sessionId } = drawingModal;
     try {
       if (sessionId) {
-        await axios.patch(`/sessions/${sessionId}/images/${imageId}`, { penNote: base64 });
+        const { data: s } = await axios.patch(`/sessions/${sessionId}/images/${imageId}`, { penNote: base64 });
+        applySession(s);
       } else {
-        await axios.patch(`/patients/${id}/images/${category}/${imageId}`, { penNote: base64 });
+        const { data: p } = await axios.patch(`/patients/${id}/images/${category}/${imageId}`, { penNote: base64 });
+        applyPatient(p);
       }
       toast.success('✅ تم حفظ نوت القلم');
       setDrawingModal(null);
-      fetchData();
     } catch { toast.error('خطأ في حفظ نوت القلم'); }
   };
 
@@ -700,13 +722,14 @@ export default function PatientFile() {
     const { category, imageId, sessionId } = drawingModal;
     try {
       if (sessionId) {
-        await axios.patch(`/sessions/${sessionId}/images/${imageId}`, { penNote: null });
+        const { data: s } = await axios.patch(`/sessions/${sessionId}/images/${imageId}`, { penNote: null });
+        applySession(s);
       } else {
-        await axios.patch(`/patients/${id}/images/${category}/${imageId}`, { penNote: null });
+        const { data: p } = await axios.patch(`/patients/${id}/images/${category}/${imageId}`, { penNote: null });
+        applyPatient(p);
       }
       toast.success('تم حذف الملاحظة');
       setDrawingModal(null);
-      fetchData();
     } catch { toast.error('خطأ في حذف الملاحظة'); }
   };
 
@@ -717,21 +740,26 @@ export default function PatientFile() {
 
   const saveImgEdit = async () => {
     try {
-      await axios.patch(`/patients/${id}/images/${editingImg.cat}/${editingImg.imgId}`, imgForm);
-      toast.success('تم الحفظ'); setEditingImg(null); fetchData();
+      const { data: p } = await axios.patch(`/patients/${id}/images/${editingImg.cat}/${editingImg.imgId}`, imgForm);
+      applyPatient(p); toast.success('تم الحفظ'); setEditingImg(null);
     } catch { toast.error('خطأ'); }
   };
 
   const deleteSessionImage = async (sessionId, imageId) => {
     if (!window.confirm('حذف هذه الصورة؟')) return;
-    try { await axios.delete(`/sessions/${sessionId}/images/${imageId}`); toast.success('تم الحذف'); fetchData(); }
-    catch { toast.error('خطأ'); }
+    try {
+      const { data: s } = await axios.delete(`/sessions/${sessionId}/images/${imageId}`);
+      applySession(s); toast.success('تم الحذف');
+    } catch { toast.error('خطأ'); }
   };
 
   const deleteSession = async (sid) => {
     if (!window.confirm('حذف الجلسة؟')) return;
-    try { await axios.delete(`/sessions/${sid}`); fetchData(); toast.success('تم الحذف'); }
-    catch { toast.error('خطأ'); }
+    try {
+      await axios.delete(`/sessions/${sid}`);
+      setSessions(prev => prev.filter(s => s._id !== sid));
+      toast.success('تم الحذف');
+    } catch { toast.error('خطأ'); }
   };
 
   const saveVisibility = async (key, value) => {
@@ -776,21 +804,18 @@ export default function PatientFile() {
   const saveSessionImgEdit = async () => {
     if (!editingSessionImg) return;
     try {
-      await axios.patch(`/sessions/${editingSessionImg.sessionId}/images/${editingSessionImg.img._id}`, sessionImgForm);
+      const { data: s } = await axios.patch(`/sessions/${editingSessionImg.sessionId}/images/${editingSessionImg.img._id}`, sessionImgForm);
+      applySession(s);
+      if (selectedSession?._id === s._id) setSelectedSession(s);
       toast.success('تم الحفظ');
-      const sRes = await axios.get(`/sessions?patientId=${id}`);
-      setSessions(sRes.data);
-      const updated = sRes.data.find(s => s._id === editingSessionImg.sessionId);
-      if (updated) setSelectedSession(updated);
       setEditingSessionImg(null);
     } catch { toast.error('خطأ في الحفظ'); }
   };
 
   const patchSessionImage = async (sessionId, imgId, data) => {
     try {
-      await axios.patch(`/sessions/${sessionId}/images/${imgId}`, data);
-      const sRes = await axios.get(`/sessions?patientId=${id}`);
-      setSessions(sRes.data);
+      const { data: s } = await axios.patch(`/sessions/${sessionId}/images/${imgId}`, data);
+      applySession(s);
     } catch { toast.error('خطأ في الحفظ'); }
   };
 
