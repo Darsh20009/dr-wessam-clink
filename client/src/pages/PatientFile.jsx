@@ -121,26 +121,88 @@ function RichNoteEditor({ initialNote, onSave }) {
     }
   };
 
+  const [focused, setFocused] = React.useState(false);
+
+  const handleFocus = () => setFocused(true);
+  const handleBlur = () => {
+    setFocused(false);
+    if (val !== (initialNote || '')) onSave(val);
+  };
+
   return (
-    <div style={{ marginTop: 4 }}>
-      <div style={{ display: 'flex', gap: 3, marginBottom: 2 }}>
-        <button
-          type="button"
-          onMouseDown={e => { e.preventDefault(); insertBullet(); }}
-          style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, padding: '1px 7px', fontSize: 10, cursor: 'pointer', color: '#475569', fontFamily: 'Cairo,sans-serif', lineHeight: 1.6 }}
-          title="إضافة نقطة"
-        >• نقطة</button>
+    <div style={{ marginTop: 4, position: 'relative', zIndex: focused ? 999 : 'auto' }}>
+      {focused && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 998 }}
+          onMouseDown={() => { taRef.current?.blur(); }}
+        />
+      )}
+      <div style={{
+        position: focused ? 'fixed' : 'relative',
+        ...(focused ? {
+          top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 420, maxWidth: '90vw',
+          background: 'white',
+          borderRadius: 14,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+          padding: 16,
+          zIndex: 999,
+          border: '2px solid #2563eb',
+        } : {})
+      }}>
+        {focused && (
+          <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontFamily: 'Cairo,sans-serif', fontWeight: 700, fontSize: 13, color: '#1e293b' }}>✏️ تعديل الملاحظة</span>
+            <button
+              onMouseDown={e => { e.preventDefault(); taRef.current?.blur(); }}
+              style={{ background: '#f1f5f9', border: 'none', borderRadius: 99, width: 26, height: 26, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#64748b' }}
+            >✕</button>
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 3, marginBottom: focused ? 6 : 2 }}>
+          <button
+            type="button"
+            onMouseDown={e => { e.preventDefault(); insertBullet(); }}
+            style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 4, padding: focused ? '3px 10px' : '1px 7px', fontSize: focused ? 11 : 10, cursor: 'pointer', color: '#2563eb', fontFamily: 'Cairo,sans-serif', lineHeight: 1.6, fontWeight: 600 }}
+            title="إضافة نقطة"
+          >• نقطة</button>
+        </div>
+        <textarea
+          ref={taRef}
+          rows={focused ? 7 : 2}
+          value={val}
+          onChange={e => setVal(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          placeholder="ملاحظة... (• نقطة للقائمة)"
+          style={{
+            width: '100%',
+            fontSize: focused ? 13 : 10,
+            border: focused ? '1.5px solid #bfdbfe' : '1px solid #e2e8f0',
+            borderRadius: focused ? 8 : 6,
+            padding: focused ? '8px 10px' : '3px 5px',
+            resize: 'none',
+            fontFamily: 'Cairo, inherit',
+            direction: 'rtl',
+            boxSizing: 'border-box',
+            color: '#334155',
+            lineHeight: 1.8,
+            outline: 'none',
+            transition: 'all 0.15s ease',
+            background: focused ? '#f8fafc' : 'white',
+          }}
+        />
+        {focused && val.trim() && (
+          <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onMouseDown={e => { e.preventDefault(); onSave(val); taRef.current?.blur(); }}
+              style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: 8, padding: '6px 18px', fontFamily: 'Cairo,sans-serif', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}
+            >حفظ</button>
+          </div>
+        )}
       </div>
-      <textarea
-        ref={taRef}
-        rows={2}
-        value={val}
-        onChange={e => setVal(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onBlur={() => { if (val !== (initialNote || '')) onSave(val); }}
-        placeholder="ملاحظة... (• نقطة للقائمة)"
-        style={{ width: '100%', fontSize: 10, border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 5px', resize: 'none', fontFamily: 'inherit', direction: 'rtl', boxSizing: 'border-box', color: '#475569' }}
-      />
     </div>
   );
 }
