@@ -27,9 +27,7 @@ const defaultSettings = {
   doctorEmail: '',
   doctorLanguages: 'العربية، الإنجليزية',
   certificates: [
-    { title: 'بكالوريوس طب الأسنان', year: '2010', institution: 'جامعة القاهرة', imageUrl: '' },
-    { title: 'ماجستير تقويم الأسنان', year: '2014', institution: 'جامعة القاهرة', imageUrl: '' },
-    { title: 'زمالة التقويم', year: '2016', institution: 'الجمعية المصرية لتقويم الأسنان', imageUrl: '' },
+    { title: 'د.زمالة تقويم الأسنان للكليات الملكية بإدنبرة وجلاسجو وأيرلندا (F.Ortho Tri-Collegiate)', year: '2016', institution: 'الكليات الملكية بإدنبرة وجلاسجو وأيرلندا', imageUrl: '' },
   ],
   doctorTraining: [
     { title: 'دورة تقويم الأسنان المتقدم', institution: 'الجمعية المصرية لطب الأسنان', year: '2015' },
@@ -93,6 +91,22 @@ router.get('/', async (req, res) => {
             heroSubtitle: settings.heroSubtitle === 'خبرة متخصصة في تقويم الأسنان بأحدث التقنيات وأعلى معايير الجودة' ? defaultSettings.heroSubtitle : settings.heroSubtitle,
             doctorBio: !settings.doctorBio?.includes('بني مزار') ? defaultSettings.doctorBio : settings.doctorBio,
           },
+          { new: true }
+        );
+        settings = await SiteSettings.findOne({ key: 'main' }).lean();
+      }
+
+      const hasOldCerts = (settings.certificates || []).some(c =>
+        c.title === 'ماجستير تقويم الأسنان' ||
+        c.title === 'بكالوريوس طب الأسنان'
+      );
+      if (hasOldCerts) {
+        const newCerts = [
+          { title: 'د.زمالة تقويم الأسنان للكليات الملكية بإدنبرة وجلاسجو وأيرلندا (F.Ortho Tri-Collegiate)', year: '2016', institution: 'الكليات الملكية بإدنبرة وجلاسجو وأيرلندا', imageUrl: '' },
+        ];
+        await SiteSettings.findOneAndUpdate(
+          { key: 'main' },
+          { certificates: newCerts },
           { new: true }
         );
         settings = await SiteSettings.findOne({ key: 'main' }).lean();

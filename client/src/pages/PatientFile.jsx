@@ -222,6 +222,7 @@ export default function PatientFile() {
   const [penNoteModal, setPenNoteModal] = useState(null);
   const [tttData, setTttData] = useState(DEFAULT_TTT);
   const [tttSaving, setTttSaving] = useState(false);
+  const [submittingSession, setSubmittingSession] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -310,7 +311,9 @@ export default function PatientFile() {
 
   const handleAddSession = async (e) => {
     e.preventDefault();
+    if (submittingSession) return;
     if (!sessionForm.sessionDate) return toast.error('يرجى إدخال تاريخ الجلسة');
+    setSubmittingSession(true);
     try {
       const { data: newSession } = await axios.post('/sessions', { patientId: id, sessionDate: sessionForm.sessionDate, notes: sessionForm.notes, nextStep: sessionForm.nextStep, nextAppointment: sessionForm.nextAppointment || undefined, amountPaid: parseFloat(sessionForm.amountPaid) || 0 });
       if (parseFloat(sessionForm.amountPaid) > 0) {
@@ -329,6 +332,7 @@ export default function PatientFile() {
       setSessionIntraoral(emptyIntraoral());
       fetchData();
     } catch { toast.error('خطأ في إضافة الجلسة'); }
+    finally { setSubmittingSession(false); }
   };
 
   const handlePayment = async (e) => {
@@ -1356,7 +1360,7 @@ export default function PatientFile() {
 
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '8px' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowAddSession(false)}>إلغاء</button>
-                <button type="submit" className="btn btn-primary"><FiPlus /> إضافة الجلسة</button>
+                <button type="submit" className="btn btn-primary" disabled={submittingSession}>{submittingSession ? 'جاري الحفظ...' : <><FiPlus /> إضافة الجلسة</>}</button>
               </div>
             </form>
           </div>
