@@ -5,6 +5,9 @@ import { ar } from 'date-fns/locale';
 /** Prepend RTL-embedding mark so Arabic text renders correctly in PowerPoint */
 const rtlStr = (s) => /[\u0600-\u06FF]/.test(s || '') ? '\u202B' + s : (s || '');
 
+/** Always prepend RTL-embedding mark — for names (clinic/patient) so they ALWAYS render right-to-left regardless of language */
+const nameRtl = (s) => '\u202B' + (s || '');
+
 /* ─── Color palette ─────────────────────────────────────── */
 const C = {
   navy:    '0f2d6e',
@@ -206,13 +209,13 @@ function addHeaderBar(slide, clinicName, subtitle, isRtl) {
   const xName = 0.3;
   const wName = 8.5;
 
-  slide.addText(rtlStr(clinicName), {
+  slide.addText(nameRtl(clinicName), {
     x: xName, y: 0.07, w: wName, h: 0.32,
     fontSize: 16, bold: true, color: C.white, fontFace: 'Calibri',
     align, rtlMode: true,
   });
   if (subtitle) {
-    slide.addText(rtlStr(subtitle), {
+    slide.addText(nameRtl(subtitle), {
       x: xName, y: 0.36, w: wName, h: 0.22,
       fontSize: 9, color: C.sky, fontFace: 'Calibri',
       align, rtlMode: true,
@@ -370,12 +373,12 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
     s.addShape('rect', { x: 0, y: 0, w: 0.28, h: '100%', fill: { color: C.lblue } });
 
     if (o.includeClinicHeader) {
-      s.addText(rtlStr(clinicName), {
+      s.addText(nameRtl(clinicName), {
         x: 0.6, y: 1.0, w: 12, h: 0.8,
         fontSize: 38, bold: true, color: C.white, fontFace: 'Calibri',
         align: 'center', rtlMode: true,
       });
-      s.addText(rtlStr(clinicSub), {
+      s.addText(nameRtl(clinicSub), {
         x: 0.6, y: 1.88, w: 12, h: 0.45,
         fontSize: 16, color: C.sky, fontFace: 'Calibri',
         align: 'center', rtlMode: true,
@@ -384,7 +387,7 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
     }
 
     // Patient name block
-    s.addText(rtlStr(patient.fullName || ''), {
+    s.addText(nameRtl(patient.fullName || ''), {
       x: 0.6, y: 5.05, w: 12, h: 0.68,
       fontSize: 30, bold: true, color: C.white, fontFace: 'Calibri',
       align: 'center', rtlMode: true,
@@ -420,7 +423,7 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
       : patient.age ? patient.age + ' ' + t.years : '';
 
     const rows = [
-      [t.patientName,  patient.fullName],
+      [t.patientName,  nameRtl(patient.fullName)],
       [t.phone,        patient.phone],
       [t.age,          age],
       [t.address,      patient.address],
