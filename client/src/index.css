@@ -695,3 +695,12 @@ tbody tr:hover { background: var(--gray-50); }
   border-radius: 0 3px 3px 0;
   background: var(--primary);
 }
+
+/* RichTextArea — contenteditable placeholder */
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #cbd5e1;
+  pointer-events: none;
+  font-family: Cairo, sans-serif;
+  font-size: 13px;
+}

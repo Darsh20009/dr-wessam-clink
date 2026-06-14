@@ -203,6 +203,125 @@ function RichNoteEditor({ initialNote, onSave }) {
   );
 }
 
+/* ═══════════════════════════════════════════
+   RichTextArea — inline rich-text editor
+   (used for diagnosis, sessions, etc.)
+═══════════════════════════════════════════ */
+function RichTextArea({ value, onChange, disabled, placeholder, minRows = 4, accentColor = '#2563eb' }) {
+  const editorRef   = React.useRef(null);
+  const isFocused   = React.useRef(false);
+  const [focused,   setFocused]   = React.useState(false);
+  const [showClr,   setShowClr]   = React.useState(false);
+  const [showHl,    setShowHl]    = React.useState(false);
+  const savedSel    = React.useRef(null);
+
+  /* Sync external value into editor only when not focused */
+  React.useEffect(() => {
+    if (editorRef.current && !isFocused.current) {
+      const current = editorRef.current.innerHTML;
+      const next    = value || '';
+      if (current !== next) editorRef.current.innerHTML = next;
+    }
+  });
+
+  const saveSel = () => {
+    const s = window.getSelection();
+    if (s?.rangeCount > 0) savedSel.current = s.getRangeAt(0).cloneRange();
+  };
+  const restoreSel = () => {
+    if (!savedSel.current) return;
+    const s = window.getSelection(); s?.removeAllRanges(); s?.addRange(savedSel.current);
+  };
+  const exec = (cmd, val = null) => {
+    restoreSel();
+    document.execCommand(cmd, false, val);
+    editorRef.current?.focus();
+    setShowClr(false); setShowHl(false);
+    onChange(editorRef.current?.innerHTML || '');
+  };
+  const insertBullet = () => {
+    editorRef.current?.focus();
+    document.execCommand('insertText', false, '• ');
+    onChange(editorRef.current?.innerHTML || '');
+  };
+  const TB = ({ ch, action, title, style: extra }) => (
+    <button
+      onMouseDown={e => { e.preventDefault(); saveSel(); action(); }} title={title}
+      style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', fontSize: 12, color: '#334155', fontFamily: 'Cairo,sans-serif', lineHeight: 1.3, minWidth: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', ...extra }}>
+      {ch}
+    </button>
+  );
+
+  /* Read-only view */
+  if (disabled) {
+    const isHtml = /<[a-z][\s\S]*?>/i.test(value || '');
+    if (!value?.trim()) return (
+      <div style={{ minHeight: minRows * 28, padding: '10px 14px', background: '#f8fafc', borderRadius: 10, border: '1px solid #e2e8f0', color: '#cbd5e1', fontSize: 13, fontFamily: 'Cairo,sans-serif', direction: 'rtl' }}>{placeholder}</div>
+    );
+    if (isHtml) return (
+      <div style={{ minHeight: minRows * 28, padding: '10px 14px', background: '#f8fafc', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, color: '#334155', lineHeight: 2, fontFamily: 'Cairo,sans-serif', direction: 'rtl', textAlign: 'right' }} dangerouslySetInnerHTML={{ __html: value }} />
+    );
+    return (
+      <div style={{ minHeight: minRows * 28, padding: '10px 14px', background: '#f8fafc', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, color: '#334155', lineHeight: 2, fontFamily: 'Cairo,sans-serif', direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap' }}>{value}</div>
+    );
+  }
+
+  return (
+    <div style={{ border: `1.5px solid ${focused ? accentColor : '#e2e8f0'}`, borderRadius: 10, overflow: 'visible', background: 'white', transition: 'border-color 0.2s', position: 'relative' }}>
+      {/* Toolbar */}
+      <div style={{ padding: '5px 10px', borderBottom: '1px solid #f1f5f9', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4, background: '#f8fafc', borderRadius: '8px 8px 0 0' }}>
+        <TB ch={<b>B</b>} action={() => exec('bold')} title="عريض" />
+        <TB ch={<i>I</i>} action={() => exec('italic')} title="مائل" />
+        <TB ch={<u>U</u>} action={() => exec('underline')} title="تحته خط" />
+        <div style={{ width: 1, height: 20, background: '#e2e8f0' }} />
+        {NOTE_SIZES.map(sz => <TB key={sz.val} ch={sz.label} action={() => exec('fontSize', sz.val)} title={sz.title} />)}
+        <div style={{ width: 1, height: 20, background: '#e2e8f0' }} />
+        {/* Text colour */}
+        <div style={{ position: 'relative' }}>
+          <button onMouseDown={e => { e.preventDefault(); saveSel(); setShowClr(p => !p); setShowHl(false); }} title="لون النص"
+            style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '2px 7px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#334155', lineHeight: 1 }}>A</span>
+            <span style={{ width: 14, height: 3, borderRadius: 2, background: '#dc2626', display: 'block' }} />
+          </button>
+          {showClr && (
+            <div onMouseDown={e => e.preventDefault()} style={{ position: 'absolute', top: 36, right: 0, background: 'white', border: '1.5px solid #e2e8f0', borderRadius: 12, padding: 8, display: 'flex', flexWrap: 'wrap', gap: 5, zIndex: 1200, boxShadow: '0 8px 28px rgba(0,0,0,0.18)', width: 160 }}>
+              {NOTE_TEXT_COLORS.map(({ c, l }) => <button key={c} onMouseDown={e => { e.preventDefault(); exec('foreColor', c); }} title={l} style={{ width: 22, height: 22, borderRadius: 5, background: c, border: c === '#ffffff' ? '2px solid #cbd5e1' : '2px solid #e2e8f0', cursor: 'pointer' }} />)}
+            </div>
+          )}
+        </div>
+        {/* Highlight */}
+        <div style={{ position: 'relative' }}>
+          <button onMouseDown={e => { e.preventDefault(); saveSel(); setShowHl(p => !p); setShowClr(false); }} title="تمييز"
+            style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '2px 7px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, background: '#fef9c3', padding: '0 2px', borderRadius: 2, lineHeight: 1.4, color: '#1e293b' }}>هـ</span>
+            <span style={{ width: 14, height: 3, borderRadius: 2, background: '#fde047', display: 'block' }} />
+          </button>
+          {showHl && (
+            <div onMouseDown={e => e.preventDefault()} style={{ position: 'absolute', top: 36, right: 0, background: 'white', border: '1.5px solid #e2e8f0', borderRadius: 12, padding: 8, display: 'flex', gap: 5, zIndex: 1200, boxShadow: '0 8px 28px rgba(0,0,0,0.18)' }}>
+              {NOTE_HL_COLORS.map(({ c, l }) => <button key={c} onMouseDown={e => { e.preventDefault(); exec('hiliteColor', c); }} title={l} style={{ width: 22, height: 22, borderRadius: 5, background: c === 'transparent' ? 'white' : c, border: c === 'transparent' ? '2px dashed #cbd5e1' : '2px solid #e2e8f0', cursor: 'pointer' }} />)}
+            </div>
+          )}
+        </div>
+        <div style={{ width: 1, height: 20, background: '#e2e8f0' }} />
+        <button onMouseDown={e => { e.preventDefault(); insertBullet(); }} style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, padding: '3px 9px', cursor: 'pointer', color: accentColor, fontFamily: 'Cairo,sans-serif', fontSize: 11, fontWeight: 700 }}>• نقطة</button>
+        <button onMouseDown={e => { e.preventDefault(); if (editorRef.current) { editorRef.current.innerHTML = ''; onChange(''); } }} style={{ background: 'none', border: '1px solid #fecaca', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', color: '#f87171', fontSize: 11, fontFamily: 'Cairo,sans-serif', marginRight: 'auto' }}>🗑</button>
+      </div>
+      {/* Editable area */}
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        dir="rtl"
+        onFocus={() => { isFocused.current = true;  setFocused(true); }}
+        onBlur={()  => { isFocused.current = false; setFocused(false); onChange(editorRef.current?.innerHTML || ''); }}
+        onInput={()  => onChange(editorRef.current?.innerHTML || '')}
+        data-placeholder={placeholder}
+        style={{ minHeight: minRows * 28, padding: '12px 14px', fontFamily: 'Cairo,sans-serif', fontSize: 13, color: '#334155', lineHeight: 2, outline: 'none', direction: 'rtl', textAlign: 'right', background: 'white', borderRadius: '0 0 8px 8px' }}
+      />
+    </div>
+  );
+}
+
 function ImageLightbox({ item, onClose }) {
   const [showAnnotated, setShowAnnotated] = React.useState(true);
   const url      = typeof item === 'string' ? item : item.url;
@@ -869,21 +988,13 @@ export default function PatientFile() {
               {/* Notes */}
               <div className="card" style={{ gridColumn: '1 / -1' }}>
                 <h3 style={{ fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>📝 ملاحظات الجلسة</h3>
-                {sessionEditMode ? (
-                  <textarea className="form-control" rows={4} value={sessionEditForm.notes} onChange={e => setSessionEditForm(f => ({ ...f, notes: e.target.value }))} placeholder="ما تم في هذه الجلسة..." />
-                ) : (
-                  <p style={{ color: '#475569', lineHeight: 1.9, margin: 0, fontSize: 14, whiteSpace: 'pre-wrap', minHeight: 40 }}>{selectedSession.notes || <span style={{ color: '#cbd5e1' }}>لا توجد ملاحظات</span>}</p>
-                )}
+                <RichTextArea value={sessionEditMode ? sessionEditForm.notes : (selectedSession.notes || '')} onChange={val => setSessionEditForm(f => ({ ...f, notes: val }))} disabled={!sessionEditMode} placeholder="ما تم في هذه الجلسة..." minRows={4} />
               </div>
 
               {/* Next Step */}
               <div className="card" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
                 <h3 style={{ fontWeight: 800, fontSize: 14, color: '#1e40af', marginBottom: 10 }}>📋 الخطوة القادمة</h3>
-                {sessionEditMode ? (
-                  <textarea className="form-control" rows={3} value={sessionEditForm.nextStep} onChange={e => setSessionEditForm(f => ({ ...f, nextStep: e.target.value }))} placeholder="ما سيتم في الجلسة القادمة..." />
-                ) : (
-                  <p style={{ color: '#1e3a8a', lineHeight: 1.8, margin: 0, fontSize: 14, whiteSpace: 'pre-wrap', minHeight: 36 }}>{selectedSession.nextStep || <span style={{ color: '#93c5fd' }}>لم تُحدَّد بعد</span>}</p>
-                )}
+                <RichTextArea value={sessionEditMode ? sessionEditForm.nextStep : (selectedSession.nextStep || '')} onChange={val => setSessionEditForm(f => ({ ...f, nextStep: val }))} disabled={!sessionEditMode} placeholder="ما سيتم في الجلسة القادمة..." minRows={3} accentColor="#1d4ed8" />
               </div>
 
               {/* Appointment + Payment */}
@@ -1093,7 +1204,7 @@ export default function PatientFile() {
               <div style={{ marginBottom: 12 }}>
                 <h3 className="section-title" style={{ margin: 0 }}>{sec.label}</h3>
               </div>
-              <textarea className="form-control" rows={sec.rows} value={form[sec.key] || ''} onChange={e => setF(sec.key, e.target.value)} disabled={!editMode} placeholder={sec.placeholder} />
+              <RichTextArea value={form[sec.key] || ''} onChange={val => setF(sec.key, val)} disabled={!editMode} placeholder={sec.placeholder} minRows={sec.rows} />
             </div>
           ))}
           {editMode && (
@@ -1566,8 +1677,8 @@ export default function PatientFile() {
                 <div className="form-group"><label>تاريخ الجلسة *</label><input className="form-control" type="date" value={sessionForm.sessionDate} onChange={e => setS('sessionDate', e.target.value)} required /></div>
                 <div className="form-group"><label>موعد الجلسة القادمة</label><input className="form-control" type="date" value={sessionForm.nextAppointment} onChange={e => setS('nextAppointment', e.target.value)} /></div>
               </div>
-              <div className="form-group"><label>ملاحظات الجلسة</label><textarea className="form-control" rows={3} value={sessionForm.notes} onChange={e => setS('notes', e.target.value)} placeholder="ما تم في هذه الجلسة..." /></div>
-              <div className="form-group"><label>الخطوة القادمة</label><textarea className="form-control" rows={2} value={sessionForm.nextStep} onChange={e => setS('nextStep', e.target.value)} placeholder="ما سيتم في الجلسة القادمة..." /></div>
+              <div className="form-group"><label>ملاحظات الجلسة</label><RichTextArea value={sessionForm.notes} onChange={val => setS('notes', val)} placeholder="ما تم في هذه الجلسة..." minRows={3} /></div>
+              <div className="form-group"><label>الخطوة القادمة</label><RichTextArea value={sessionForm.nextStep} onChange={val => setS('nextStep', val)} placeholder="ما سيتم في الجلسة القادمة..." minRows={2} /></div>
               <div className="form-group">
                 <label>المبلغ المدفوع في هذه الجلسة (ج.م)</label>
                 <input className="form-control" type="number" value={sessionForm.amountPaid} onChange={e => setS('amountPaid', e.target.value)} placeholder="0" min="0" />
