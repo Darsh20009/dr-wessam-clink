@@ -12,7 +12,7 @@ function imgToBase64(url) {
         canvas.height = img.naturalHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
+        resolve(canvas.toDataURL('image/jpeg', 0.95));
       } catch { resolve(url); }
     };
     img.onerror = () => resolve(url);
@@ -203,7 +203,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     const hasAny = patient.diagnosis || patient.treatmentPlan || patient.treatmentStages || patient.instructions || patient.treatmentNotes;
     if (!hasAny) return '';
     return `
-      <div class="page-break">
+      <div class="new-page">
         ${sectionTitle(t.diagnosisSection)}
         <table class="ttt-table">
           ${patient.diagnosis      ? `<tr><td class="label">${t.diagnosis}</td><td style="white-space:pre-wrap">${patient.diagnosis}</td></tr>` : ''}
@@ -220,7 +220,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     const v = (k) => ttt[k] || '';
     const chk = (k) => ttt[k] ? '✓' : '☐';
     return `
-      <div class="page-break">
+      <div class="new-page">
         ${sectionTitle('TTT FILE — Orthodontic Treatment Planning')}
         <table class="ttt-table">
           <tr><th colspan="2" class="th-head">Problem List</th></tr>
@@ -301,6 +301,25 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
       </div>`;
   };
 
+  const photoGroup = (labelText, gridClass, items) => `
+    <div class="new-page">
+      ${sectionTitle(t.photosSection)}
+      <div class="subsec">${labelText}</div>
+      <div class="${gridClass}">${items}</div>
+    </div>`;
+
+  const renderImgSlots = (slotDefs, images) => slotDefs.flatMap(slot => {
+    const imgs = images.filter(i => i.type === slot.type);
+    return imgs.map(i => `
+      <div class="img-slot">
+        ${i.penNote
+          ? `<img src="${i.penNote}" onerror="this.style.display='none'" />`
+          : imgTag(i.url, '')
+        }
+        ${i.notes ? `<div class="img-note">${i.notes}</div>` : ''}
+      </div>`);
+  }).join('');
+
   const photosSection = () => {
     if (!o.includePhotos) return '';
     const faceImgs  = o.includeFacePhotos      ? (patient.faceImages || [])     : [];
@@ -308,26 +327,11 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     const xrayImgs  = o.includeXrays           ? (patient.xrays || [])          : [];
     if (!faceImgs.length && !intraImgs.length && !xrayImgs.length) return '';
 
-    const xrayGrid = slots.xray.flatMap(slot => {
-      const imgs = xrayImgs.filter(i => i.type === slot.type);
-      if (!imgs.length) return [];
-      return imgs.map(i => `
-        <div class="img-slot">
-          ${i.penNote
-            ? `<img src="${i.penNote}" style="border-radius:6px;" onerror="this.style.display='none'" />`
-            : imgTag(i.url, '')
-          }
-        </div>
-      `);
-    }).join('');
-
-    return `
-      <div class="page-break">
-        ${sectionTitle(t.photosSection)}
-        ${faceImgs.length  ? `<div class="img-group"><div class="subsec">${t.extraoral}</div><div class="img-grid">${slotGrid(slots.face, faceImgs)}</div></div>` : ''}
-        ${intraImgs.length ? `<div class="img-group"><div class="subsec">${t.intraoral}</div><div class="img-grid">${slotGrid(slots.intraoral, intraImgs)}</div></div>` : ''}
-        ${xrayImgs.length  ? `<div class="img-group"><div class="subsec">${t.radiographs}</div><div class="img-grid-xray">${xrayGrid}</div></div>` : ''}
-      </div>`;
+    const parts = [];
+    if (faceImgs.length)  parts.push(photoGroup(t.extraoral,  'img-grid-3', renderImgSlots(slots.face,     faceImgs)));
+    if (intraImgs.length) parts.push(photoGroup(t.intraoral,  'img-grid-3', renderImgSlots(slots.intraoral, intraImgs)));
+    if (xrayImgs.length)  parts.push(photoGroup(t.radiographs,'img-grid-2', renderImgSlots(slots.xray,      xrayImgs)));
+    return parts.join('');
   };
 
   const sessionsSection = () => {
@@ -344,27 +348,15 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
       const imgs    = o.includeSessionImages ? (s.images || []) : [];
       const dateStr = t.dateFormat(new Date(s.sessionDate));
       return `
-        <div class="page-break">
+        <div class="new-page">
           ${sectionTitle(t.sessionTitle(s.sessionNumber || i + 1, dateStr))}
           ${s.notes           ? `<div class="field-row"><span class="fl">${t.sessionNotes}:</span><span class="fv">${s.notes}</span></div>` : ''}
           ${s.nextStep        ? `<div class="field-row"><span class="fl">${t.nextStep}:</span><span class="fv">${s.nextStep}</span></div>` : ''}
           ${s.nextAppointment ? `<div class="field-row"><span class="fl">${t.nextAppointment}:</span><span class="fv">${t.dateFormat(new Date(s.nextAppointment))}</span></div>` : ''}
           ${s.amountPaid > 0  ? `<div class="field-row"><span class="fl">${t.amountPaid}:</span><span class="fv" style="color:#10b981;font-weight:700">${s.amountPaid.toLocaleString()} ${t.currency}</span></div>` : ''}
           ${imgs.length ? `
-            <div class="subsec" style="margin-top:12px">${t.sessionPhotos}</div>
-            <div class="img-grid">${slots.session.flatMap(slot => {
-              const slotImgs = imgs.filter(im => im.type === slot.type);
-              if (!slotImgs.length) return [];
-              return slotImgs.map(im => `
-                <div class="img-slot">
-                  ${im.penNote
-                    ? `<img src="${im.penNote}" style="border-radius:6px;" onerror="this.style.display='none'" />`
-                    : imgTag(im.url, '')
-                  }
-                  ${im.notes ? `<div style="font-size:9px;color:#475569;margin-top:3px;">${im.notes}</div>` : ''}
-                </div>
-              `);
-            }).join('')}</div>` : ''}
+            <div class="subsec" style="margin-top:14px">${t.sessionPhotos}</div>
+            <div class="img-grid-3">${renderImgSlots(slots.session, imgs)}</div>` : ''}
         </div>`;
     }).join('');
   };
@@ -372,7 +364,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
   const financialSection = () => {
     if (!o.includeFinancials) return '';
     return `
-      <div class="page-break">
+      <div class="new-page">
         ${sectionTitle(t.financialSection)}
         <table class="ttt-table">
           <tr><td class="label">${t.totalCost}</td><td><strong>${(fin.totalCost || 0).toLocaleString()} ${t.currency}</strong></td></tr>
@@ -397,46 +389,67 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
   ${fontLink}
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:${fontFamily}; color:#0f172a; background:white; direction:ltr; font-size:13px; line-height:1.6; }
-    .page { max-width:210mm; margin:0 auto; padding:14mm 16mm 20mm; }
+    body { font-family:${fontFamily}; color:#0f172a; background:white; direction:ltr; font-size:13px; line-height:1.6; padding-top:50px; }
+    .page { max-width:210mm; margin:0 auto; padding:14mm 16mm 20mm; position:relative; }
     @media print {
       body { font-size:11px; padding-top:0 !important; }
       .no-print { display:none !important; }
-      @page { margin:12mm 10mm; size:A4; }
+      @page { margin:15mm 12mm; size:A4 portrait; }
     }
-    .clinic-header { display:flex; align-items:center; gap:18px; padding-bottom:16px; border-bottom:3px solid #2563eb; margin-bottom:20px; page-break-inside:avoid; break-inside:avoid; }
+    /* ═══ WATERMARK ═══ */
+    .watermark {
+      position:fixed; top:50%; left:50%;
+      transform:translate(-50%,-50%) rotate(-15deg);
+      opacity:0.055; pointer-events:none; z-index:0;
+      width:280px; height:280px;
+    }
+    .watermark img { width:100%; height:100%; object-fit:contain; display:block; }
+    /* ═══ HEADER ═══ */
+    .clinic-header { display:flex; align-items:center; gap:18px; padding-bottom:16px; border-bottom:3px solid #2563eb; margin-bottom:20px; }
     .clinic-logo { width:72px; height:72px; object-fit:contain; border-radius:12px; }
     .clinic-info h1 { font-size:20px; font-weight:900; color:#1e3a8a; }
     .clinic-info p { font-size:12px; color:#64748b; margin-top:2px; }
-    .patient-card { background:#eff6ff; border-radius:10px; padding:14px 18px; margin-bottom:20px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; border:1px solid #bfdbfe; page-break-inside:avoid; break-inside:avoid; }
+    .patient-card { background:#eff6ff; border-radius:10px; padding:14px 18px; margin-bottom:20px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; border:1px solid #bfdbfe; }
     .patient-card .pf { font-size:11px; color:#64748b; }
     .patient-card .pv { font-weight:700; color:#1e293b; font-size:13px; }
-    .sec-title { font-size:15px; font-weight:900; color:#1e40af; border-left:4px solid #2563eb; padding-left:10px; margin:18px 0 12px; text-align:left; page-break-after:avoid; break-after:avoid; }
-    .subsec { font-size:12px; font-weight:700; color:#475569; margin:10px 0 6px; text-align:left; page-break-after:avoid; break-after:avoid; }
-    .ttt-table { width:100%; border-collapse:collapse; font-size:12px; page-break-inside:avoid; break-inside:avoid; }
-    .ttt-table td, .ttt-table th { border:1px solid #e2e8f0; padding:7px 10px; text-align:left; }
-    .ttt-table tr { page-break-inside:avoid; break-inside:avoid; }
-    .ttt-table .label { background:#f8fafc; font-weight:700; color:#334155; width:38%; text-align:left; }
+    /* ═══ SECTION TITLES ═══ */
+    .sec-title { font-size:16px; font-weight:900; color:#1e40af; border-left:4px solid #2563eb; padding:6px 0 6px 12px; margin-bottom:14px; }
+    .subsec { font-size:12px; font-weight:700; color:#2563eb; margin:0 0 10px; text-transform:uppercase; letter-spacing:0.5px; }
+    /* ═══ NEW PAGE SECTIONS ═══ */
+    .new-page { page-break-before:always; break-before:always; padding-top:4px; margin-bottom:24px; }
+    .first-section { margin-bottom:24px; }
+    /* ═══ PHOTO GRIDS ═══ */
+    .img-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .img-grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+    .img-slot { break-inside:avoid; page-break-inside:avoid; }
+    .img-slot img { display:block; width:100%; height:auto; border-radius:6px; border:1px solid #e2e8f0; }
+    .img-note { font-size:9px; color:#64748b; margin-top:4px; text-align:center; }
+    /* ═══ TEXT SECTIONS ═══ */
+    .ttt-table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:16px; }
+    .ttt-table td, .ttt-table th { border:1px solid #e2e8f0; padding:7px 10px; text-align:left; vertical-align:top; }
+    .ttt-table tr { break-inside:avoid; page-break-inside:avoid; }
+    .ttt-table .label { background:#f8fafc; font-weight:700; color:#334155; width:38%; }
     .ttt-table .th-head { background:#1e3a8a; color:white; font-weight:900; font-size:13px; text-align:center; }
-    .img-group { margin-bottom:24px; }
-    .img-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,220px)); gap:14px; margin:10px 0; }
-    .img-grid-xray { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,300px)); gap:14px; margin:10px 0; }
-    .img-slot { break-inside:avoid; page-break-inside:avoid; display:block; }
-    .img-slot img { display:block; width:100%; height:auto; max-height:400px; object-fit:contain; }
-    .slot-label { font-size:10px; font-weight:700; color:#334155; margin-bottom:4px; font-family:monospace; text-align:center; }
-    .field-row { display:flex; gap:12px; margin-bottom:8px; align-items:flex-start; text-align:left; page-break-inside:avoid; break-inside:avoid; }
-    .fl { font-weight:700; color:#334155; min-width:160px; font-size:12px; text-align:left; }
-    .fv { color:#475569; font-size:12px; flex:1; text-align:left; }
-    .page-break { margin-bottom:28px; padding-bottom:8px; page-break-inside:avoid; break-inside:avoid; }
-    .footer { margin-top:30px; padding-top:12px; border-top:1px solid #e2e8f0; text-align:center; color:#94a3b8; font-size:11px; page-break-inside:avoid; break-inside:avoid; }
-    .print-toolbar { position:fixed; top:0; left:0; right:0; background:#1e3a8a; color:white; padding:10px 20px; display:flex; align-items:center; justify-content:space-between; z-index:9999; font-family:${fontFamily}; direction:ltr; }
-    .print-toolbar button { background:#2563eb; color:white; border:none; border-radius:8px; padding:8px 20px; font-size:14px; font-weight:700; cursor:pointer; }
-    body { padding-top: 50px; }
+    .field-row { display:flex; gap:12px; margin-bottom:10px; break-inside:avoid; page-break-inside:avoid; }
+    .fl { font-weight:700; color:#334155; min-width:160px; font-size:12px; flex-shrink:0; }
+    .fv { color:#475569; font-size:12px; flex:1; white-space:pre-wrap; }
+    /* ═══ SESSION ═══ */
+    .session-block { margin-bottom:8px; }
+    /* ═══ FOOTER ═══ */
+    .footer { margin-top:32px; padding-top:12px; border-top:1px solid #e2e8f0; text-align:center; color:#94a3b8; font-size:11px; }
+    /* ═══ TOOLBAR ═══ */
+    .print-toolbar { position:fixed; top:0; left:0; right:0; background:#1e3a8a; color:white; padding:10px 20px; display:flex; align-items:center; gap:16px; z-index:9999; font-family:${fontFamily}; }
+    .print-toolbar button { background:#2563eb; color:white; border:none; border-radius:8px; padding:7px 18px; font-size:13px; font-weight:700; cursor:pointer; }
   </style>
 </head>
 <body>
+  <!-- Watermark: position:fixed repeats on every printed page -->
+  <div class="watermark" aria-hidden="true">
+    <img src="/logo.png" onerror="this.style.display='none'" />
+  </div>
   <div class="print-toolbar no-print">
     <span style="font-weight:700;font-size:15px">📄 ${t.reportTitle} — ${patientName}</span>
+    <button onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
   </div>
   <div class="page">
     ${o.includeClinicHeader ? `
