@@ -2,28 +2,156 @@ import PptxGenJS from 'pptxgenjs';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
-const BLUE   = '1e3a8a';
-const LBLUE  = '2563eb';
-const WHITE  = 'FFFFFF';
-const GRAY   = '64748b';
-const LGRAY  = 'f1f5f9';
-const DARK   = '0f172a';
+/* ─── Color palette ─────────────────────────────────────── */
+const C = {
+  navy:    '0f2d6e',
+  blue:    '1d4ed8',
+  lblue:   '3b82f6',
+  sky:     'bfdbfe',
+  white:   'FFFFFF',
+  offwhite:'f8fafc',
+  silver:  'e2e8f0',
+  mid:     '94a3b8',
+  dark:    '1e293b',
+  gray:    '475569',
+  lgray:   'f1f5f9',
+  teal:    '0d9488',
+  accent:  '06b6d4',
+};
 
-async function toBase64(url) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      try {
-        const c = document.createElement('canvas');
-        c.width = img.naturalWidth; c.height = img.naturalHeight;
-        c.getContext('2d').drawImage(img, 0, 0);
-        resolve(c.toDataURL('image/jpeg', 0.85));
-      } catch { resolve(null); }
-    };
-    img.onerror = () => resolve(null);
-    img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
-  });
+/* ─── Bilingual labels (mirrors exportPDF.js) ────────────── */
+const SLOTS = {
+  en: {
+    session:   [
+      { type: 'frontal_occlusion', label: 'Frontal Occlusion' },
+      { type: 'right_lateral',     label: 'Right Lateral' },
+      { type: 'left_lateral',      label: 'Left Lateral' },
+      { type: 'upper_jaw',         label: 'Upper Jaw' },
+      { type: 'lower_jaw',         label: 'Lower Jaw' },
+    ],
+    face: [
+      { type: 'frontal_rest',   label: 'Frontal — Rest' },
+      { type: 'frontal_smile',  label: 'Frontal — Smile' },
+      { type: 'lateral',        label: 'Lateral — Rest' },
+    ],
+    intraoral: [
+      { type: 'frontal_occlusion', label: 'Frontal Occlusion' },
+      { type: 'upper_jaw',         label: 'Upper Jaw' },
+      { type: 'lower_jaw',         label: 'Lower Jaw' },
+      { type: 'right_lateral',     label: 'Right Lateral' },
+      { type: 'left_lateral',      label: 'Left Lateral' },
+    ],
+    xray: [
+      { type: 'panorama', label: 'Panoramic X-Ray' },
+      { type: 'lateral',  label: 'Lateral Ceph' },
+      { type: 'cbct',     label: 'CBCT' },
+    ],
+  },
+  ar: {
+    session:   [
+      { type: 'frontal_occlusion', label: 'إطباق أمامي' },
+      { type: 'right_lateral',     label: 'جانبي أيمن' },
+      { type: 'left_lateral',      label: 'جانبي أيسر' },
+      { type: 'upper_jaw',         label: 'الفك العلوي' },
+      { type: 'lower_jaw',         label: 'الفك السفلي' },
+    ],
+    face: [
+      { type: 'frontal_rest',   label: 'أمامي — راحة' },
+      { type: 'frontal_smile',  label: 'أمامي — ابتسامة' },
+      { type: 'lateral',        label: 'جانبي — راحة' },
+    ],
+    intraoral: [
+      { type: 'frontal_occlusion', label: 'إطباق أمامي' },
+      { type: 'upper_jaw',         label: 'الفك العلوي' },
+      { type: 'lower_jaw',         label: 'الفك السفلي' },
+      { type: 'right_lateral',     label: 'جانبي أيمن' },
+      { type: 'left_lateral',      label: 'جانبي أيسر' },
+    ],
+    xray: [
+      { type: 'panorama', label: 'أشعة بانورامية' },
+      { type: 'lateral',  label: 'أشعة جانبية' },
+      { type: 'cbct',     label: 'CBCT' },
+    ],
+  },
+};
+
+const L = {
+  en: {
+    isRtl:          false,
+    reportTitle:    'Medical File',
+    reportDate:     'Report Date',
+    patientInfo:    'Patient Information',
+    patientName:    'Patient Name',
+    phone:          'Phone',
+    age:            'Age',
+    address:        'Address',
+    patientId:      'Patient ID',
+    years:          'y/o',
+    currency:       'EGP',
+    diagnosisTitle: 'Diagnosis & Treatment Plan',
+    diagnosis:      'Diagnosis',
+    treatmentPlan:  'Treatment Plan',
+    treatmentStages:'Treatment Stages',
+    instructions:   'Instructions',
+    treatmentNotes: 'Treatment Notes',
+    extraoral:      'Extra-Oral Photographs',
+    intraoral:      'Intra-Oral Photographs',
+    radiographs:    'Radiographs',
+    sessionTitle:   (n, d) => `Session #${n}  —  ${d}`,
+    sessionPhotosTitle: (n, d) => `Session #${n} Photos`,
+    sessionNotes:   'Session Notes',
+    nextStep:       'Next Step',
+    amountPaid:     'Amount Paid',
+    financialTitle: 'Financial Summary',
+    totalCost:      'Total Treatment Cost',
+    totalPaid:      'Total Paid',
+    remaining:      'Remaining',
+    accountStatus:  'Account Status',
+    statusMap:      { paid: 'Paid', partial: 'Partial', overdue: 'Overdue', pending: 'Pending' },
+    notes:          'Notes',
+    dateFormat:     (d) => format(d, 'd MMMM yyyy'),
+  },
+  ar: {
+    isRtl:          true,
+    reportTitle:    'الملف الطبي',
+    reportDate:     'تاريخ التقرير',
+    patientInfo:    'بيانات المريض',
+    patientName:    'الاسم الكامل',
+    phone:          'رقم الجوال',
+    age:            'العمر',
+    address:        'العنوان',
+    patientId:      'رقم المريض',
+    years:          'سنة',
+    currency:       'ج.م',
+    diagnosisTitle: 'التشخيص وخطة العلاج',
+    diagnosis:      'التشخيص',
+    treatmentPlan:  'خطة العلاج',
+    treatmentStages:'مراحل العلاج',
+    instructions:   'التعليمات',
+    treatmentNotes: 'ملاحظات العلاج',
+    extraoral:      'صور خارج الفم — Extraoral',
+    intraoral:      'صور داخل الفم — Intraoral',
+    radiographs:    'الأشعة التشخيصية',
+    sessionTitle:   (n, d) => `جلسة #${n}  —  ${d}`,
+    sessionPhotosTitle: (n) => `صور الجلسة #${n}`,
+    sessionNotes:   'ملاحظات الجلسة',
+    nextStep:       'الخطوة القادمة',
+    amountPaid:     'المبلغ المدفوع',
+    financialTitle: 'البيانات المالية',
+    totalCost:      'إجمالي تكلفة العلاج',
+    totalPaid:      'إجمالي المدفوع',
+    remaining:      'المتبقي',
+    accountStatus:  'حالة الحساب',
+    statusMap:      { paid: 'مدفوع', partial: 'جزئي', overdue: 'متأخر', pending: 'معلق' },
+    notes:          'ملاحظات',
+    dateFormat:     (d) => format(d, 'd MMMM yyyy', { locale: ar }),
+  },
+};
+
+/* ─── Helpers ────────────────────────────────────────────── */
+function slotLabel(type, category, lang) {
+  const list = SLOTS[lang]?.[category] || [];
+  return list.find(s => s.type === type)?.label || type?.replace(/_/g, ' ') || '';
 }
 
 function stripHtml(html) {
@@ -31,76 +159,139 @@ function stripHtml(html) {
   return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function addHeader(slide, clinicName, subtitle) {
-  slide.addShape('rect', { x: 0, y: 0, w: '100%', h: 0.7, fill: { color: BLUE } });
+async function toBase64(url, quality = 0.96) {
+  if (!url) return null;
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth;
+        c.height = img.naturalHeight;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        resolve(c.toDataURL('image/jpeg', quality));
+      } catch { resolve(null); }
+    };
+    img.onerror = () => resolve(null);
+    img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  });
+}
+
+/* ─── Slide building blocks ──────────────────────────────── */
+function addHeaderBar(slide, clinicName, subtitle, isRtl) {
+  // Navy gradient bar
+  slide.addShape('rect', { x: 0, y: 0, w: '100%', h: 0.65, fill: { color: C.navy } });
+  // Accent stripe
+  slide.addShape('rect', { x: 0, y: 0.65, w: '100%', h: 0.06, fill: { color: C.lblue } });
+
+  const align = isRtl ? 'right' : 'left';
+  const rtl   = isRtl ? true : false;
+  const xName = isRtl ? 0.2 : 0.3;
+  const xSub  = isRtl ? 0.2 : 0.3;
+  const wName = 8.5;
+
   slide.addText(clinicName, {
-    x: 0.2, y: 0.08, w: 7, h: 0.35,
-    fontSize: 18, bold: true, color: WHITE, fontFace: 'Arial',
-    align: 'right', rtlMode: true,
+    x: xName, y: 0.07, w: wName, h: 0.32,
+    fontSize: 16, bold: true, color: C.white, fontFace: 'Calibri',
+    align, rtlMode: rtl,
   });
   if (subtitle) {
     slide.addText(subtitle, {
-      x: 0.2, y: 0.38, w: 7, h: 0.25,
-      fontSize: 10, color: 'bfdbfe', fontFace: 'Arial',
-      align: 'right', rtlMode: true,
+      x: xSub, y: 0.36, w: wName, h: 0.22,
+      fontSize: 9, color: C.sky, fontFace: 'Calibri',
+      align, rtlMode: rtl,
     });
   }
 }
 
-function addSlideTitle(slide, title) {
-  slide.addShape('rect', { x: 0, y: 0.7, w: '100%', h: 0.45, fill: { color: 'eff6ff' } });
+function addSectionTitle(slide, title, isRtl) {
+  slide.addShape('rect', { x: 0, y: 0.71, w: '100%', h: 0.5, fill: { color: C.lgray } });
+  slide.addShape('rect', { x: isRtl ? 12.8 : 0, y: 0.71, w: 0.16, h: 0.5, fill: { color: C.lblue } });
   slide.addText(title, {
-    x: 0.3, y: 0.72, w: 9, h: 0.38,
-    fontSize: 14, bold: true, color: BLUE, fontFace: 'Arial',
-    align: 'right', rtlMode: true,
+    x: isRtl ? 0.3 : 0.3, y: 0.74, w: 12.7, h: 0.42,
+    fontSize: 14, bold: true, color: C.navy, fontFace: 'Calibri',
+    align: isRtl ? 'right' : 'left', rtlMode: isRtl,
   });
 }
 
-function infoRow(slide, label, value, y) {
+function addInfoRow(slide, label, value, y, isRtl, shade) {
   if (!value) return;
-  slide.addText(label + ':', {
-    x: 6.2, y, w: 3.2, h: 0.28,
-    fontSize: 10, bold: true, color: DARK, fontFace: 'Arial',
-    align: 'right', rtlMode: true,
-  });
-  slide.addText(String(value), {
-    x: 0.3, y, w: 5.8, h: 0.28,
-    fontSize: 10, color: GRAY, fontFace: 'Arial',
-    align: 'right', rtlMode: true,
-  });
+  slide.addShape('rect', { x: 0.3, y, w: 12.6, h: 0.36, fill: { color: shade ? C.lgray : C.offwhite }, line: { color: C.silver, width: 0.3 } });
+  if (isRtl) {
+    slide.addText(label, { x: 9.5, y: y + 0.05, w: 3.2, h: 0.26, fontSize: 10, bold: true, color: C.navy, fontFace: 'Calibri', align: 'right', rtlMode: true });
+    slide.addText(String(value), { x: 0.4, y: y + 0.05, w: 9.0, h: 0.26, fontSize: 10, color: C.dark, fontFace: 'Calibri', align: 'right', rtlMode: true });
+  } else {
+    slide.addText(label, { x: 0.4, y: y + 0.05, w: 3.2, h: 0.26, fontSize: 10, bold: true, color: C.navy, fontFace: 'Calibri', align: 'left' });
+    slide.addText(String(value), { x: 3.8, y: y + 0.05, w: 9.0, h: 0.26, fontSize: 10, color: C.dark, fontFace: 'Calibri', align: 'left' });
+  }
 }
 
-async function buildImageGrid(slide, images, startY, maxW, maxH) {
-  const count = images.length;
-  if (!count) return;
-  const cols = Math.min(count, 3);
-  const rows = Math.ceil(count / cols);
-  const cellW = maxW / cols;
-  const cellH = maxH / rows;
-  const pad = 0.05;
-  for (let i = 0; i < images.length; i++) {
-    const { base64, label } = images[i];
-    if (!base64) continue;
+/* ─── Image grid with notes below each image ─────────────── */
+async function buildImageGrid(slide, images, startY, totalW, totalH, isRtl) {
+  const valid = images.filter(i => i.base64);
+  if (!valid.length) return;
+
+  const hasNotes = valid.some(i => i.notes?.trim());
+  const noteH    = hasNotes ? 0.42 : 0;
+
+  const cols   = Math.min(valid.length, 3);
+  const rows   = Math.ceil(valid.length / cols);
+  const pad    = 0.08;
+  const cellW  = totalW / cols;
+  const cellH  = totalH / rows;
+  const imgH   = cellH - noteH - pad * 2 - 0.22;   // 0.22 for type label
+
+  for (let i = 0; i < valid.length; i++) {
+    const { base64, label, notes } = valid[i];
     const col = i % cols;
     const row = Math.floor(i / cols);
-    const x = 0.3 + col * cellW;
-    const y = startY + row * cellH;
-    const imgW = cellW - pad * 2;
-    const imgH = cellH - 0.25 - pad * 2;
+    const x   = 0.15 + col * cellW + pad;
+    const y   = startY + row * cellH + pad;
+    const iW  = cellW - pad * 2;
+
+    // Image frame background
+    slide.addShape('rect', { x, y, w: iW, h: imgH, fill: { color: C.lgray }, line: { color: C.silver, width: 0.5 } });
+
     try {
-      slide.addImage({ data: base64, x: x + pad, y: y + pad, w: imgW, h: imgH, sizing: { type: 'contain', w: imgW, h: imgH } });
+      slide.addImage({
+        data: base64,
+        x: x + 0.02, y: y + 0.02, w: iW - 0.04, h: imgH - 0.04,
+        sizing: { type: 'contain', w: iW - 0.04, h: imgH - 0.04 },
+      });
     } catch {}
+
+    // Type label
     if (label) {
+      slide.addShape('rect', { x, y: y + imgH, w: iW, h: 0.22, fill: { color: C.navy } });
       slide.addText(label, {
-        x: x + pad, y: y + pad + imgH + 0.01, w: imgW, h: 0.2,
-        fontSize: 7, color: GRAY, fontFace: 'Arial', align: 'center',
+        x, y: y + imgH + 0.02, w: iW, h: 0.18,
+        fontSize: 8, bold: true, color: C.white, fontFace: 'Calibri',
+        align: 'center',
+      });
+    }
+
+    // Notes text
+    if (notes?.trim()) {
+      const noteY = y + imgH + 0.22;
+      slide.addShape('rect', { x, y: noteY, w: iW, h: noteH - 0.04, fill: { color: 'fffbeb' }, line: { color: 'fde68a', width: 0.4 } });
+      slide.addText(stripHtml(notes), {
+        x: x + 0.04, y: noteY + 0.03, w: iW - 0.08, h: noteH - 0.1,
+        fontSize: 7.5, color: '78350f', fontFace: 'Calibri',
+        align: isRtl ? 'right' : 'left', rtlMode: isRtl,
+        wrap: true, valign: 'top',
       });
     }
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   MAIN EXPORT FUNCTION
+═══════════════════════════════════════════════════════════ */
 export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, siteInfo = {}, opts = {} }) {
   const o = {
+    lang: 'en',
     includeClinicHeader: true,
     includePatientCard: true,
     includeDiagnosis: true,
@@ -115,244 +306,276 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
     ...opts,
   };
 
-  const clinicName  = siteInfo?.clinicName  || 'عيادة د. وسام يوسف';
-  const clinicSub   = siteInfo?.clinicSubtitle || 'أخصائي تقويم الأسنان — بني مزار، المنيا';
-  const clinicPhone = siteInfo?.phone || '+20 115 679 8324';
-  const fin         = patient.financials || {};
-  const today       = format(new Date(), 'd MMMM yyyy', { locale: ar });
+  const lang  = o.lang || 'en';
+  const t     = L[lang];
+  const isRtl = t.isRtl;
 
-  const filteredSessions = sessions.filter(s =>
-    !o.sessionIds?.length || o.sessionIds.includes(s._id)
-  ).sort((a, b) => new Date(a.sessionDate) - new Date(b.sessionDate));
+  const clinicName  = siteInfo?.clinicName      || 'عيادة د. وسام يوسف';
+  const clinicSub   = siteInfo?.clinicSubtitle  || (lang === 'en' ? 'Orthodontic Specialist — Beni Mazar, Minya' : 'أخصائي تقويم الأسنان — بني مزار، المنيا');
+  const clinicPhone = siteInfo?.phone           || '+20 115 679 8324';
+  const fin         = patient.financials        || {};
+  const today       = t.dateFormat(new Date());
 
-  const pptx = new PptxGenJS();
-  pptx.layout = 'LAYOUT_WIDE';
-  pptx.author  = clinicName;
-  pptx.subject = `ملف المريض — ${patient.fullName}`;
+  const filteredSessions = sessions
+    .filter(s => !o.sessionIds?.length || o.sessionIds.includes(s._id))
+    .sort((a, b) => new Date(a.sessionDate) - new Date(b.sessionDate));
 
-  /* ─── Slide 1: Cover ─────────────────────────────────── */
+  const pptx    = new PptxGenJS();
+  pptx.layout   = 'LAYOUT_WIDE';
+  pptx.author   = clinicName;
+  pptx.subject  = `${t.reportTitle} — ${patient.fullName}`;
+  pptx.rtlMode  = isRtl;
+
+  const align   = isRtl ? 'right' : 'left';
+  const rtl     = isRtl;
+
+  /* ══════════════════════════════════════
+     SLIDE 1 — Cover
+  ══════════════════════════════════════ */
   {
     const s = pptx.addSlide();
-    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: BLUE } });
-    s.addShape('rect', { x: 0, y: 4.2, w: '100%', h: 3.3, fill: { color: LBLUE } });
+    // Full navy background
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.navy } });
+    // Decorative horizontal bands
+    s.addShape('rect', { x: 0, y: 4.8, w: '100%', h: 0.08, fill: { color: C.lblue } });
+    s.addShape('rect', { x: 0, y: 4.88, w: '100%', h: 2.72, fill: { color: '0a1f4e' } });
+    // Left accent bar
+    s.addShape('rect', { x: 0, y: 0, w: 0.28, h: '100%', fill: { color: C.lblue } });
 
     if (o.includeClinicHeader) {
       s.addText(clinicName, {
-        x: 0.5, y: 1.2, w: 12.3, h: 0.8,
-        fontSize: 36, bold: true, color: WHITE, fontFace: 'Arial',
-        align: 'center', rtlMode: true,
+        x: 0.6, y: 1.0, w: 12, h: 0.8,
+        fontSize: 38, bold: true, color: C.white, fontFace: 'Calibri',
+        align: 'center', rtlMode: rtl,
       });
       s.addText(clinicSub, {
-        x: 0.5, y: 2.0, w: 12.3, h: 0.45,
-        fontSize: 16, color: 'bfdbfe', fontFace: 'Arial',
-        align: 'center', rtlMode: true,
+        x: 0.6, y: 1.88, w: 12, h: 0.45,
+        fontSize: 16, color: C.sky, fontFace: 'Calibri',
+        align: 'center', rtlMode: rtl,
       });
-      s.addShape('line', { x: 3, y: 2.6, w: 7.3, h: 0, line: { color: 'bfdbfe', width: 1 } });
+      s.addShape('line', { x: 2.5, y: 2.55, w: 8.3, h: 0, line: { color: C.sky, width: 0.8 } });
     }
 
+    // Patient name block
     s.addText(patient.fullName || '', {
-      x: 0.5, y: 4.5, w: 12.3, h: 0.6,
-      fontSize: 28, bold: true, color: WHITE, fontFace: 'Arial',
-      align: 'center', rtlMode: true,
+      x: 0.6, y: 5.05, w: 12, h: 0.68,
+      fontSize: 30, bold: true, color: C.white, fontFace: 'Calibri',
+      align: 'center', rtlMode: rtl,
     });
-    s.addText('الملف الطبي الكامل', {
-      x: 0.5, y: 5.1, w: 12.3, h: 0.35,
-      fontSize: 14, color: 'bfdbfe', fontFace: 'Arial',
-      align: 'center', rtlMode: true,
+    s.addText(t.reportTitle, {
+      x: 0.6, y: 5.75, w: 12, h: 0.38,
+      fontSize: 15, color: C.sky, fontFace: 'Calibri',
+      align: 'center', rtlMode: rtl,
     });
-    s.addText(`تاريخ التقرير: ${today}`, {
-      x: 0.5, y: 6.6, w: 12.3, h: 0.3,
-      fontSize: 11, color: 'bfdbfe', fontFace: 'Arial',
-      align: 'center', rtlMode: true,
+    s.addText(`${t.reportDate}: ${today}`, {
+      x: 0.6, y: 6.85, w: 12, h: 0.28,
+      fontSize: 11, color: C.mid, fontFace: 'Calibri',
+      align: 'center',
     });
     s.addText(clinicPhone, {
-      x: 0.5, y: 6.95, w: 12.3, h: 0.28,
-      fontSize: 11, color: 'bfdbfe', fontFace: 'Arial',
+      x: 0.6, y: 7.18, w: 12, h: 0.26,
+      fontSize: 11, color: C.mid, fontFace: 'Calibri',
       align: 'center',
     });
   }
 
-  /* ─── Slide 2: Patient Info ──────────────────────────── */
+  /* ══════════════════════════════════════
+     SLIDE 2 — Patient Information
+  ══════════════════════════════════════ */
   if (o.includePatientCard) {
     const s = pptx.addSlide();
-    addHeader(s, clinicName, clinicSub);
-    addSlideTitle(s, '👤 بيانات المريض');
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+    addHeaderBar(s, clinicName, clinicSub, isRtl);
+    addSectionTitle(s, `👤  ${t.patientInfo}`, isRtl);
 
     const age = patient.dateOfBirth
-      ? Math.floor((Date.now() - new Date(patient.dateOfBirth)) / 31557600000) + ' سنة'
-      : patient.age ? patient.age + ' سنة' : '';
+      ? Math.floor((Date.now() - new Date(patient.dateOfBirth)) / 31557600000) + ' ' + t.years
+      : patient.age ? patient.age + ' ' + t.years : '';
 
-    let y = 1.35;
     const rows = [
-      ['الاسم الكامل', patient.fullName],
-      ['رقم الجوال', patient.phone],
-      ['العمر', age],
-      ['العنوان', patient.address],
-      ['رقم المريض', patient.patientId],
+      [t.patientName,  patient.fullName],
+      [t.phone,        patient.phone],
+      [t.age,          age],
+      [t.address,      patient.address],
+      [t.patientId,    patient.patientId],
     ];
-    rows.forEach(([lbl, val]) => {
+    let y = 1.32;
+    rows.forEach(([lbl, val], i) => {
       if (!val) return;
-      s.addShape('rect', { x: 0.3, y, w: 9, h: 0.32, fill: { color: 'f8fafc' }, line: { color: 'e2e8f0', width: 0.5 } });
-      s.addText(lbl + ':', { x: 6.2, y: y + 0.04, w: 2.8, h: 0.24, fontSize: 10, bold: true, color: DARK, fontFace: 'Arial', align: 'right', rtlMode: true });
-      s.addText(String(val), { x: 0.4, y: y + 0.04, w: 5.7, h: 0.24, fontSize: 10, color: GRAY, fontFace: 'Arial', align: 'right', rtlMode: true });
-      y += 0.38;
+      addInfoRow(s, lbl, val, y, isRtl, i % 2 === 0);
+      y += 0.42;
     });
   }
 
-  /* ─── Slide 3: Diagnosis ─────────────────────────────── */
+  /* ══════════════════════════════════════
+     SLIDE 3 — Diagnosis
+  ══════════════════════════════════════ */
   if (o.includeDiagnosis) {
     const fields = [
-      ['التشخيص', patient.diagnosis],
-      ['خطة العلاج', patient.treatmentPlan],
-      ['مراحل العلاج', patient.treatmentStages],
-      ['التعليمات', patient.instructions],
-      ['ملاحظات العلاج', patient.treatmentNotes],
+      [t.diagnosis,       patient.diagnosis],
+      [t.treatmentPlan,   patient.treatmentPlan],
+      [t.treatmentStages, patient.treatmentStages],
+      [t.instructions,    patient.instructions],
+      [t.treatmentNotes,  patient.treatmentNotes],
     ].filter(([, v]) => v);
 
     if (fields.length) {
       const s = pptx.addSlide();
-      addHeader(s, clinicName, clinicSub);
-      addSlideTitle(s, '🩺 التشخيص وخطة العلاج');
-      let y = 1.38;
+      s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+      addHeaderBar(s, clinicName, clinicSub, isRtl);
+      addSectionTitle(s, `🩺  ${t.diagnosisTitle}`, isRtl);
+
+      let y = 1.35;
       fields.forEach(([lbl, val]) => {
         const text = stripHtml(val);
-        s.addText(lbl + ':', { x: 6.5, y, w: 2.8, h: 0.26, fontSize: 10, bold: true, color: BLUE, fontFace: 'Arial', align: 'right', rtlMode: true });
+        if (!text || y > 7.0) return;
+
+        // Label chip
+        s.addShape('rect', { x: 0.3, y, w: 12.6, h: 0.26, fill: { color: C.navy } });
+        s.addText(lbl, {
+          x: isRtl ? 0.4 : 0.4, y: y + 0.03, w: 12.4, h: 0.2,
+          fontSize: 9, bold: true, color: C.white, fontFace: 'Calibri',
+          align, rtlMode: rtl,
+        });
         y += 0.28;
-        s.addShape('rect', { x: 0.3, y, w: 9, h: 0.01, line: { color: 'e2e8f0', width: 0.5 } });
-        s.addText(text, { x: 0.3, y, w: 9, h: 0.5, fontSize: 9, color: DARK, fontFace: 'Arial', align: 'right', rtlMode: true, wrap: true });
-        y += 0.55;
-        if (y > 6.8) return;
+
+        // Value
+        const lines = Math.min(Math.ceil(text.length / 100) + 1, 3);
+        const valH  = lines * 0.26;
+        s.addShape('rect', { x: 0.3, y, w: 12.6, h: valH, fill: { color: C.offwhite }, line: { color: C.silver, width: 0.3 } });
+        s.addText(text, {
+          x: 0.45, y: y + 0.03, w: 12.3, h: valH - 0.05,
+          fontSize: 10, color: C.dark, fontFace: 'Calibri',
+          align, rtlMode: rtl, wrap: true, valign: 'top',
+        });
+        y += valH + 0.1;
       });
     }
   }
 
-  /* ─── Photos: Face ───────────────────────────────────── */
-  if (o.includePhotos && o.includeFacePhotos && (patient.faceImages || []).length) {
+  /* ══════════════════════════════════════
+     Photo helper — one slide per section
+  ══════════════════════════════════════ */
+  const photoSlide = async (imgArr, sectionTitle, category) => {
     const imgs = await Promise.all(
-      (patient.faceImages || []).map(async img => ({
+      imgArr.map(async img => ({
         base64: img.penNote || await toBase64(img.url),
-        label: img.type?.replace(/_/g, ' ') || '',
+        label:  slotLabel(img.type, category, lang),
+        notes:  img.notes || '',
       }))
     );
     const valid = imgs.filter(i => i.base64);
-    if (valid.length) {
-      const s = pptx.addSlide();
-      addHeader(s, clinicName, clinicSub);
-      addSlideTitle(s, '📸 صور خارج الفم (Extraoral)');
-      await buildImageGrid(s, valid, 1.25, 9.7, 5.5);
-    }
+    if (!valid.length) return;
+
+    const s = pptx.addSlide();
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+    addHeaderBar(s, clinicName, clinicSub, isRtl);
+    addSectionTitle(s, `📸  ${sectionTitle}`, isRtl);
+    await buildImageGrid(s, valid, 1.28, 12.9, 6.3, isRtl);
+  };
+
+  if (o.includePhotos) {
+    if (o.includeFacePhotos && (patient.faceImages || []).length)
+      await photoSlide(patient.faceImages, t.extraoral, 'face');
+    if (o.includeIntraOralPhotos && (patient.intraOralImages || []).length)
+      await photoSlide(patient.intraOralImages, t.intraoral, 'intraoral');
+    if (o.includeXrays && (patient.xrays || []).length)
+      await photoSlide(patient.xrays, t.radiographs, 'xray');
   }
 
-  /* ─── Photos: Intraoral ──────────────────────────────── */
-  if (o.includePhotos && o.includeIntraOralPhotos && (patient.intraOralImages || []).length) {
-    const imgs = await Promise.all(
-      (patient.intraOralImages || []).map(async img => ({
-        base64: img.penNote || await toBase64(img.url),
-        label: img.type?.replace(/_/g, ' ') || '',
-      }))
-    );
-    const valid = imgs.filter(i => i.base64);
-    if (valid.length) {
-      const s = pptx.addSlide();
-      addHeader(s, clinicName, clinicSub);
-      addSlideTitle(s, '📸 صور داخل الفم (Intraoral)');
-      await buildImageGrid(s, valid, 1.25, 9.7, 5.5);
-    }
-  }
-
-  /* ─── Photos: Xrays ──────────────────────────────────── */
-  if (o.includePhotos && o.includeXrays && (patient.xrays || []).length) {
-    const imgs = await Promise.all(
-      (patient.xrays || []).map(async img => ({
-        base64: await toBase64(img.url),
-        label: img.type?.replace(/_/g, ' ') || '',
-      }))
-    );
-    const valid = imgs.filter(i => i.base64);
-    if (valid.length) {
-      const s = pptx.addSlide();
-      addHeader(s, clinicName, clinicSub);
-      addSlideTitle(s, '🩻 الأشعة التشخيصية');
-      await buildImageGrid(s, valid, 1.25, 9.7, 5.5);
-    }
-  }
-
-  /* ─── Sessions ───────────────────────────────────────── */
+  /* ══════════════════════════════════════
+     Sessions
+  ══════════════════════════════════════ */
   if (o.includeSessions) {
     for (const [idx, session] of filteredSessions.entries()) {
+      const num     = session.sessionNumber || idx + 1;
       const dateStr = session.sessionDate
-        ? format(new Date(session.sessionDate), 'd MMMM yyyy', { locale: ar })
+        ? t.dateFormat(new Date(session.sessionDate))
         : '';
-      const sessionLabel = `جلسة #${session.sessionNumber || idx + 1}  —  ${dateStr}`;
+      const heading = t.sessionTitle(num, dateStr);
 
+      /* ── Session info slide ── */
       const s = pptx.addSlide();
-      addHeader(s, clinicName, clinicSub);
-      addSlideTitle(s, `📋 ${sessionLabel}`);
+      s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+      addHeaderBar(s, clinicName, clinicSub, isRtl);
+      addSectionTitle(s, `📋  ${heading}`, isRtl);
 
-      let y = 1.38;
-      const fields = [
-        ['ملاحظات', session.notes],
-        ['الخطوة القادمة', session.nextStep],
-        ['المبلغ المدفوع', session.amountPaid ? session.amountPaid + ' ج.م' : null],
-      ];
-      fields.forEach(([lbl, val]) => {
-        if (!val) return;
+      let y = 1.35;
+      const sFields = [
+        [t.sessionNotes, session.notes],
+        [t.nextStep,     session.nextStep],
+        [t.amountPaid,   session.amountPaid ? `${session.amountPaid} ${t.currency}` : null],
+      ].filter(([, v]) => v);
+
+      sFields.forEach(([lbl, val]) => {
         const text = stripHtml(String(val));
-        s.addText(lbl + ': ' + text, {
-          x: 0.3, y, w: 9, h: 0.3,
-          fontSize: 10, color: DARK, fontFace: 'Arial',
-          align: 'right', rtlMode: true, wrap: true,
+        if (!text || y > 6.8) return;
+        s.addShape('rect', { x: 0.3, y, w: 12.6, h: 0.24, fill: { color: C.lblue } });
+        s.addText(lbl, {
+          x: 0.4, y: y + 0.03, w: 12.4, h: 0.18,
+          fontSize: 8.5, bold: true, color: C.white, fontFace: 'Calibri',
+          align, rtlMode: rtl,
         });
-        y += 0.34;
+        y += 0.26;
+        const valH = Math.min(0.62, Math.ceil(text.length / 110) * 0.28 + 0.1);
+        s.addShape('rect', { x: 0.3, y, w: 12.6, h: valH, fill: { color: C.offwhite }, line: { color: C.silver, width: 0.3 } });
+        s.addText(text, {
+          x: 0.45, y: y + 0.03, w: 12.3, h: valH - 0.05,
+          fontSize: 10, color: C.dark, fontFace: 'Calibri',
+          align, rtlMode: rtl, wrap: true, valign: 'top',
+        });
+        y += valH + 0.1;
       });
 
-      /* Session images on same slide if few, else new slide */
+      /* ── Session images slide ── */
       if (o.includeSessionImages && (session.images || []).length) {
         const sessionImgs = await Promise.all(
           (session.images || []).map(async img => ({
             base64: img.penNote || await toBase64(img.url),
-            label: img.type?.replace(/_/g, ' ') || '',
+            label:  slotLabel(img.type, 'session', lang),
+            notes:  img.notes || '',
           }))
         );
         const valid = sessionImgs.filter(i => i.base64);
         if (valid.length) {
-          const remainH = 7.5 - y - 0.1;
-          if (remainH >= 1.5) {
-            await buildImageGrid(s, valid, y + 0.05, 9.7, remainH);
-          } else {
-            const imgSlide = pptx.addSlide();
-            addHeader(imgSlide, clinicName, clinicSub);
-            addSlideTitle(imgSlide, `📸 صور ${sessionLabel}`);
-            await buildImageGrid(imgSlide, valid, 1.25, 9.7, 5.5);
-          }
+          const imgSlide = pptx.addSlide();
+          imgSlide.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+          addHeaderBar(imgSlide, clinicName, clinicSub, isRtl);
+          addSectionTitle(imgSlide, `📸  ${t.sessionPhotosTitle(num, dateStr)}`, isRtl);
+          await buildImageGrid(imgSlide, valid, 1.28, 12.9, 6.3, isRtl);
         }
       }
     }
   }
 
-  /* ─── Financial Summary ──────────────────────────────── */
+  /* ══════════════════════════════════════
+     Financial Summary
+  ══════════════════════════════════════ */
   if (o.includeFinancials) {
     const s = pptx.addSlide();
-    addHeader(s, clinicName, clinicSub);
-    addSlideTitle(s, '💰 البيانات المالية');
-    const statusMap = { paid: 'مدفوع', partial: 'جزئي', overdue: 'متأخر', pending: 'معلق' };
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+    addHeaderBar(s, clinicName, clinicSub, isRtl);
+    addSectionTitle(s, `💰  ${t.financialTitle}`, isRtl);
+
+    const statusMap = t.statusMap;
     const rows = [
-      ['إجمالي تكلفة العلاج', fin.totalCost != null ? fin.totalCost + ' ج.م' : null],
-      ['إجمالي المدفوع',       fin.totalPaid != null ? fin.totalPaid + ' ج.م' : null],
-      ['المتبقي',              fin.remaining != null ? fin.remaining + ' ج.م' : null],
-      ['حالة الحساب',          statusMap[fin.accountStatus] || fin.accountStatus],
+      [t.totalCost,     fin.totalCost != null ? `${fin.totalCost} ${t.currency}` : null],
+      [t.totalPaid,     fin.totalPaid != null ? `${fin.totalPaid} ${t.currency}` : null],
+      [t.remaining,     fin.remaining != null ? `${fin.remaining} ${t.currency}` : null],
+      [t.accountStatus, statusMap[fin.accountStatus] || fin.accountStatus],
     ];
     let y = 1.5;
-    rows.forEach(([lbl, val]) => {
+    rows.forEach(([lbl, val], i) => {
       if (!val) return;
-      s.addShape('rect', { x: 0.3, y, w: 9, h: 0.38, fill: { color: 'f0f9ff' }, line: { color: 'bfdbfe', width: 0.5 } });
-      s.addText(lbl + ':', { x: 6.2, y: y + 0.06, w: 2.8, h: 0.26, fontSize: 11, bold: true, color: BLUE, fontFace: 'Arial', align: 'right', rtlMode: true });
-      s.addText(String(val),  { x: 0.4, y: y + 0.06, w: 5.7, h: 0.26, fontSize: 11, color: DARK, fontFace: 'Arial', align: 'right', rtlMode: true });
-      y += 0.46;
+      addInfoRow(s, lbl, val, y, isRtl, i % 2 === 0);
+      y += 0.48;
     });
   }
 
-  /* ─── Save ───────────────────────────────────────────── */
-  const fileName = `ملف-${patient.fullName}-${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.pptx`;
+  /* ══════════════════════════════════════
+     Save file
+  ══════════════════════════════════════ */
+  const dateStamp = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+  const fileName  = `Patient-${patient.fullName}-${dateStamp}.pptx`;
   await pptx.writeFile({ fileName });
 }
