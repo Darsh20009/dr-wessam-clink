@@ -53,7 +53,14 @@ wss.on('connection', (ws, req) => {
 });
 
 // ─── Middleware ───────────────────────────────────────────────────
-app.use(compression({ level: 6, threshold: 1024 }));
+app.use(compression({
+  level: 9,
+  threshold: 512,
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) return false;
+    return compression.filter(req, res);
+  }
+}));
 app.use(cors({
   origin: (origin, cb) => cb(null, true),
   credentials: true,
@@ -62,7 +69,14 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '30d',
+  etag: true,
+  lastModified: true,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=2592000, stale-while-revalidate=86400');
+  }
+}));
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3001;

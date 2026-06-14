@@ -18,6 +18,8 @@ export default defineConfig({
     minify: 'esbuild',
     target: 'es2020',
     cssMinify: true,
+    cssCodeSplit: true,
+    reportCompressedSize: false,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
@@ -27,10 +29,15 @@ export default defineConfig({
             if (id.includes('date-fns')) return 'date-utils';
             if (id.includes('qrcode') || id.includes('html5-qrcode')) return 'qrcode';
             if (id.includes('simplewebauthn')) return 'webauthn';
+            if (id.includes('html2pdf') || id.includes('jspdf') || id.includes('html2canvas')) return 'pdf';
+            if (id.includes('pptxgenjs')) return 'pptx';
             if (id.includes('axios')) return 'http';
             return 'vendor';
           }
-        }
+        },
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
       }
     }
   },
