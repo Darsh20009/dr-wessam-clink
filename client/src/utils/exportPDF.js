@@ -449,14 +449,14 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     .img-slot img { display:block; width:100%; height:auto; border-radius:6px; border:1px solid #e2e8f0; }
     .img-note { font-size:9px; color:#64748b; margin-top:4px; text-align:center; }
     /* ═══ TEXT SECTIONS ═══ */
-    .ttt-table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:16px; }
-    .ttt-table td, .ttt-table th { border:1px solid #e2e8f0; padding:7px 10px; text-align:left; vertical-align:top; }
+    .ttt-table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:16px; table-layout:fixed; word-wrap:break-word; overflow-wrap:break-word; }
+    .ttt-table td, .ttt-table th { border:1px solid #e2e8f0; padding:7px 10px; text-align:left; vertical-align:top; word-wrap:break-word; overflow-wrap:break-word; word-break:break-word; overflow:hidden; }
     .ttt-table tr { break-inside:avoid; page-break-inside:avoid; }
-    .ttt-table .label { background:#f8fafc; font-weight:700; color:#334155; width:38%; }
+    .ttt-table .label { background:#f8fafc; font-weight:700; color:#334155; width:38%; word-wrap:break-word; overflow-wrap:break-word; }
     .ttt-table .th-head { background:#1e3a8a; color:white; font-weight:900; font-size:13px; text-align:center; }
-    .field-row { display:flex; gap:12px; margin-bottom:10px; break-inside:avoid; page-break-inside:avoid; }
-    .fl { font-weight:700; color:#334155; min-width:160px; font-size:12px; flex-shrink:0; }
-    .fv { color:#475569; font-size:12px; flex:1; white-space:pre-wrap; }
+    .field-row { display:flex; gap:12px; margin-bottom:10px; break-inside:avoid; page-break-inside:avoid; flex-wrap:wrap; }
+    .fl { font-weight:700; color:#334155; min-width:120px; max-width:200px; font-size:12px; flex-shrink:0; word-wrap:break-word; overflow-wrap:break-word; }
+    .fv { color:#475569; font-size:12px; flex:1; white-space:pre-wrap; word-wrap:break-word; overflow-wrap:break-word; min-width:0; }
     /* ═══ SESSION ═══ */
     .session-block { margin-bottom:8px; }
     /* ═══ FOOTER ═══ */
