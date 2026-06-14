@@ -2,6 +2,9 @@ import PptxGenJS from 'pptxgenjs';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
+/** Prepend RTL-embedding mark so Arabic text renders correctly in PowerPoint */
+const rtlStr = (s) => /[\u0600-\u06FF]/.test(s || '') ? '\u202B' + s : (s || '');
+
 /* ─── Color palette ─────────────────────────────────────── */
 const C = {
   navy:    '0f2d6e',
@@ -200,21 +203,19 @@ function addHeaderBar(slide, clinicName, subtitle, isRtl) {
   slide.addShape('rect', { x: 0, y: 0.65, w: '100%', h: 0.06, fill: { color: C.lblue } });
 
   const align = isRtl ? 'right' : 'left';
-  const rtl   = isRtl ? true : false;
-  const xName = isRtl ? 0.2 : 0.3;
-  const xSub  = isRtl ? 0.2 : 0.3;
+  const xName = 0.3;
   const wName = 8.5;
 
-  slide.addText(clinicName, {
+  slide.addText(rtlStr(clinicName), {
     x: xName, y: 0.07, w: wName, h: 0.32,
     fontSize: 16, bold: true, color: C.white, fontFace: 'Calibri',
-    align, rtlMode: rtl,
+    align, rtlMode: true,
   });
   if (subtitle) {
-    slide.addText(subtitle, {
-      x: xSub, y: 0.36, w: wName, h: 0.22,
+    slide.addText(rtlStr(subtitle), {
+      x: xName, y: 0.36, w: wName, h: 0.22,
       fontSize: 9, color: C.sky, fontFace: 'Calibri',
-      align, rtlMode: rtl,
+      align, rtlMode: true,
     });
   }
 }
@@ -222,10 +223,10 @@ function addHeaderBar(slide, clinicName, subtitle, isRtl) {
 function addSectionTitle(slide, title, isRtl) {
   slide.addShape('rect', { x: 0, y: 0.71, w: '100%', h: 0.5, fill: { color: C.lgray } });
   slide.addShape('rect', { x: isRtl ? 12.8 : 0, y: 0.71, w: 0.16, h: 0.5, fill: { color: C.lblue } });
-  slide.addText(title, {
-    x: isRtl ? 0.3 : 0.3, y: 0.74, w: 12.7, h: 0.42,
+  slide.addText(rtlStr(title), {
+    x: 0.3, y: 0.74, w: 12.7, h: 0.42,
     fontSize: 14, bold: true, color: C.navy, fontFace: 'Calibri',
-    align: isRtl ? 'right' : 'left', rtlMode: isRtl,
+    align: isRtl ? 'right' : 'left', rtlMode: true,
   });
 }
 
@@ -233,11 +234,11 @@ function addInfoRow(slide, label, value, y, isRtl, shade) {
   if (!value) return;
   slide.addShape('rect', { x: 0.3, y, w: 12.6, h: 0.36, fill: { color: shade ? C.lgray : C.offwhite }, line: { color: C.silver, width: 0.3 } });
   if (isRtl) {
-    slide.addText(label, { x: 9.5, y: y + 0.05, w: 3.2, h: 0.26, fontSize: 10, bold: true, color: C.navy, fontFace: 'Calibri', align: 'right', rtlMode: true });
-    slide.addText(String(value), { x: 0.4, y: y + 0.05, w: 9.0, h: 0.26, fontSize: 10, color: C.dark, fontFace: 'Calibri', align: 'right', rtlMode: true });
+    slide.addText(rtlStr(label),        { x: 9.5, y: y + 0.05, w: 3.2, h: 0.26, fontSize: 10, bold: true, color: C.navy, fontFace: 'Calibri', align: 'right', rtlMode: true });
+    slide.addText(rtlStr(String(value)),{ x: 0.4, y: y + 0.05, w: 9.0, h: 0.26, fontSize: 10, color: C.dark, fontFace: 'Calibri', align: 'right', rtlMode: true });
   } else {
-    slide.addText(label, { x: 0.4, y: y + 0.05, w: 3.2, h: 0.26, fontSize: 10, bold: true, color: C.navy, fontFace: 'Calibri', align: 'left' });
-    slide.addText(String(value), { x: 3.8, y: y + 0.05, w: 9.0, h: 0.26, fontSize: 10, color: C.dark, fontFace: 'Calibri', align: 'left' });
+    slide.addText(rtlStr(label),        { x: 0.4, y: y + 0.05, w: 3.2, h: 0.26, fontSize: 10, bold: true, color: C.navy, fontFace: 'Calibri', align: 'left', rtlMode: true });
+    slide.addText(rtlStr(String(value)),{ x: 3.8, y: y + 0.05, w: 9.0, h: 0.26, fontSize: 10, color: C.dark, fontFace: 'Calibri', align: 'left', rtlMode: true });
   }
 }
 
@@ -369,29 +370,29 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
     s.addShape('rect', { x: 0, y: 0, w: 0.28, h: '100%', fill: { color: C.lblue } });
 
     if (o.includeClinicHeader) {
-      s.addText(clinicName, {
+      s.addText(rtlStr(clinicName), {
         x: 0.6, y: 1.0, w: 12, h: 0.8,
         fontSize: 38, bold: true, color: C.white, fontFace: 'Calibri',
-        align: 'center', rtlMode: rtl,
+        align: 'center', rtlMode: true,
       });
-      s.addText(clinicSub, {
+      s.addText(rtlStr(clinicSub), {
         x: 0.6, y: 1.88, w: 12, h: 0.45,
         fontSize: 16, color: C.sky, fontFace: 'Calibri',
-        align: 'center', rtlMode: rtl,
+        align: 'center', rtlMode: true,
       });
       s.addShape('line', { x: 2.5, y: 2.55, w: 8.3, h: 0, line: { color: C.sky, width: 0.8 } });
     }
 
     // Patient name block
-    s.addText(patient.fullName || '', {
+    s.addText(rtlStr(patient.fullName || ''), {
       x: 0.6, y: 5.05, w: 12, h: 0.68,
       fontSize: 30, bold: true, color: C.white, fontFace: 'Calibri',
-      align: 'center', rtlMode: rtl,
+      align: 'center', rtlMode: true,
     });
-    s.addText(t.reportTitle, {
+    s.addText(rtlStr(t.reportTitle), {
       x: 0.6, y: 5.75, w: 12, h: 0.38,
       fontSize: 15, color: C.sky, fontFace: 'Calibri',
-      align: 'center', rtlMode: rtl,
+      align: 'center', rtlMode: true,
     });
     s.addText(`${t.reportDate}: ${today}`, {
       x: 0.6, y: 6.85, w: 12, h: 0.28,
@@ -434,48 +435,39 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
   }
 
   /* ══════════════════════════════════════
-     SLIDE 3 — Diagnosis
+     Photo helper — one slide per section
   ══════════════════════════════════════ */
-  if (o.includeDiagnosis) {
-    const fields = [
-      [t.diagnosis,       patient.diagnosis],
-      [t.treatmentPlan,   patient.treatmentPlan],
-      [t.treatmentStages, patient.treatmentStages],
-      [t.instructions,    patient.instructions],
-      [t.treatmentNotes,  patient.treatmentNotes],
-    ].filter(([, v]) => v);
+  const photoSlide = async (imgArr, sectionTitle, category) => {
+    const imgs = await Promise.all(
+      imgArr.map(async img => {
+        const result = img.penNote
+          ? await getDimsFromBase64(img.penNote)
+          : await toBase64(img.url);
+        return {
+          base64: result?.data || null,
+          ratio:  result?.ratio || 0.75,
+          label:  slotLabel(img.type, category, lang),
+          notes:  img.notes || '',
+        };
+      })
+    );
+    const valid = imgs.filter(i => i.base64);
+    if (!valid.length) return;
 
-    if (fields.length) {
-      const s = pptx.addSlide();
-      s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
-      addHeaderBar(s, clinicName, clinicSub, isRtl);
-      addSectionTitle(s, `🩺  ${t.diagnosisTitle}`, isRtl);
+    const s = pptx.addSlide();
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+    addHeaderBar(s, clinicName, clinicSub, isRtl);
+    addSectionTitle(s, `📸  ${sectionTitle}`, isRtl);
+    await buildImageGrid(s, valid, 1.28, 12.9, 6.3, isRtl);
+  };
 
-      let y = 1.35;
-      fields.forEach(([lbl, val]) => {
-        const text = stripHtml(val);
-        if (!text || y > 7.0) return;
-
-        // Label chip
-        s.addShape('rect', { x: 0.3, y, w: 12.6, h: 0.26, fill: { color: C.navy } });
-        s.addText(lbl, {
-          x: isRtl ? 0.4 : 0.4, y: y + 0.03, w: 12.4, h: 0.2,
-          fontSize: 9, bold: true, color: C.white, fontFace: 'Calibri',
-          align, rtlMode: rtl,
-        });
-        y += 0.28;
-
-        // Value — dynamic height, no hard cap
-        const valH = Math.min(2.5, Math.max(0.4, Math.ceil(text.length / 80) * 0.3 + 0.1));
-        s.addShape('rect', { x: 0.3, y, w: 12.6, h: valH, fill: { color: C.offwhite }, line: { color: C.silver, width: 0.3 } });
-        s.addText(text, {
-          x: 0.45, y: y + 0.03, w: 12.3, h: valH - 0.05,
-          fontSize: 10, color: C.dark, fontFace: 'Calibri',
-          align, rtlMode: rtl, wrap: true, valign: 'top',
-        });
-        y += valH + 0.1;
-      });
-    }
+  if (o.includePhotos) {
+    if (o.includeFacePhotos && (patient.faceImages || []).length)
+      await photoSlide(patient.faceImages, t.extraoral, 'face');
+    if (o.includeIntraOralPhotos && (patient.intraOralImages || []).length)
+      await photoSlide(patient.intraOralImages, t.intraoral, 'intraoral');
+    if (o.includeXrays && (patient.xrays || []).length)
+      await photoSlide(patient.xrays, t.radiographs, 'xray');
   }
 
   /* ══════════════════════════════════════
@@ -643,39 +635,44 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
   }
 
   /* ══════════════════════════════════════
-     Photo helper — one slide per section
+     Diagnosis
   ══════════════════════════════════════ */
-  const photoSlide = async (imgArr, sectionTitle, category) => {
-    const imgs = await Promise.all(
-      imgArr.map(async img => {
-        const result = img.penNote
-          ? await getDimsFromBase64(img.penNote)
-          : await toBase64(img.url);
-        return {
-          base64: result?.data || null,
-          ratio:  result?.ratio || 0.75,
-          label:  slotLabel(img.type, category, lang),
-          notes:  img.notes || '',
-        };
-      })
-    );
-    const valid = imgs.filter(i => i.base64);
-    if (!valid.length) return;
+  if (o.includeDiagnosis) {
+    const fields = [
+      [t.diagnosis,       patient.diagnosis],
+      [t.treatmentPlan,   patient.treatmentPlan],
+      [t.treatmentStages, patient.treatmentStages],
+      [t.instructions,    patient.instructions],
+      [t.treatmentNotes,  patient.treatmentNotes],
+    ].filter(([, v]) => v);
 
-    const s = pptx.addSlide();
-    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
-    addHeaderBar(s, clinicName, clinicSub, isRtl);
-    addSectionTitle(s, `📸  ${sectionTitle}`, isRtl);
-    await buildImageGrid(s, valid, 1.28, 12.9, 6.3, isRtl);
-  };
+    if (fields.length) {
+      const s = pptx.addSlide();
+      s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+      addHeaderBar(s, clinicName, clinicSub, isRtl);
+      addSectionTitle(s, `🩺  ${t.diagnosisTitle}`, isRtl);
 
-  if (o.includePhotos) {
-    if (o.includeFacePhotos && (patient.faceImages || []).length)
-      await photoSlide(patient.faceImages, t.extraoral, 'face');
-    if (o.includeIntraOralPhotos && (patient.intraOralImages || []).length)
-      await photoSlide(patient.intraOralImages, t.intraoral, 'intraoral');
-    if (o.includeXrays && (patient.xrays || []).length)
-      await photoSlide(patient.xrays, t.radiographs, 'xray');
+      let y = 1.35;
+      fields.forEach(([lbl, val]) => {
+        const text = stripHtml(val);
+        if (!text || y > 7.0) return;
+        s.addShape('rect', { x: 0.3, y, w: 12.6, h: 0.26, fill: { color: C.navy } });
+        s.addText(rtlStr(lbl), {
+          x: 0.4, y: y + 0.03, w: 12.4, h: 0.2,
+          fontSize: 9, bold: true, color: C.white, fontFace: 'Calibri',
+          align, rtlMode: true,
+        });
+        y += 0.28;
+        const valH = Math.min(2.5, Math.max(0.4, Math.ceil(text.length / 80) * 0.3 + 0.1));
+        s.addShape('rect', { x: 0.3, y, w: 12.6, h: valH, fill: { color: C.offwhite }, line: { color: C.silver, width: 0.3 } });
+        s.addText(rtlStr(text), {
+          x: 0.45, y: y + 0.03, w: 12.3, h: valH - 0.05,
+          fontSize: 10, color: C.dark, fontFace: 'Calibri',
+          align, rtlMode: true, wrap: true, valign: 'top',
+        });
+        y += valH + 0.1;
+      });
+    }
   }
 
   /* ══════════════════════════════════════
