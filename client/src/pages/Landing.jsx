@@ -16,8 +16,7 @@ const defaultSettings = {
   address: 'المنيا، بني مزار، شرق المحطة، ميدان 25 يناير، فوق مكتبة الأهرام',
   workingHours: 'السبت - الخميس: 10 ص - 8 م',
   certificates: [
-    { title: 'بكالوريوس طب الأسنان', year: '2010', institution: 'جامعة القاهرة' },
-    { title: 'ماجستير تقويم الأسنان', year: '2014', institution: 'جامعة القاهرة' },
+    { title: 'د.زمالة تقويم الأسنان للكليات الملكية بإدنبرة وجلاسجو وأيرلندا (F.Ortho Tri-Collegiate)', year: '2016', institution: 'الكليات الملكية بإدنبرة وجلاسجو وأيرلندا' },
   ],
   achievements: [
     { title: '+1000 حالة ناجحة', description: 'علاج حالات متنوعة بنتائج متميزة' },
