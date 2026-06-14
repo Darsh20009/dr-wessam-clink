@@ -111,9 +111,12 @@ export async function htmlToPdfBlob(htmlString, { filename = 'report.pdf', scale
     };
 
     // Collect cut points: start of every .new-page div
+    // We SKIP the very first .new-page so the header + patient card + first
+    // content section all share the first PDF page (avoids a near-empty first page).
     const sectionEls  = Array.from(iDoc.querySelectorAll('.new-page'));
     const cutSet = new Set([0]); // always start at 0
-    sectionEls.forEach(el => {
+    sectionEls.forEach((el, idx) => {
+      if (idx === 0) return; // merge first section with the header page
       const y = getTopFromBody(el);
       if (y > 0 && y < totalH) cutSet.add(y);
     });
