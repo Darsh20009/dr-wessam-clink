@@ -213,6 +213,10 @@ function ImageLightbox({ item, onClose }) {
 
   const renderedNotes = React.useMemo(() => {
     if (!notes?.trim()) return null;
+    const isHtml = /<[a-z][\s\S]*?>/i.test(notes);
+    if (isHtml) {
+      return [<div key="html" style={{ fontSize: 13, color: '#e2e8f0', lineHeight: 1.9, fontFamily: 'Cairo,sans-serif', direction: 'rtl', textAlign: 'right' }} dangerouslySetInnerHTML={{ __html: notes }} />];
+    }
     const lines = notes.split('\n');
     const elements = [];
     let bullets = [];
@@ -782,6 +786,14 @@ export default function PatientFile() {
     } catch { toast.error('خطأ في الحفظ'); }
   };
 
+  const patchSessionImage = async (sessionId, imgId, data) => {
+    try {
+      await axios.patch(`/sessions/${sessionId}/images/${imgId}`, data);
+      const sRes = await axios.get(`/sessions?patientId=${id}`);
+      setSessions(sRes.data);
+    } catch { toast.error('خطأ في الحفظ'); }
+  };
+
   if (loading) return <div className="loading"><div className="spinner"></div></div>;
   if (!patient) return null;
 
@@ -931,7 +943,10 @@ export default function PatientFile() {
             )}
             <div className="form-group">
               <label>📝 ملاحظات الصورة</label>
-              <textarea className="form-control" rows={3} value={sessionImgForm.notes} onChange={e => setSessionImgForm(f => ({ ...f, notes: e.target.value }))} placeholder="أضف ملاحظة طبية لهذه الصورة..." />
+              <RichNoteEditor
+                initialNote={sessionImgForm.notes}
+                onSave={val => setSessionImgForm(f => ({ ...f, notes: val }))}
+              />
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
               <button className="btn btn-secondary" onClick={() => setEditingSessionImg(null)}>إلغاء</button>
@@ -1103,14 +1118,20 @@ export default function PatientFile() {
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, paddingRight: 40 }}>
                       {s.images.map((img, idx) => (
-                        <div key={img._id || idx} style={{ borderRadius: 10, overflow: 'hidden', border: `1.5px solid ${img.penNote ? '#bfdbfe' : '#e2e8f0'}`, background: '#f8fafc', width: 120, flexShrink: 0 }}>
-                          <img src={img.penNote || img.url} alt={img.type} style={{ width: 120, height: 90, objectFit: 'cover', display: 'block', cursor: 'pointer' }} onClick={() => setLightbox({ url: img.url, penNote: img.penNote, notes: img.notes, label: img.type?.replace(/_/g, ' ') || 'صورة' })} />
+                        <div key={img._id || idx} style={{ borderRadius: 10, overflow: 'hidden', border: `1.5px solid ${img.penNote ? '#bfdbfe' : '#e2e8f0'}`, background: '#f8fafc', width: 130, flexShrink: 0 }}>
+                          <div style={{ position: 'relative' }}>
+                            <img src={img.penNote || img.url} alt={img.type} style={{ width: 130, height: 97, objectFit: 'cover', display: 'block', cursor: 'pointer' }} onClick={() => setLightbox({ url: img.url, penNote: img.penNote, notes: img.notes, label: img.type?.replace(/_/g, ' ') || 'صورة جلسة' })} />
+                            {img.penNote && <div style={{ position: 'absolute', bottom: 3, right: 3, background: '#2563eb', borderRadius: 3, padding: '1px 5px', fontSize: 9, color: 'white', fontFamily: 'Cairo,sans-serif', fontWeight: 700 }}>✎</div>}
+                          </div>
                           <div style={{ padding: '4px 6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', fontFamily: 'monospace, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.type?.replace(/_/g, ' ') || 'صورة'}</div>
-                              {img.notes && <div style={{ fontSize: 10, color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.notes}</div>}
-                            </div>
-                            <button onClick={e => { e.stopPropagation(); openDrawingModal('session', img._id, img.url, img.penNote, s._id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: img.penNote ? '#2563eb' : '#cbd5e1', flexShrink: 0 }} title="نوت القلم"><FiEdit3 size={11}/></button>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', fontFamily: 'monospace, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{img.type?.replace(/_/g, ' ') || 'صورة'}</div>
+                            <button onClick={e => { e.stopPropagation(); openDrawingModal('session', img._id, img.url, img.penNote, s._id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: img.penNote ? '#2563eb' : '#cbd5e1', flexShrink: 0 }} title="رسم على الصورة"><FiEdit3 size={11}/></button>
+                          </div>
+                          <div style={{ padding: '0 6px 6px' }}>
+                            <RichNoteEditor
+                              initialNote={img.notes || ''}
+                              onSave={val => patchSessionImage(s._id, img._id, { notes: val })}
+                            />
                           </div>
                         </div>
                       ))}
