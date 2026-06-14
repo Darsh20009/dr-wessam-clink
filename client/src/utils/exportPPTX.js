@@ -5,8 +5,9 @@ import { ar } from 'date-fns/locale';
 /** Prepend RTL-embedding mark so Arabic text renders correctly in PowerPoint */
 const rtlStr = (s) => /[\u0600-\u06FF]/.test(s || '') ? '\u202B' + s : (s || '');
 
-/** Always prepend RTL-embedding mark — for names (clinic/patient) so they ALWAYS render right-to-left regardless of language */
-const nameRtl = (s) => '\u202B' + (s || '');
+/** Always force RTL for names (clinic/patient) — works on desktop AND mobile PowerPoint apps.
+ *  Uses RLM (\u200F) + RLE (\u202B) at start and PDF (\u202C) at end for maximum platform compatibility. */
+const nameRtl = (s) => '\u200F\u202B' + (s || '') + '\u202C';
 
 /* ─── Color palette ─────────────────────────────────────── */
 const C = {
