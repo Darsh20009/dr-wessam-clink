@@ -87,122 +87,115 @@ const DEFAULT_TTT = {
 const statusMap = { paid: 'badge-success', partial: 'badge-warning', overdue: 'badge-danger', pending: 'badge-gray' };
 const statusLabel = { paid: 'مدفوع', partial: 'جزئي', overdue: 'متأخر', pending: 'معلق' };
 
+const NOTE_TEXT_COLORS = [
+  { c: '#334155', l: 'افتراضي' }, { c: '#dc2626', l: 'أحمر' }, { c: '#ea580c', l: 'برتقالي' },
+  { c: '#d97706', l: 'ذهبي' }, { c: '#16a34a', l: 'أخضر' }, { c: '#2563eb', l: 'أزرق' },
+  { c: '#7c3aed', l: 'بنفسجي' }, { c: '#db2777', l: 'وردي' },
+];
+const NOTE_HL_COLORS = [
+  { c: 'transparent', l: 'بدون' }, { c: '#fef9c3', l: 'أصفر' }, { c: '#dcfce7', l: 'أخضر' },
+  { c: '#dbeafe', l: 'أزرق' }, { c: '#fce7f3', l: 'وردي' }, { c: '#fee2e2', l: 'أحمر' },
+];
+const NOTE_SIZES = [
+  { label: 'ص', val: '1', title: 'صغير' }, { label: 'ع', val: '3', title: 'عادي' },
+  { label: 'ك', val: '5', title: 'كبير' }, { label: 'ع+', val: '7', title: 'عنوان' },
+];
+
 function RichNoteEditor({ initialNote, onSave }) {
-  const [val, setVal] = React.useState(initialNote || '');
-  const taRef = React.useRef(null);
-  React.useEffect(() => { setVal(initialNote || ''); }, [initialNote]);
+  const editorRef = React.useRef(null);
+  const [open, setOpen] = React.useState(false);
+  const [showClr, setShowClr] = React.useState(false);
+  const [showHl, setShowHl] = React.useState(false);
+  const savedSel = React.useRef(null);
 
-  const insertBullet = () => {
-    const ta = taRef.current;
-    if (!ta) return;
-    const s = ta.selectionStart;
-    const lineStart = val.lastIndexOf('\n', s - 1) + 1;
-    const linePrefix = val.substring(lineStart, s);
-    const insert = linePrefix.length === 0 ? '• ' : '\n• ';
-    const newVal = val.substring(0, s) + insert + val.substring(ta.selectionEnd);
-    setVal(newVal);
-    const np = s + insert.length;
-    requestAnimationFrame(() => { ta.setSelectionRange(np, np); ta.focus(); });
+  const saveSel = () => {
+    const s = window.getSelection();
+    if (s && s.rangeCount > 0) savedSel.current = s.getRangeAt(0).cloneRange();
+  };
+  const restoreSel = () => {
+    if (!savedSel.current) return;
+    const s = window.getSelection(); s?.removeAllRanges(); s?.addRange(savedSel.current);
+  };
+  const exec = (cmd, val = null) => {
+    restoreSel();
+    document.execCommand(cmd, false, val);
+    editorRef.current?.focus();
+    setShowClr(false); setShowHl(false);
+  };
+  const insertBullet = () => { editorRef.current?.focus(); document.execCommand('insertText', false, '• '); };
+
+  const openModal = () => {
+    setOpen(true);
+    setTimeout(() => {
+      if (!editorRef.current) return;
+      editorRef.current.innerHTML = initialNote || '';
+      editorRef.current.focus();
+      const r = document.createRange(); r.selectNodeContents(editorRef.current); r.collapse(false);
+      const s = window.getSelection(); s?.removeAllRanges(); s?.addRange(r);
+    }, 60);
+  };
+  const closeModal = () => {
+    onSave(editorRef.current?.innerHTML || '');
+    setOpen(false); setShowClr(false); setShowHl(false);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      const ta = taRef.current;
-      const s = ta.selectionStart;
-      const lineStart = val.lastIndexOf('\n', s - 1) + 1;
-      const currentLine = val.substring(lineStart, s);
-      if (/^\s*[•\-]\s/.test(currentLine)) {
-        e.preventDefault();
-        const newVal = val.substring(0, s) + '\n• ' + val.substring(ta.selectionEnd);
-        setVal(newVal);
-        const np = s + 3;
-        requestAnimationFrame(() => { ta.setSelectionRange(np, np); });
-      }
-    }
-  };
-
-  const [focused, setFocused] = React.useState(false);
-
-  const handleFocus = () => setFocused(true);
-  const handleBlur = () => {
-    setFocused(false);
-    if (val !== (initialNote || '')) onSave(val);
-  };
+  const TB = ({ ch, action, title, extra }) => (
+    <button onMouseDown={e => { e.preventDefault(); saveSel(); action(); }} title={title}
+      style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 9px', cursor: 'pointer', fontSize: 12, color: '#334155', fontFamily: 'Cairo,sans-serif', lineHeight: 1.3, minWidth: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', ...extra }}>
+      {ch}
+    </button>
+  );
 
   return (
-    <div style={{ marginTop: 4, position: 'relative', zIndex: focused ? 999 : 'auto' }}>
-      {focused && (
-        <div
-          style={{ position: 'fixed', inset: 0, zIndex: 998 }}
-          onMouseDown={() => { taRef.current?.blur(); }}
-        />
+    <div style={{ marginTop: 4 }}>
+      <div onClick={openModal} style={{ cursor: 'text', minHeight: 28, fontSize: 10, lineHeight: 1.7, border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 7px', background: 'white', direction: 'rtl', textAlign: 'right', overflow: 'hidden', maxHeight: 44 }}
+        dangerouslySetInnerHTML={{ __html: initialNote?.trim() ? initialNote : '<span style="color:#cbd5e1;font-family:Cairo,sans-serif;font-size:10px;">ملاحظة... اضغط للتحرير</span>' }}
+      />
+      {open && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(3px)' }} onMouseDown={e => { e.preventDefault(); closeModal(); }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 520, maxWidth: '95vw', background: 'white', borderRadius: 18, boxShadow: '0 32px 80px rgba(0,0,0,0.3)', zIndex: 1001, border: '2px solid #2563eb', overflow: 'hidden' }} onMouseDown={e => e.stopPropagation()}>
+            <div style={{ padding: '12px 18px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc' }}>
+              <span style={{ fontFamily: 'Cairo,sans-serif', fontWeight: 700, fontSize: 14, color: '#1e293b' }}>✏️ تعديل الملاحظة</span>
+              <button onMouseDown={e => { e.preventDefault(); closeModal(); }} style={{ background: '#e2e8f0', border: 'none', borderRadius: 99, width: 28, height: 28, cursor: 'pointer', fontSize: 14, color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+            </div>
+            <div style={{ padding: '9px 14px', borderBottom: '1px solid #f1f5f9', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5, background: 'white' }}>
+              <TB ch={<b>B</b>} action={() => exec('bold')} title="عريض" />
+              <TB ch={<i>I</i>} action={() => exec('italic')} title="مائل" />
+              <TB ch={<u>U</u>} action={() => exec('underline')} title="تحته خط" />
+              <div style={{ width: 1, height: 22, background: '#e2e8f0' }} />
+              {NOTE_SIZES.map(s => <TB key={s.val} ch={s.label} action={() => exec('fontSize', s.val)} title={s.title} />)}
+              <div style={{ width: 1, height: 22, background: '#e2e8f0' }} />
+              <div style={{ position: 'relative' }}>
+                <button onMouseDown={e => { e.preventDefault(); saveSel(); setShowClr(p => !p); setShowHl(false); }} title="لون النص" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#334155', lineHeight: 1 }}>A</span>
+                  <span style={{ width: 16, height: 3, borderRadius: 2, background: '#dc2626', display: 'block' }} />
+                </button>
+                {showClr && <div onMouseDown={e => e.preventDefault()} style={{ position: 'absolute', top: 36, right: 0, background: 'white', border: '1.5px solid #e2e8f0', borderRadius: 12, padding: 10, display: 'flex', flexWrap: 'wrap', gap: 6, zIndex: 1100, boxShadow: '0 8px 28px rgba(0,0,0,0.18)', width: 152 }}>
+                  {NOTE_TEXT_COLORS.map(({ c, l }) => <button key={c} onMouseDown={e => { e.preventDefault(); exec('foreColor', c); }} title={l} style={{ width: 24, height: 24, borderRadius: 6, background: c, border: '2px solid #e2e8f0', cursor: 'pointer' }} />)}
+                </div>}
+              </div>
+              <div style={{ position: 'relative' }}>
+                <button onMouseDown={e => { e.preventDefault(); saveSel(); setShowHl(p => !p); setShowClr(false); }} title="تمييز" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, background: '#fef9c3', padding: '0 3px', borderRadius: 2, lineHeight: 1.4, color: '#1e293b' }}>هـ</span>
+                  <span style={{ width: 16, height: 3, borderRadius: 2, background: '#fde047', display: 'block' }} />
+                </button>
+                {showHl && <div onMouseDown={e => e.preventDefault()} style={{ position: 'absolute', top: 36, right: 0, background: 'white', border: '1.5px solid #e2e8f0', borderRadius: 12, padding: 10, display: 'flex', gap: 6, zIndex: 1100, boxShadow: '0 8px 28px rgba(0,0,0,0.18)' }}>
+                  {NOTE_HL_COLORS.map(({ c, l }) => <button key={c} onMouseDown={e => { e.preventDefault(); exec('hiliteColor', c); }} title={l} style={{ width: 24, height: 24, borderRadius: 6, background: c === 'transparent' ? 'white' : c, border: c === 'transparent' ? '2px dashed #cbd5e1' : '2px solid #e2e8f0', cursor: 'pointer' }} />)}
+                </div>}
+              </div>
+              <div style={{ width: 1, height: 22, background: '#e2e8f0' }} />
+              <button onMouseDown={e => { e.preventDefault(); insertBullet(); }} style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#2563eb', fontFamily: 'Cairo,sans-serif', fontSize: 12, fontWeight: 700 }}>• نقطة</button>
+            </div>
+            <div ref={editorRef} contentEditable suppressContentEditableWarning dir="rtl"
+              style={{ minHeight: 160, maxHeight: 280, overflowY: 'auto', padding: '14px 18px', fontFamily: 'Cairo,sans-serif', fontSize: 13, color: '#334155', lineHeight: 2, outline: 'none', direction: 'rtl', textAlign: 'right', background: '#fcfcfd' }} />
+            <div style={{ padding: '10px 18px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
+              <button onMouseDown={e => { e.preventDefault(); if (editorRef.current) editorRef.current.innerHTML = ''; }} style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 14px', fontFamily: 'Cairo,sans-serif', fontSize: 12, cursor: 'pointer', color: '#94a3b8' }}>🗑 مسح</button>
+              <button onMouseDown={e => { e.preventDefault(); closeModal(); }} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: 8, padding: '7px 22px', fontFamily: 'Cairo,sans-serif', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>💾 حفظ</button>
+            </div>
+          </div>
+        </>
       )}
-      <div style={{
-        position: focused ? 'fixed' : 'relative',
-        ...(focused ? {
-          top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 420, maxWidth: '90vw',
-          background: 'white',
-          borderRadius: 14,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
-          padding: 16,
-          zIndex: 999,
-          border: '2px solid #2563eb',
-        } : {})
-      }}>
-        {focused && (
-          <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontFamily: 'Cairo,sans-serif', fontWeight: 700, fontSize: 13, color: '#1e293b' }}>✏️ تعديل الملاحظة</span>
-            <button
-              onMouseDown={e => { e.preventDefault(); taRef.current?.blur(); }}
-              style={{ background: '#f1f5f9', border: 'none', borderRadius: 99, width: 26, height: 26, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#64748b' }}
-            >✕</button>
-          </div>
-        )}
-        <div style={{ display: 'flex', gap: 3, marginBottom: focused ? 6 : 2 }}>
-          <button
-            type="button"
-            onMouseDown={e => { e.preventDefault(); insertBullet(); }}
-            style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 4, padding: focused ? '3px 10px' : '1px 7px', fontSize: focused ? 11 : 10, cursor: 'pointer', color: '#2563eb', fontFamily: 'Cairo,sans-serif', lineHeight: 1.6, fontWeight: 600 }}
-            title="إضافة نقطة"
-          >• نقطة</button>
-        </div>
-        <textarea
-          ref={taRef}
-          rows={focused ? 7 : 2}
-          value={val}
-          onChange={e => setVal(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          placeholder="ملاحظة... (• نقطة للقائمة)"
-          style={{
-            width: '100%',
-            fontSize: focused ? 13 : 10,
-            border: focused ? '1.5px solid #bfdbfe' : '1px solid #e2e8f0',
-            borderRadius: focused ? 8 : 6,
-            padding: focused ? '8px 10px' : '3px 5px',
-            resize: 'none',
-            fontFamily: 'Cairo, inherit',
-            direction: 'rtl',
-            boxSizing: 'border-box',
-            color: '#334155',
-            lineHeight: 1.8,
-            outline: 'none',
-            transition: 'all 0.15s ease',
-            background: focused ? '#f8fafc' : 'white',
-          }}
-        />
-        {focused && val.trim() && (
-          <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              onMouseDown={e => { e.preventDefault(); onSave(val); taRef.current?.blur(); }}
-              style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: 8, padding: '6px 18px', fontFamily: 'Cairo,sans-serif', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}
-            >حفظ</button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

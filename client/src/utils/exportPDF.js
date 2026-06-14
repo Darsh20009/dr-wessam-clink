@@ -186,6 +186,10 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
 
   const formatNotes = (notes) => {
     if (!notes?.trim()) return '';
+    const isHtml = /<[a-z][\s\S]*?>/i.test(notes);
+    if (isHtml) {
+      return `<div style="margin-top:4px;border-top:1px solid #f1f5f9;padding-top:4px;font-size:9px;line-height:1.8;color:#334155;direction:rtl;text-align:right;font-family:Cairo,sans-serif;">${notes}</div>`;
+    }
     const lines = notes.split('\n');
     let html = '';
     let inList = false;
