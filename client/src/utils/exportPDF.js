@@ -184,6 +184,26 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
 
   const sectionTitle = (txt) => `<div class="sec-title">${txt}</div>`;
 
+  const formatNotes = (notes) => {
+    if (!notes?.trim()) return '';
+    const lines = notes.split('\n');
+    let html = '';
+    let inList = false;
+    lines.forEach(line => {
+      const t = line.trimStart();
+      const isBullet = t.startsWith('•') || t.startsWith('-') || t.startsWith('*');
+      if (isBullet) {
+        if (!inList) { html += '<ul style="margin:3px 0 3px 14px;padding:0;list-style:disc;">'; inList = true; }
+        html += `<li style="font-size:8.5px;color:#334155;line-height:1.6;margin-bottom:2px;">${t.replace(/^[•\-*]\s*/, '')}</li>`;
+      } else {
+        if (inList) { html += '</ul>'; inList = false; }
+        if (t) html += `<div style="font-size:8.5px;color:#475569;line-height:1.6;">${line}</div>`;
+      }
+    });
+    if (inList) html += '</ul>';
+    return html ? `<div style="margin-top:4px;border-top:1px solid #f1f5f9;padding-top:3px;">${html}</div>` : '';
+  };
+
   const slotGrid = (slotDefs, images) => slotDefs.map(slot => {
     const imgs = images.filter(i => i.type === slot.type);
     if (!imgs.length) return '';
@@ -193,7 +213,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
           ? `<img src="${i.penNote}" style="border-radius:6px;" onerror="this.style.display='none'" />`
           : imgTag(i.url, '')
         }
-        ${i.notes ? `<div style="font-size:9px;color:#475569;margin-top:3px;">${i.notes}</div>` : ''}
+        ${formatNotes(i.notes)}
       </div>
     `).join('');
   }).join('');

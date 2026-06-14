@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 
 const COLORS = [
   '#ef4444', '#f97316', '#eab308', '#22c55e',
-  '#3b82f6', '#8b5cf6', '#000000', '#ffffff',
+  '#3b82f6', '#8b5cf6', '#ec4899', '#000000', '#ffffff',
 ];
 const TOOLS = [
   { id: 'pen',    label: '✏️', title: 'قلم' },
@@ -13,6 +13,18 @@ const TOOLS = [
   { id: 'eraser', label: '◻',  title: 'ممحاة' },
 ];
 const SIZES = [3, 6, 12, 22];
+const FONT_STYLES = [
+  { id: 'normal',      label: 'A',  title: 'عادي',        css: '' },
+  { id: 'bold',        label: 'B',  title: 'عريض',        css: 'bold ' },
+  { id: 'italic',      label: 'I',  title: 'مائل',        css: 'italic ' },
+  { id: 'bolditalic',  label: 'BI', title: 'عريض مائل',   css: 'bold italic ' },
+];
+const FONT_FAMILIES = [
+  { id: 'Cairo',    label: 'Cairo' },
+  { id: 'Arial',    label: 'Arial' },
+  { id: 'Georgia',  label: 'Georgia' },
+  { id: 'Courier New', label: 'Mono' },
+];
 
 export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], onSave, onClose, onDeleteNote, blankMode = false }) {
   const canvasRef      = useRef(null);
@@ -26,13 +38,15 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
   const pointsRef      = useRef([]);
   const originalIdxRef = useRef(0);
 
-  const [tool, setTool]             = useState('pen');
-  const [color, setColor]           = useState('#ef4444');
-  const [size, setSize]             = useState(6);
-  const [penOnly, setPenOnly]       = useState(false);
-  const [showImport, setShowImport] = useState(false);
-  const [textInput, setTextInput]   = useState(null);
-  const [textVal, setTextVal]       = useState('');
+  const [tool, setTool]               = useState('pen');
+  const [color, setColor]             = useState('#ef4444');
+  const [size, setSize]               = useState(6);
+  const [penOnly, setPenOnly]         = useState(false);
+  const [showImport, setShowImport]   = useState(false);
+  const [textInput, setTextInput]     = useState(null);
+  const [textVal, setTextVal]         = useState('');
+  const [fontStyle, setFontStyle]     = useState('bold');
+  const [fontFamily, setFontFamily]   = useState('Cairo');
   const [, tick] = useState(0);
 
   const saveHistory = useCallback(() => {
@@ -310,10 +324,12 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
     if (textVal.trim()) {
       const ctx      = canvasRef.current.getContext('2d');
       const fontSize = Math.max(16, size * 4);
-      ctx.font          = `bold ${fontSize}px Cairo,Arial,sans-serif`;
+      const fStyle   = FONT_STYLES.find(f => f.id === fontStyle)?.css || 'bold ';
+      const fFamily  = fontFamily || 'Cairo';
+      ctx.font          = `${fStyle}${fontSize}px ${fFamily},Arial,sans-serif`;
       ctx.textBaseline  = 'top';
       ctx.shadowColor   = color === '#ffffff' ? '#000' : 'rgba(255,255,255,0.8)';
-      ctx.shadowBlur    = 3;
+      ctx.shadowBlur    = 4;
       ctx.fillStyle     = color;
       ctx.fillText(textVal, textInput.canvasX, textInput.canvasY);
       ctx.shadowBlur    = 0;
@@ -470,6 +486,38 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
               📥 استيراد <span style={{ background: '#2563eb', color: 'white', borderRadius: 99, fontSize: 10, padding: '1px 5px' }}>{allNotes.length}</span>
             </button>
           )}
+
+          {/* Font style controls — show when text tool active */}
+          {tool === 'text' && (<>
+            <div style={{ width: 1, height: 30, background: '#e2e8f0', flexShrink: 0 }} />
+            <div style={{ display: 'flex', gap: 2 }}>
+              {FONT_STYLES.map(fs => (
+                <button
+                  key={fs.id}
+                  title={fs.title}
+                  onClick={() => setFontStyle(fs.id)}
+                  style={{
+                    ...btnBase,
+                    width: 32, height: 32, borderRadius: 6,
+                    border: `2px solid ${fontStyle === fs.id ? '#7c3aed' : '#e2e8f0'}`,
+                    background: fontStyle === fs.id ? '#ede9fe' : 'white',
+                    fontSize: 12, fontWeight: 900,
+                    color: fontStyle === fs.id ? '#7c3aed' : '#64748b',
+                    fontStyle: fs.id.includes('italic') ? 'italic' : 'normal',
+                    fontFamily: 'Cairo,sans-serif',
+                  }}
+                >{fs.label}</button>
+              ))}
+            </div>
+            <div style={{ width: 1, height: 30, background: '#e2e8f0', flexShrink: 0 }} />
+            <select
+              value={fontFamily}
+              onChange={e => setFontFamily(e.target.value)}
+              style={{ border: '1.5px solid #e2e8f0', borderRadius: 6, padding: '4px 8px', fontSize: 11, fontFamily: 'Cairo,sans-serif', background: 'white', color: '#334155', cursor: 'pointer', outline: 'none' }}
+            >
+              {FONT_FAMILIES.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
+            </select>
+          </>)}
 
           {/* Active tool indicator */}
           <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#64748b', fontFamily: 'Cairo,sans-serif' }}>

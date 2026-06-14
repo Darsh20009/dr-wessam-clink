@@ -87,18 +87,163 @@ const DEFAULT_TTT = {
 const statusMap = { paid: 'badge-success', partial: 'badge-warning', overdue: 'badge-danger', pending: 'badge-gray' };
 const statusLabel = { paid: 'مدفوع', partial: 'جزئي', overdue: 'متأخر', pending: 'معلق' };
 
-function ImgNote({ initialNote, onSave }) {
+function RichNoteEditor({ initialNote, onSave }) {
   const [val, setVal] = React.useState(initialNote || '');
+  const taRef = React.useRef(null);
   React.useEffect(() => { setVal(initialNote || ''); }, [initialNote]);
+
+  const insertBullet = () => {
+    const ta = taRef.current;
+    if (!ta) return;
+    const s = ta.selectionStart;
+    const lineStart = val.lastIndexOf('\n', s - 1) + 1;
+    const linePrefix = val.substring(lineStart, s);
+    const insert = linePrefix.length === 0 ? '• ' : '\n• ';
+    const newVal = val.substring(0, s) + insert + val.substring(ta.selectionEnd);
+    setVal(newVal);
+    const np = s + insert.length;
+    requestAnimationFrame(() => { ta.setSelectionRange(np, np); ta.focus(); });
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      const ta = taRef.current;
+      const s = ta.selectionStart;
+      const lineStart = val.lastIndexOf('\n', s - 1) + 1;
+      const currentLine = val.substring(lineStart, s);
+      if (/^\s*[•\-]\s/.test(currentLine)) {
+        e.preventDefault();
+        const newVal = val.substring(0, s) + '\n• ' + val.substring(ta.selectionEnd);
+        setVal(newVal);
+        const np = s + 3;
+        requestAnimationFrame(() => { ta.setSelectionRange(np, np); });
+      }
+    }
+  };
+
   return (
-    <textarea
-      rows={2}
-      value={val}
-      onChange={e => setVal(e.target.value)}
-      onBlur={() => { if (val !== (initialNote || '')) onSave(val); }}
-      placeholder="ملاحظة..."
-      style={{ width: '100%', fontSize: 10, border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 5px', resize: 'none', fontFamily: 'inherit', direction: 'rtl', boxSizing: 'border-box', marginTop: 4, color: '#475569' }}
-    />
+    <div style={{ marginTop: 4 }}>
+      <div style={{ display: 'flex', gap: 3, marginBottom: 2 }}>
+        <button
+          type="button"
+          onMouseDown={e => { e.preventDefault(); insertBullet(); }}
+          style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, padding: '1px 7px', fontSize: 10, cursor: 'pointer', color: '#475569', fontFamily: 'Cairo,sans-serif', lineHeight: 1.6 }}
+          title="إضافة نقطة"
+        >• نقطة</button>
+      </div>
+      <textarea
+        ref={taRef}
+        rows={2}
+        value={val}
+        onChange={e => setVal(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={() => { if (val !== (initialNote || '')) onSave(val); }}
+        placeholder="ملاحظة... (• نقطة للقائمة)"
+        style={{ width: '100%', fontSize: 10, border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 5px', resize: 'none', fontFamily: 'inherit', direction: 'rtl', boxSizing: 'border-box', color: '#475569' }}
+      />
+    </div>
+  );
+}
+
+function ImageLightbox({ item, onClose }) {
+  const [showAnnotated, setShowAnnotated] = React.useState(true);
+  const url      = typeof item === 'string' ? item : item.url;
+  const penNote  = typeof item === 'string' ? null : item.penNote;
+  const notes    = typeof item === 'string' ? null : item.notes;
+  const label    = typeof item === 'string' ? 'صورة' : (item.label || 'صورة');
+  const displaySrc = showAnnotated && penNote ? penNote : url;
+
+  const renderedNotes = React.useMemo(() => {
+    if (!notes?.trim()) return null;
+    const lines = notes.split('\n');
+    const elements = [];
+    let bullets = [];
+    const flushBullets = (key) => {
+      if (!bullets.length) return;
+      elements.push(
+        <ul key={key} style={{ margin: '6px 0', paddingRight: 16, paddingLeft: 0, listStyle: 'none' }}>
+          {bullets.map((b, i) => (
+            <li key={i} style={{ fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, marginBottom: 3, display: 'flex', alignItems: 'flex-start', gap: 8, fontFamily: 'Cairo,sans-serif' }}>
+              <span style={{ color: '#60a5fa', fontWeight: 900, flexShrink: 0, marginTop: 3, fontSize: 10 }}>◆</span>
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
+      );
+      bullets = [];
+    };
+    lines.forEach((line, i) => {
+      const t = line.trimStart();
+      if (t.startsWith('•') || t.startsWith('-') || t.startsWith('*')) {
+        bullets.push(t.replace(/^[•\-*]\s*/, ''));
+      } else {
+        flushBullets(`ul-${i}`);
+        if (t) {
+          elements.push(<p key={i} style={{ margin: '4px 0', fontSize: 13, color: '#cbd5e1', lineHeight: 1.8, fontFamily: 'Cairo,sans-serif' }}>{line}</p>);
+        } else {
+          elements.push(<div key={i} style={{ height: 6 }} />);
+        }
+      }
+    });
+    flushBullets('ul-end');
+    return elements;
+  }, [notes]);
+
+  React.useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  const hasNotes = renderedNotes && renderedNotes.length > 0;
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.97)', zIndex: 99999, display: 'flex', flexDirection: 'column', direction: 'rtl' }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      {/* Top Bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(14px)', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+        <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: 34, height: 34, cursor: 'pointer', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0, transition: 'background 0.15s' }}>×</button>
+        {penNote && (
+          <button
+            onClick={() => setShowAnnotated(v => !v)}
+            style={{ background: showAnnotated ? '#2563eb' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, padding: '5px 14px', color: 'white', fontFamily: 'Cairo,sans-serif', fontSize: 12, cursor: 'pointer', fontWeight: 700, flexShrink: 0, transition: 'all 0.2s' }}
+          >
+            {showAnnotated ? '✎ النوت' : '🖼 الأصلية'}
+          </button>
+        )}
+        {penNote && <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Cairo,sans-serif' }}>اضغط للتبديل بين الصورة الأصلية والملاحظة</span>}
+        <div style={{ flex: 1 }} />
+        <span style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Cairo,sans-serif', fontSize: 13, fontWeight: 700 }}>{label}</span>
+      </div>
+
+      {/* Main Area */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        {/* Notes side panel */}
+        {hasNotes && (
+          <div style={{ width: 250, minWidth: 200, background: 'rgba(15,23,42,0.92)', borderLeft: '1px solid rgba(255,255,255,0.07)', overflowY: 'auto', padding: '14px 12px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <span style={{ fontSize: 15 }}>📝</span>
+              <span style={{ color: '#93c5fd', fontFamily: 'Cairo,sans-serif', fontSize: 13, fontWeight: 800 }}>الملاحظات الطبية</span>
+            </div>
+            <div>{renderedNotes}</div>
+          </div>
+        )}
+        {/* Image area */}
+        <div
+          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, overflow: 'hidden' }}
+          onClick={onClose}
+        >
+          <img
+            src={displaySrc}
+            alt={label}
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 10, boxShadow: '0 8px 60px rgba(0,0,0,0.7)', transition: 'opacity 0.25s' }}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -115,15 +260,30 @@ function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, deleteImg,
           {slotImages.map(img => (
             <div key={img._id} style={{ width: 110 }}>
               <div style={{ position: 'relative' }}>
-                <img src={img.url} alt={slotLabel} style={{ width: 110, height: 82, objectFit: 'cover', borderRadius: 8, border: '1.5px solid #e2e8f0', cursor: 'pointer', display: 'block' }} onClick={() => openLightbox(img.url)} />
-                <button onClick={() => openLightbox(img.url)} style={{ position: 'absolute', top: 3, left: 3, background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 4, padding: '2px 4px', cursor: 'pointer', color: 'white', lineHeight: 1 }}><FiMaximize2 size={10}/></button>
+                <img
+                  src={img.penNote || img.url}
+                  alt={slotLabel}
+                  style={{ width: 110, height: 82, objectFit: 'cover', borderRadius: 8, border: img.penNote ? '2px solid #2563eb' : '1.5px solid #e2e8f0', cursor: 'pointer', display: 'block' }}
+                  onClick={() => openLightbox({ url: img.url, penNote: img.penNote, notes: img.notes, label: slotLabel })}
+                />
+                <button
+                  onClick={() => openLightbox({ url: img.url, penNote: img.penNote, notes: img.notes, label: slotLabel })}
+                  style={{ position: 'absolute', top: 3, left: 3, background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: 4, padding: '2px 5px', cursor: 'pointer', color: 'white', lineHeight: 1, display: 'flex', alignItems: 'center', gap: 3 }}
+                >
+                  <FiMaximize2 size={10}/>
+                </button>
+                {img.penNote && (
+                  <div style={{ position: 'absolute', bottom: 3, right: 3, background: '#2563eb', borderRadius: 3, padding: '1px 5px', fontSize: 9, color: 'white', fontFamily: 'Cairo,sans-serif', fontWeight: 700 }}>✎</div>
+                )}
               </div>
-              <ImgNote
+              <RichNoteEditor
                 initialNote={img.notes || ''}
                 onSave={val => patchImage(cat, img._id, { notes: val })}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                <button onClick={() => onPenClick && onPenClick(cat, img._id, img.url, img.penNote)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: img.penNote ? '#2563eb' : '#94a3b8' }} title={img.penNote ? 'تعديل نوت القلم' : 'إضافة نوت القلم'}><FiEdit3 size={12}/></button>
+                <button onClick={() => onPenClick && onPenClick(cat, img._id, img.url, img.penNote)} style={{ background: img.penNote ? '#dbeafe' : 'none', border: img.penNote ? '1px solid #bfdbfe' : 'none', borderRadius: 4, cursor: 'pointer', padding: '2px 5px', color: img.penNote ? '#2563eb' : '#94a3b8', display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, fontFamily: 'Cairo,sans-serif' }} title={img.penNote ? 'تعديل النوت' : 'رسم على الصورة'}>
+                  <FiEdit3 size={10}/>{img.penNote ? 'نوت' : ''}
+                </button>
                 <button onClick={() => deleteImg(cat, img._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#ef4444' }}><FiTrash2 size={12}/></button>
               </div>
             </div>
@@ -139,7 +299,7 @@ function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, deleteImg,
   );
 }
 
-function XraySlot({ xrayType, xrayLabel, xrays, triggerUpload, deleteImg, openLightbox }) {
+function XraySlot({ xrayType, xrayLabel, xrays, triggerUpload, deleteImg, patchImage, openLightbox, onPenClick }) {
   const slotItems = (xrays || []).filter(x => x.type === xrayType);
   return (
     <div style={{ border: '1.5px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', background: 'white' }}>
@@ -150,13 +310,33 @@ function XraySlot({ xrayType, xrayLabel, xrays, triggerUpload, deleteImg, openLi
       {slotItems.length > 0 && (
         <div style={{ padding: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {slotItems.map(x => (
-            <div key={x._id} style={{ width: 120 }}>
+            <div key={x._id} style={{ width: 130 }}>
               <div style={{ position: 'relative' }}>
-                <img src={x.url} alt={xrayLabel} style={{ width: 120, height: 90, objectFit: 'cover', borderRadius: 8, cursor: 'pointer', background: '#0f172a', display: 'block', border: '1px solid #1e293b' }} onClick={() => openLightbox(x.url)} />
-                <button onClick={() => openLightbox(x.url)} style={{ position: 'absolute', top: 3, left: 3, background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: 4, padding: '2px 4px', cursor: 'pointer', color: 'white', lineHeight: 1 }}><FiMaximize2 size={10}/></button>
+                <img
+                  src={x.penNote || x.url}
+                  alt={xrayLabel}
+                  style={{ width: 130, height: 97, objectFit: 'cover', borderRadius: 8, cursor: 'pointer', background: '#0f172a', display: 'block', border: x.penNote ? '2px solid #2563eb' : '1px solid #1e293b' }}
+                  onClick={() => openLightbox({ url: x.url, penNote: x.penNote, notes: x.notes, label: xrayLabel })}
+                />
+                <button
+                  onClick={() => openLightbox({ url: x.url, penNote: x.penNote, notes: x.notes, label: xrayLabel })}
+                  style={{ position: 'absolute', top: 3, left: 3, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: 4, padding: '2px 5px', cursor: 'pointer', color: 'white', lineHeight: 1 }}
+                ><FiMaximize2 size={10}/></button>
+                {x.penNote && (
+                  <div style={{ position: 'absolute', bottom: 3, right: 3, background: '#2563eb', borderRadius: 3, padding: '1px 5px', fontSize: 9, color: 'white', fontFamily: 'Cairo,sans-serif', fontWeight: 700 }}>✎ نوت</div>
+                )}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, padding: '0 2px' }}>
-                <span style={{ fontSize: 11, color: '#94a3b8' }}>{x.uploadedAt ? format(new Date(x.uploadedAt), 'd/M/yy') : ''}</span>
+              <RichNoteEditor
+                initialNote={x.notes || ''}
+                onSave={val => patchImage && patchImage('xray', x._id, { notes: val })}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, padding: '0 2px' }}>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>{x.uploadedAt ? format(new Date(x.uploadedAt), 'd/M/yy') : ''}</span>
+                  <button onClick={() => onPenClick && onPenClick('xray', x._id, x.url, x.penNote)} style={{ background: x.penNote ? '#dbeafe' : 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 4, cursor: 'pointer', padding: '1px 5px', color: x.penNote ? '#2563eb' : '#64748b', display: 'flex', alignItems: 'center', gap: 2, fontSize: 10 }} title={x.penNote ? 'تعديل النوت' : 'رسم على الأشعة'}>
+                    <FiEdit3 size={10}/>
+                  </button>
+                </div>
                 <button onClick={() => deleteImg('xray', x._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><FiTrash2 size={12}/></button>
               </div>
             </div>
@@ -555,13 +735,8 @@ export default function PatientFile() {
       <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileUpload} />
       <input ref={sessionFileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleSessionFileUpload} />
 
-      {/* Lightbox */}
-      {lightbox && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setLightbox(null)}>
-          <img src={lightbox} alt="صورة" style={{ maxWidth: '95vw', maxHeight: '92vh', objectFit: 'contain', borderRadius: 12 }} />
-          <button onClick={() => setLightbox(null)} style={{ position: 'absolute', top: 20, left: 20, background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 38, height: 38, cursor: 'pointer', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiX size={18}/></button>
-        </div>
-      )}
+      {/* Enhanced Lightbox */}
+      {lightbox && <ImageLightbox item={lightbox} onClose={() => setLightbox(null)} />}
 
       {/* ── Session Detail Full-Page Overlay ── */}
       {selectedSession && (
@@ -659,8 +834,8 @@ export default function PatientFile() {
                           {slotImgs.map(img => (
                             <div key={img._id} style={{ width: 80 }}>
                               <div style={{ position: 'relative' }}>
-                                <img src={img.url} alt={slot.label} style={{ width: 80, height: 60, objectFit: 'cover', borderRadius: 6, border: '1px solid #e2e8f0', display: 'block', cursor: 'pointer' }} onClick={() => setLightbox(img.url)} />
-                                <button onClick={() => setLightbox(img.url)} style={{ position: 'absolute', top: 2, left: 2, background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: 3, padding: '1px 3px', cursor: 'pointer', color: 'white' }}><FiMaximize2 size={9}/></button>
+                                <img src={img.penNote || img.url} alt={slot.label} style={{ width: 80, height: 60, objectFit: 'cover', borderRadius: 6, border: img.penNote ? '2px solid #2563eb' : '1px solid #e2e8f0', display: 'block', cursor: 'pointer' }} onClick={() => setLightbox({ url: img.url, penNote: img.penNote, notes: img.notes, label: slot.label })} />
+                                <button onClick={() => setLightbox({ url: img.url, penNote: img.penNote, notes: img.notes, label: slot.label })} style={{ position: 'absolute', top: 2, left: 2, background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: 3, padding: '1px 3px', cursor: 'pointer', color: 'white' }}><FiMaximize2 size={9}/></button>
                               </div>
                               {img.notes && <div style={{ fontSize: 9, color: '#64748b', marginTop: 2, lineHeight: 1.3 }}>{img.notes}</div>}
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
@@ -871,7 +1046,7 @@ export default function PatientFile() {
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, paddingRight: 40 }}>
                       {s.images.map((img, idx) => (
                         <div key={img._id || idx} style={{ borderRadius: 10, overflow: 'hidden', border: `1.5px solid ${img.penNote ? '#bfdbfe' : '#e2e8f0'}`, background: '#f8fafc', width: 120, flexShrink: 0 }}>
-                          <img src={img.url} alt={img.type} style={{ width: 120, height: 90, objectFit: 'cover', display: 'block', cursor: 'pointer' }} onClick={() => setLightbox(img.url)} />
+                          <img src={img.penNote || img.url} alt={img.type} style={{ width: 120, height: 90, objectFit: 'cover', display: 'block', cursor: 'pointer' }} onClick={() => setLightbox({ url: img.url, penNote: img.penNote, notes: img.notes, label: img.type?.replace(/_/g, ' ') || 'صورة' })} />
                           <div style={{ padding: '4px 6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', fontFamily: 'monospace, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.type?.replace(/_/g, ' ') || 'صورة'}</div>
@@ -898,7 +1073,7 @@ export default function PatientFile() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
             {XRAY_TYPES.map(x => (
-              <XraySlot key={x.type} xrayType={x.type} xrayLabel={x.label} xrays={patient.xrays} triggerUpload={triggerUpload} deleteImg={deletePatientImage} openLightbox={setLightbox} />
+              <XraySlot key={x.type} xrayType={x.type} xrayLabel={x.label} xrays={patient.xrays} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} />
             ))}
           </div>
         </div>
