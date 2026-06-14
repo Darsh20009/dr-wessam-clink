@@ -1,6 +1,0 @@
-📁 Client dist path: /home/runner/workspace/client/dist
-📄 index.html exists: [33mfalse[39m
-⚠️  client/dist not found — running API-only mode (run the frontend build first)
-🚀 Server running on 0.0.0.0:3001 [development]
-✅ Connected to MongoDB
-✅ Dropped unique phone index on patients
