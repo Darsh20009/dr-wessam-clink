@@ -171,11 +171,24 @@ async function toBase64(url, quality = 0.96) {
         c.height = img.naturalHeight;
         const ctx = c.getContext('2d');
         ctx.drawImage(img, 0, 0);
-        resolve(c.toDataURL('image/jpeg', quality));
+        const ratio = img.naturalWidth > 0 ? img.naturalHeight / img.naturalWidth : 0.75;
+        resolve({ data: c.toDataURL('image/jpeg', quality), ratio });
       } catch { resolve(null); }
     };
     img.onerror = () => resolve(null);
     img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  });
+}
+
+async function getDimsFromBase64(dataUrl) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const ratio = img.naturalWidth > 0 ? img.naturalHeight / img.naturalWidth : 0.75;
+      resolve({ data: dataUrl, ratio });
+    };
+    img.onerror = () => resolve({ data: dataUrl, ratio: 0.75 });
+    img.src = dataUrl;
   });
 }
 
@@ -233,54 +246,63 @@ async function buildImageGrid(slide, images, startY, totalW, totalH, isRtl) {
   const valid = images.filter(i => i.base64);
   if (!valid.length) return;
 
-  const hasNotes = valid.some(i => i.notes?.trim());
-  const noteH    = hasNotes ? 0.42 : 0;
-
-  const cols   = Math.min(valid.length, 3);
-  const rows   = Math.ceil(valid.length / cols);
-  const pad    = 0.08;
-  const cellW  = totalW / cols;
-  const cellH  = totalH / rows;
-  const imgH   = cellH - noteH - pad * 2 - 0.22;   // 0.22 for type label
+  const cols  = Math.min(valid.length, 3);
+  const rows  = Math.ceil(valid.length / cols);
+  const pad   = 0.1;
+  const cellW = totalW / cols;
+  const cellH = totalH / rows;
 
   for (let i = 0; i < valid.length; i++) {
-    const { base64, label, notes } = valid[i];
+    const { base64, ratio = 0.75, label, notes } = valid[i];
     const col = i % cols;
     const row = Math.floor(i / cols);
     const x   = 0.15 + col * cellW + pad;
     const y   = startY + row * cellH + pad;
     const iW  = cellW - pad * 2;
 
-    // Image frame background
-    slide.addShape('rect', { x, y, w: iW, h: imgH, fill: { color: C.lgray }, line: { color: C.silver, width: 0.5 } });
+    // Dynamic note height based on text length
+    const noteText = stripHtml(notes || '');
+    const noteH    = noteText ? Math.min(0.9, 0.18 + Math.ceil(noteText.length / 55) * 0.2) : 0;
+    const labelH   = label ? 0.24 : 0;
+    const imgAreaH = Math.max(0.5, cellH - noteH - labelH - pad * 2);
+
+    // ── Maintain natural aspect ratio (contain) ──────────────
+    // ratio = naturalHeight / naturalWidth
+    let dispW = iW;
+    let dispH = iW * ratio;
+    if (dispH > imgAreaH) {
+      dispH = imgAreaH;
+      dispW = imgAreaH / ratio;
+    }
+    const imgX = x + (iW - dispW) / 2;
+    const imgY = y + (imgAreaH - dispH) / 2;
+
+    // Frame background
+    slide.addShape('rect', { x, y, w: iW, h: imgAreaH, fill: { color: C.lgray }, line: { color: C.silver, width: 0.5 } });
 
     try {
-      slide.addImage({
-        data: base64,
-        x: x + 0.02, y: y + 0.02, w: iW - 0.04, h: imgH - 0.04,
-        sizing: { type: 'contain', w: iW - 0.04, h: imgH - 0.04 },
-      });
+      slide.addImage({ data: base64, x: imgX, y: imgY, w: dispW, h: dispH });
     } catch {}
 
     // Type label
     if (label) {
-      slide.addShape('rect', { x, y: y + imgH, w: iW, h: 0.22, fill: { color: C.navy } });
+      slide.addShape('rect', { x, y: y + imgAreaH, w: iW, h: labelH, fill: { color: C.navy } });
       slide.addText(label, {
-        x, y: y + imgH + 0.02, w: iW, h: 0.18,
+        x, y: y + imgAreaH + 0.02, w: iW, h: labelH - 0.04,
         fontSize: 8, bold: true, color: C.white, fontFace: 'Calibri',
         align: 'center',
       });
     }
 
     // Notes text
-    if (notes?.trim()) {
-      const noteY = y + imgH + 0.22;
-      slide.addShape('rect', { x, y: noteY, w: iW, h: noteH - 0.04, fill: { color: 'fffbeb' }, line: { color: 'fde68a', width: 0.4 } });
-      slide.addText(stripHtml(notes), {
-        x: x + 0.04, y: noteY + 0.03, w: iW - 0.08, h: noteH - 0.1,
-        fontSize: 7.5, color: '78350f', fontFace: 'Calibri',
+    if (noteText) {
+      const noteY = y + imgAreaH + labelH;
+      slide.addShape('rect', { x, y: noteY, w: iW, h: noteH, fill: { color: 'fffbeb' }, line: { color: 'fde68a', width: 0.4 } });
+      slide.addText(noteText, {
+        x: x + 0.05, y: noteY + 0.03, w: iW - 0.1, h: noteH - 0.05,
+        fontSize: 7, color: '78350f', fontFace: 'Calibri',
         align: isRtl ? 'right' : 'left', rtlMode: isRtl,
-        wrap: true, valign: 'top',
+        wrap: true, valign: 'top', shrinkText: true,
       });
     }
   }
@@ -439,9 +461,8 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
         });
         y += 0.28;
 
-        // Value
-        const lines = Math.min(Math.ceil(text.length / 100) + 1, 3);
-        const valH  = lines * 0.26;
+        // Value — dynamic height, no hard cap
+        const valH = Math.min(2.5, Math.max(0.4, Math.ceil(text.length / 80) * 0.3 + 0.1));
         s.addShape('rect', { x: 0.3, y, w: 12.6, h: valH, fill: { color: C.offwhite }, line: { color: C.silver, width: 0.3 } });
         s.addText(text, {
           x: 0.45, y: y + 0.03, w: 12.3, h: valH - 0.05,
@@ -458,11 +479,17 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
   ══════════════════════════════════════ */
   const photoSlide = async (imgArr, sectionTitle, category) => {
     const imgs = await Promise.all(
-      imgArr.map(async img => ({
-        base64: img.penNote || await toBase64(img.url),
-        label:  slotLabel(img.type, category, lang),
-        notes:  img.notes || '',
-      }))
+      imgArr.map(async img => {
+        const result = img.penNote
+          ? await getDimsFromBase64(img.penNote)
+          : await toBase64(img.url);
+        return {
+          base64: result?.data || null,
+          ratio:  result?.ratio || 0.75,
+          label:  slotLabel(img.type, category, lang),
+          notes:  img.notes || '',
+        };
+      })
     );
     const valid = imgs.filter(i => i.base64);
     if (!valid.length) return;
@@ -517,7 +544,7 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
           align, rtlMode: rtl,
         });
         y += 0.26;
-        const valH = Math.min(0.62, Math.ceil(text.length / 110) * 0.28 + 0.1);
+        const valH = Math.min(2.5, Math.max(0.4, Math.ceil(text.length / 80) * 0.3 + 0.1));
         s.addShape('rect', { x: 0.3, y, w: 12.6, h: valH, fill: { color: C.offwhite }, line: { color: C.silver, width: 0.3 } });
         s.addText(text, {
           x: 0.45, y: y + 0.03, w: 12.3, h: valH - 0.05,
@@ -530,11 +557,17 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
       /* ── Session images slide ── */
       if (o.includeSessionImages && (session.images || []).length) {
         const sessionImgs = await Promise.all(
-          (session.images || []).map(async img => ({
-            base64: img.penNote || await toBase64(img.url),
-            label:  slotLabel(img.type, 'session', lang),
-            notes:  img.notes || '',
-          }))
+          (session.images || []).map(async img => {
+            const result = img.penNote
+              ? await getDimsFromBase64(img.penNote)
+              : await toBase64(img.url);
+            return {
+              base64: result?.data || null,
+              ratio:  result?.ratio || 0.75,
+              label:  slotLabel(img.type, 'session', lang),
+              notes:  img.notes || '',
+            };
+          })
         );
         const valid = sessionImgs.filter(i => i.base64);
         if (valid.length) {
