@@ -427,10 +427,14 @@ export default function DrawingCanvas({ imageUrl, existingNote, allNotes = [], o
           <div style={{ width: 1, height: 30, background: '#e2e8f0', flexShrink: 0 }} />
 
           {/* Colors */}
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
             {COLORS.map(c => (
-              <button key={c} onClick={() => setColor(c)} style={{ ...btnBase, width: 26, height: 26, borderRadius: '50%', background: c, border: color === c ? '3px solid #2563eb' : '1.5px solid #cbd5e1', transform: color === c ? 'scale(1.2)' : 'scale(1)' }} />
+              <button key={c} onClick={() => setColor(c)} style={{ ...btnBase, width: 26, height: 26, borderRadius: '50%', background: c, border: color === c ? '3px solid #2563eb' : c === '#ffffff' ? '1.5px solid #cbd5e1' : '1.5px solid transparent', boxShadow: c === '#ffffff' ? 'inset 0 0 0 1px #e2e8f0' : 'none', transform: color === c ? 'scale(1.2)' : 'scale(1)', transition: 'transform 0.12s' }} />
             ))}
+            {/* Full spectrum picker */}
+            <label title="اختر أي لون" style={{ ...btnBase, width: 26, height: 26, borderRadius: '50%', border: '1.5px solid #cbd5e1', background: 'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+              <input type="color" value={color} onChange={e => setColor(e.target.value)} style={{ opacity: 0, position: 'absolute', width: 1, height: 1, pointerEvents: 'none' }} />
+            </label>
           </div>
 
           <div style={{ width: 1, height: 30, background: '#e2e8f0', flexShrink: 0 }} />

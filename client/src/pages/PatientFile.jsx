@@ -90,7 +90,7 @@ const statusLabel = { paid: 'مدفوع', partial: 'جزئي', overdue: 'متأ�
 const NOTE_TEXT_COLORS = [
   { c: '#334155', l: 'افتراضي' }, { c: '#dc2626', l: 'أحمر' }, { c: '#ea580c', l: 'برتقالي' },
   { c: '#d97706', l: 'ذهبي' }, { c: '#16a34a', l: 'أخضر' }, { c: '#2563eb', l: 'أزرق' },
-  { c: '#7c3aed', l: 'بنفسجي' }, { c: '#db2777', l: 'وردي' },
+  { c: '#7c3aed', l: 'بنفسجي' }, { c: '#db2777', l: 'وردي' }, { c: '#ffffff', l: 'أبيض' },
 ];
 const NOTE_HL_COLORS = [
   { c: 'transparent', l: 'بدون' }, { c: '#fef9c3', l: 'أصفر' }, { c: '#dcfce7', l: 'أخضر' },
@@ -171,8 +171,11 @@ function RichNoteEditor({ initialNote, onSave }) {
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#334155', lineHeight: 1 }}>A</span>
                   <span style={{ width: 16, height: 3, borderRadius: 2, background: '#dc2626', display: 'block' }} />
                 </button>
-                {showClr && <div onMouseDown={e => e.preventDefault()} style={{ position: 'absolute', top: 36, right: 0, background: 'white', border: '1.5px solid #e2e8f0', borderRadius: 12, padding: 10, display: 'flex', flexWrap: 'wrap', gap: 6, zIndex: 1100, boxShadow: '0 8px 28px rgba(0,0,0,0.18)', width: 152 }}>
-                  {NOTE_TEXT_COLORS.map(({ c, l }) => <button key={c} onMouseDown={e => { e.preventDefault(); exec('foreColor', c); }} title={l} style={{ width: 24, height: 24, borderRadius: 6, background: c, border: '2px solid #e2e8f0', cursor: 'pointer' }} />)}
+                {showClr && <div onMouseDown={e => e.preventDefault()} style={{ position: 'absolute', top: 36, right: 0, background: 'white', border: '1.5px solid #e2e8f0', borderRadius: 12, padding: 10, display: 'flex', flexWrap: 'wrap', gap: 6, zIndex: 1100, boxShadow: '0 8px 28px rgba(0,0,0,0.18)', width: 166 }}>
+                  {NOTE_TEXT_COLORS.map(({ c, l }) => <button key={c} onMouseDown={e => { e.preventDefault(); exec('foreColor', c); }} title={l} style={{ width: 24, height: 24, borderRadius: 6, background: c, border: c === '#ffffff' ? '2px solid #cbd5e1' : '2px solid #e2e8f0', cursor: 'pointer' }} />)}
+                  <label title="اختر أي لون" style={{ width: 24, height: 24, borderRadius: 6, background: 'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)', border: '2px solid #e2e8f0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+                    <input type="color" onMouseDown={e => e.stopPropagation()} onChange={e => { restoreSel(); document.execCommand('foreColor', false, e.target.value); editorRef.current?.focus(); }} style={{ opacity: 0, position: 'absolute', width: 1, height: 1, pointerEvents: 'none' }} />
+                  </label>
                 </div>}
               </div>
               <div style={{ position: 'relative' }}>
