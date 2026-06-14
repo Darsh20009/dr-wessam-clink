@@ -228,60 +228,97 @@ function addInfoRow(slide, label, value, y, isRtl, shade) {
   }
 }
 
-/* ─── Image grid with notes below each image ─────────────── */
-async function buildImageGrid(slide, images, startY, totalW, totalH, isRtl) {
-  const valid = images.filter(i => i.base64);
-  if (!valid.length) return;
+/* ─── One image per slide — maximum quality ──────────────── */
+// PPTX WIDE = 13.33" × 7.5"
+const SLIDE_W = 13.33;
+const SLIDE_H = 7.5;
+const HEADER_H = 0.71;  // header bar height
+const TITLE_H  = 0.5;   // section title bar height
+const CONTENT_TOP = HEADER_H + TITLE_H;  // 1.21"
 
-  const hasNotes = valid.some(i => i.notes?.trim());
-  const noteH    = hasNotes ? 0.42 : 0;
+async function addSingleImageSlides(pptx, images, sectionTitle, clinicName, clinicSub, isRtl) {
+  for (const imgObj of images) {
+    const { base64, label, notes } = imgObj;
+    if (!base64) continue;
 
-  const cols   = Math.min(valid.length, 3);
-  const rows   = Math.ceil(valid.length / cols);
-  const pad    = 0.08;
-  const cellW  = totalW / cols;
-  const cellH  = totalH / rows;
-  const imgH   = cellH - noteH - pad * 2 - 0.22;   // 0.22 for type label
+    const noteText   = stripHtml(notes || '');
+    const hasNotes   = noteText.length > 0;
+    // Estimate lines needed for notes (approx 90 chars per line at fontSize 10)
+    const noteLines  = hasNotes ? Math.ceil(noteText.length / 90) : 0;
+    const noteH      = hasNotes ? Math.max(0.45, noteLines * 0.28 + 0.16) : 0;
+    const labelBarH  = label ? 0.3 : 0;
 
-  for (let i = 0; i < valid.length; i++) {
-    const { base64, label, notes } = valid[i];
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    const x   = 0.15 + col * cellW + pad;
-    const y   = startY + row * cellH + pad;
-    const iW  = cellW - pad * 2;
+    // Usable image height on this slide
+    const margin     = 0.15;
+    const availH     = SLIDE_H - CONTENT_TOP - noteH - labelBarH - margin * 2;
+    const availW     = SLIDE_W - margin * 2;
+    const imgX       = margin;
+    const imgY       = CONTENT_TOP + margin;
 
-    // Image frame background
-    slide.addShape('rect', { x, y, w: iW, h: imgH, fill: { color: C.lgray }, line: { color: C.silver, width: 0.5 } });
+    /* ── Image slide ── */
+    const s = pptx.addSlide();
+    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+    addHeaderBar(s, clinicName, clinicSub, isRtl);
+    addSectionTitle(s, sectionTitle, isRtl);
 
+    // Image — full width, maximum height
+    s.addShape('rect', {
+      x: imgX, y: imgY, w: availW, h: availH,
+      fill: { color: '0a0a0a' },
+    });
     try {
-      slide.addImage({
+      s.addImage({
         data: base64,
-        x: x + 0.02, y: y + 0.02, w: iW - 0.04, h: imgH - 0.04,
-        sizing: { type: 'contain', w: iW - 0.04, h: imgH - 0.04 },
+        x: imgX, y: imgY, w: availW, h: availH,
+        sizing: { type: 'contain', w: availW, h: availH },
       });
     } catch {}
 
-    // Type label
+    // Label bar directly below image
     if (label) {
-      slide.addShape('rect', { x, y: y + imgH, w: iW, h: 0.22, fill: { color: C.navy } });
-      slide.addText(label, {
-        x, y: y + imgH + 0.02, w: iW, h: 0.18,
-        fontSize: 8, bold: true, color: C.white, fontFace: 'Calibri',
+      const labelY = imgY + availH;
+      s.addShape('rect', { x: imgX, y: labelY, w: availW, h: labelBarH, fill: { color: C.navy } });
+      s.addText(label, {
+        x: imgX, y: labelY + 0.04, w: availW, h: labelBarH - 0.06,
+        fontSize: 11, bold: true, color: C.white, fontFace: 'Calibri',
         align: 'center',
       });
     }
 
-    // Notes text
-    if (notes?.trim()) {
-      const noteY = y + imgH + 0.22;
-      slide.addShape('rect', { x, y: noteY, w: iW, h: noteH - 0.04, fill: { color: 'fffbeb' }, line: { color: 'fde68a', width: 0.4 } });
-      slide.addText(stripHtml(notes), {
-        x: x + 0.04, y: noteY + 0.03, w: iW - 0.08, h: noteH - 0.1,
-        fontSize: 7.5, color: '78350f', fontFace: 'Calibri',
-        align: isRtl ? 'right' : 'left', rtlMode: isRtl,
-        wrap: true, valign: 'top',
-      });
+    // Notes — on same slide if short, else overflow to next slide
+    if (hasNotes) {
+      const noteFitsOnSlide = noteH <= 1.2 && noteLines <= 4;
+
+      if (noteFitsOnSlide) {
+        const noteY = imgY + availH + labelBarH;
+        s.addShape('rect', {
+          x: imgX, y: noteY, w: availW, h: noteH,
+          fill: { color: 'fffbeb' }, line: { color: 'fde68a', width: 0.5 },
+        });
+        s.addText(noteText, {
+          x: imgX + 0.12, y: noteY + 0.06, w: availW - 0.24, h: noteH - 0.1,
+          fontSize: 10, color: '78350f', fontFace: 'Calibri',
+          align: isRtl ? 'right' : 'left', rtlMode: isRtl,
+          wrap: true, valign: 'top',
+        });
+      } else {
+        // Long notes → dedicated notes slide
+        const ns = pptx.addSlide();
+        ns.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+        addHeaderBar(ns, clinicName, clinicSub, isRtl);
+        addSectionTitle(ns, `${sectionTitle}  —  ${isRtl ? 'ملاحظات' : 'Notes'}: ${label || ''}`, isRtl);
+
+        ns.addShape('rect', {
+          x: 0.3, y: CONTENT_TOP + 0.2, w: SLIDE_W - 0.6, h: SLIDE_H - CONTENT_TOP - 0.5,
+          fill: { color: 'fffbeb' }, line: { color: 'fde68a', width: 0.5 },
+        });
+        ns.addText(noteText, {
+          x: 0.5, y: CONTENT_TOP + 0.3, w: SLIDE_W - 1.0, h: SLIDE_H - CONTENT_TOP - 0.7,
+          fontSize: 12, color: '78350f', fontFace: 'Calibri',
+          align: isRtl ? 'right' : 'left', rtlMode: isRtl,
+          wrap: true, valign: 'top',
+        });
+      }
     }
   }
 }
@@ -454,9 +491,9 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
   }
 
   /* ══════════════════════════════════════
-     Photo helper — one slide per section
+     Photos — one full slide per image
   ══════════════════════════════════════ */
-  const photoSlide = async (imgArr, sectionTitle, category) => {
+  const processPhotoSection = async (imgArr, sectionTitle, category) => {
     const imgs = await Promise.all(
       imgArr.map(async img => ({
         base64: img.penNote || await toBase64(img.url),
@@ -464,23 +501,16 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
         notes:  img.notes || '',
       }))
     );
-    const valid = imgs.filter(i => i.base64);
-    if (!valid.length) return;
-
-    const s = pptx.addSlide();
-    s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
-    addHeaderBar(s, clinicName, clinicSub, isRtl);
-    addSectionTitle(s, `📸  ${sectionTitle}`, isRtl);
-    await buildImageGrid(s, valid, 1.28, 12.9, 6.3, isRtl);
+    await addSingleImageSlides(pptx, imgs, `📸  ${sectionTitle}`, clinicName, clinicSub, isRtl);
   };
 
   if (o.includePhotos) {
     if (o.includeFacePhotos && (patient.faceImages || []).length)
-      await photoSlide(patient.faceImages, t.extraoral, 'face');
+      await processPhotoSection(patient.faceImages, t.extraoral, 'face');
     if (o.includeIntraOralPhotos && (patient.intraOralImages || []).length)
-      await photoSlide(patient.intraOralImages, t.intraoral, 'intraoral');
+      await processPhotoSection(patient.intraOralImages, t.intraoral, 'intraoral');
     if (o.includeXrays && (patient.xrays || []).length)
-      await photoSlide(patient.xrays, t.radiographs, 'xray');
+      await processPhotoSection(patient.xrays, t.radiographs, 'xray');
   }
 
   /* ══════════════════════════════════════
@@ -494,40 +524,57 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
         : '';
       const heading = t.sessionTitle(num, dateStr);
 
-      /* ── Session info slide ── */
-      const s = pptx.addSlide();
-      s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
-      addHeaderBar(s, clinicName, clinicSub, isRtl);
-      addSectionTitle(s, `📋  ${heading}`, isRtl);
-
-      let y = 1.35;
+      /* ── Session info slide (notes + details) ── */
+      // Each field gets its own block; if total content overflows → new slide
       const sFields = [
         [t.sessionNotes, session.notes],
         [t.nextStep,     session.nextStep],
         [t.amountPaid,   session.amountPaid ? `${session.amountPaid} ${t.currency}` : null],
       ].filter(([, v]) => v);
 
+      const addSessionInfoSlide = () => {
+        const s = pptx.addSlide();
+        s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+        addHeaderBar(s, clinicName, clinicSub, isRtl);
+        addSectionTitle(s, `📋  ${heading}`, isRtl);
+        return { s, y: CONTENT_TOP + 0.12 };
+      };
+
+      let { s, y } = addSessionInfoSlide();
+
       sFields.forEach(([lbl, val]) => {
         const text = stripHtml(String(val));
-        if (!text || y > 6.8) return;
-        s.addShape('rect', { x: 0.3, y, w: 12.6, h: 0.24, fill: { color: C.lblue } });
+        if (!text) return;
+
+        const lines  = Math.ceil(text.length / 100);
+        const valH   = Math.max(0.4, lines * 0.3 + 0.12);
+        const blockH = 0.28 + valH + 0.12;
+
+        // Overflow to new slide if needed
+        if (y + blockH > SLIDE_H - 0.2) {
+          ({ s, y } = addSessionInfoSlide());
+        }
+
+        // Label chip
+        s.addShape('rect', { x: 0.3, y, w: 12.6, h: 0.28, fill: { color: C.lblue } });
         s.addText(lbl, {
-          x: 0.4, y: y + 0.03, w: 12.4, h: 0.18,
-          fontSize: 8.5, bold: true, color: C.white, fontFace: 'Calibri',
+          x: 0.4, y: y + 0.04, w: 12.4, h: 0.22,
+          fontSize: 9, bold: true, color: C.white, fontFace: 'Calibri',
           align, rtlMode: rtl,
         });
-        y += 0.26;
-        const valH = Math.min(0.62, Math.ceil(text.length / 110) * 0.28 + 0.1);
+        y += 0.3;
+
+        // Value block
         s.addShape('rect', { x: 0.3, y, w: 12.6, h: valH, fill: { color: C.offwhite }, line: { color: C.silver, width: 0.3 } });
         s.addText(text, {
-          x: 0.45, y: y + 0.03, w: 12.3, h: valH - 0.05,
-          fontSize: 10, color: C.dark, fontFace: 'Calibri',
+          x: 0.45, y: y + 0.05, w: 12.3, h: valH - 0.08,
+          fontSize: 11, color: C.dark, fontFace: 'Calibri',
           align, rtlMode: rtl, wrap: true, valign: 'top',
         });
-        y += valH + 0.1;
+        y += valH + 0.12;
       });
 
-      /* ── Session images slide ── */
+      /* ── Session images — one full slide each ── */
       if (o.includeSessionImages && (session.images || []).length) {
         const sessionImgs = await Promise.all(
           (session.images || []).map(async img => ({
@@ -536,14 +583,11 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
             notes:  img.notes || '',
           }))
         );
-        const valid = sessionImgs.filter(i => i.base64);
-        if (valid.length) {
-          const imgSlide = pptx.addSlide();
-          imgSlide.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
-          addHeaderBar(imgSlide, clinicName, clinicSub, isRtl);
-          addSectionTitle(imgSlide, `📸  ${t.sessionPhotosTitle(num, dateStr)}`, isRtl);
-          await buildImageGrid(imgSlide, valid, 1.28, 12.9, 6.3, isRtl);
-        }
+        await addSingleImageSlides(
+          pptx, sessionImgs,
+          `📸  ${t.sessionPhotosTitle(num, dateStr)}`,
+          clinicName, clinicSub, isRtl
+        );
       }
     }
   }
