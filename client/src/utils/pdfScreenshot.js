@@ -1,37 +1,48 @@
 /**
- * Renders an HTML string in a hidden iframe, screenshots each A4 page
- * with html2canvas, and assembles them into a jsPDF blob.
- * Smart page breaking: scans for whitespace rows near boundaries to avoid mid-text cuts.
+ * Section-aware HTML → PDF conversion.
+ *
+ * Strategy:
+ *   1. Render the full HTML in a hidden iframe.
+ *   2. Capture the entire page as one tall canvas (html2canvas).
+ *   3. Query every `.new-page` element for its exact pixel Y-offset.
+ *   4. Use those Y-offsets as forced page boundaries in the PDF — each
+ *      section starts at the TOP of a fresh PDF page, so nothing inside
+ *      a section is ever cut across a page.
+ *   5. If a single section is taller than one A4 page (e.g. a very long
+ *      TTT table) we split it further but still only at blank/white rows.
  */
 
-function findBestCutRow(imageData, canvasWidth, targetY, canvasHeight, searchWindow = 90) {
+function findBestCutRow(imageData, canvasWidth, targetY, endY, searchWindow = 80) {
   const start = Math.max(0, targetY - searchWindow);
-  const end   = Math.min(canvasHeight - 1, targetY + Math.round(searchWindow * 0.4));
-
-  let bestY     = targetY;
-  let bestScore = -1;
-
+  const end   = Math.min(endY - 1, targetY + Math.round(searchWindow * 0.3));
+  let bestY = targetY, bestScore = -1;
   for (let y = end; y >= start; y--) {
-    const rowStart = y * canvasWidth * 4;
-    let whiteCount = 0;
+    const base = y * canvasWidth * 4;
+    let white = 0;
     for (let x = 0; x < canvasWidth; x++) {
-      const i = rowStart + x * 4;
-      if (imageData.data[i] > 242 && imageData.data[i + 1] > 242 && imageData.data[i + 2] > 242) {
-        whiteCount++;
-      }
+      const i = base + x * 4;
+      if (imageData.data[i] > 240 && imageData.data[i+1] > 240 && imageData.data[i+2] > 240) white++;
     }
-    const score = whiteCount / canvasWidth;
-    if (score > bestScore) {
-      bestScore = score;
-      bestY = y;
-    }
+    const score = white / canvasWidth;
+    if (score > bestScore) { bestScore = score; bestY = y; }
     if (score > 0.98) break;
   }
   return bestY;
 }
 
+function sliceCanvas(src, startY, heightPx, targetPageH) {
+  const c = document.createElement('canvas');
+  c.width  = src.width;
+  c.height = targetPageH;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(src, 0, startY, src.width, heightPx, 0, 0, src.width, heightPx);
+  return c;
+}
+
 export async function htmlToPdfBlob(htmlString, { filename = 'report.pdf', scale = 2 } = {}) {
-  const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
     import('html2canvas'),
     import('jspdf'),
   ]);
@@ -50,62 +61,102 @@ export async function htmlToPdfBlob(htmlString, { filename = 'report.pdf', scale
     iframe.contentDocument.write(htmlString);
     iframe.contentDocument.close();
 
-    await new Promise(r => setTimeout(r, 3000));
+    // Wait for fonts + images inside iframe
+    await new Promise(r => setTimeout(r, 3500));
 
-    const iBody = iframe.contentDocument.body;
-    const fullH = Math.max(iBody.scrollHeight, iBody.offsetHeight, 100);
+    const iDoc  = iframe.contentDocument;
+    const iBody = iDoc.body;
+
+    // Strip UI chrome before measuring / capturing
+    iDoc.querySelectorAll('.print-toolbar, .watermark, .no-print').forEach(el => {
+      el.style.display = 'none';
+    });
+    iBody.style.paddingTop = '0';
+    iBody.style.background = '#fff';
+
+    // Measure full content height
+    const fullH = Math.max(iBody.scrollHeight, iBody.offsetHeight, 200);
     iframe.style.height = fullH + 'px';
+    await new Promise(r => setTimeout(r, 300));
 
-    await new Promise(r => setTimeout(r, 500));
-
-    const canvas = await html2canvas(iBody, {
+    // ── Capture the whole page as one canvas ──
+    const fullCanvas = await html2canvas(iBody, {
       scale,
-      useCORS: true,
-      allowTaint: true,
-      logging: false,
-      width: A4_W_PX,
-      height: fullH,
-      windowWidth: A4_W_PX,
+      useCORS:      true,
+      allowTaint:   true,
+      logging:      false,
+      width:        A4_W_PX,
+      height:       fullH,
+      windowWidth:  A4_W_PX,
       windowHeight: fullH,
       scrollX: 0,
       scrollY: 0,
       backgroundColor: '#ffffff',
+      imageTimeout: 0,
     });
 
-    const pageH    = Math.round(A4_H_PX * scale);
-    const totalH   = canvas.height;
-    const fullCtx  = canvas.getContext('2d');
-    const fullData = fullCtx.getImageData(0, 0, canvas.width, canvas.height);
+    const pageHPx = Math.round(A4_H_PX * scale);   // one A4 page in canvas pixels
+    const totalH  = fullCanvas.height;
+
+    // ── Compute section boundaries from .new-page elements ──
+    // We compute cumulative offsetTop from iBody.
+    const getTopFromBody = (el) => {
+      let top = 0;
+      let node = el;
+      while (node && node !== iBody) {
+        top  += node.offsetTop;
+        node  = node.offsetParent;
+      }
+      return Math.round(top * scale);
+    };
+
+    // Collect cut points: start of every .new-page div
+    const sectionEls  = Array.from(iDoc.querySelectorAll('.new-page'));
+    const cutSet = new Set([0]); // always start at 0
+    sectionEls.forEach(el => {
+      const y = getTopFromBody(el);
+      if (y > 0 && y < totalH) cutSet.add(y);
+    });
+    cutSet.add(totalH); // sentinel
+
+    const cuts = Array.from(cutSet).sort((a, b) => a - b);
+
+    // Pre-fetch image data for white-row detection (only used inside sections)
+    const fullCtx  = fullCanvas.getContext('2d');
+    const fullData = fullCtx.getImageData(0, 0, fullCanvas.width, totalH);
 
     const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-    let currentY   = 0;
-    let pageIndex  = 0;
+    let pageIndex = 0;
 
-    while (currentY < totalH) {
-      const rawEndY    = currentY + pageH;
-      const isLastPage = rawEndY >= totalH;
-      const actualEndY = isLastPage
-        ? totalH
-        : findBestCutRow(fullData, canvas.width, rawEndY, totalH, 90);
-
-      const srcH = actualEndY - currentY;
-
-      const slice = document.createElement('canvas');
-      slice.width  = canvas.width;
-      slice.height = pageH;
-
-      const ctx = slice.getContext('2d');
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, slice.width, slice.height);
-      ctx.drawImage(canvas, 0, currentY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-
-      const imgData = slice.toDataURL('image/jpeg', 0.93);
-
+    const addPage = (canvasSlice) => {
       if (pageIndex > 0) pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, 0, A4_W_MM, A4_H_MM);
-
-      currentY = actualEndY;
+      pdf.addImage(canvasSlice.toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, A4_W_MM, A4_H_MM);
       pageIndex++;
+    };
+
+    for (let i = 0; i < cuts.length - 1; i++) {
+      const secStart = cuts[i];
+      const secEnd   = cuts[i + 1];
+      const secH     = secEnd - secStart;
+      if (secH <= 0) continue;
+
+      if (secH <= pageHPx) {
+        // ── Section fits on one page — perfect, no cut ──
+        addPage(sliceCanvas(fullCanvas, secStart, secH, pageHPx));
+      } else {
+        // ── Section taller than one A4 page — split further ──
+        // This happens only for very long text tables (TTT).
+        // We split at the nearest white row to avoid cutting mid-row text.
+        let y = secStart;
+        while (y < secEnd) {
+          const rawEnd  = y + pageHPx;
+          const isLast  = rawEnd >= secEnd;
+          const cutAt   = isLast ? secEnd : findBestCutRow(fullData, fullCanvas.width, rawEnd, secEnd, 80);
+          const chunkH  = cutAt - y;
+          addPage(sliceCanvas(fullCanvas, y, chunkH, pageHPx));
+          y = cutAt;
+        }
+      }
     }
 
     return pdf.output('blob');
