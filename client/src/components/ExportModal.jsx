@@ -4,6 +4,7 @@ import { FiX, FiDownload, FiMail, FiCheck, FiArrowRight, FiFileText,
   FiImage, FiCpu } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { exportPatientPDF } from '../utils/exportPDF';
+import { exportPatientPPTX } from '../utils/exportPPTX';
 import { htmlToPdfBlob } from '../utils/pdfScreenshot';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -82,6 +83,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
     sessionIds: [],
   });
 
+  const [exportFormat, setExportFormat] = useState('pdf');
   const [expandedSections, setExpandedSections] = useState({ ttt: false, photos: false });
   const [allSessions, setAllSessions] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -117,11 +119,30 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
   };
 
   const handleGenerate = async () => {
+    const finalOpts = { ...opts, sessionIds: allSessions ? [] : opts.sessionIds };
+
+    /* ── PowerPoint path ── */
+    if (exportFormat === 'pptx') {
+      setLoading(true);
+      setLoadingStep('جاري تجهيز الملف...');
+      try {
+        await exportPatientPPTX({ patient, sessions, ttt, siteInfo, opts: finalOpts });
+        toast.success('✅ تم تحميل ملف PowerPoint');
+        onClose();
+      } catch (e) {
+        console.error(e);
+        toast.error('خطأ في إنشاء ملف PowerPoint');
+      }
+      setLoading(false);
+      setLoadingStep('');
+      return;
+    }
+
+    /* ── PDF path ── */
     if (!dest.download && !dest.whatsapp && !dest.email) return toast.error('اختر وجهة واحدة على الأقل');
     setLoading(true);
     try {
       setLoadingStep('جاري تجهيز البيانات والصور...');
-      const finalOpts = { ...opts, sessionIds: allSessions ? [] : opts.sessionIds };
       const { blobUrl, html } = await exportPatientPDF({ patient, sessions, ttt, siteInfo, opts: finalOpts });
       setHtmlBlobUrl(blobUrl);
 
@@ -279,8 +300,30 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
 
         <div style={{ padding: '16px 20px' }}>
 
-          {/* Destination */}
+          {/* ═══ FORMAT SELECTOR ═══ */}
           <div style={{ marginBottom: 18 }}>
+            <SectionHeader label="صيغة التصدير" />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {[
+                { val: 'pdf',  icon: '📄', label: 'PDF', sub: 'معاينة، واتساب، بريد',    color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+                { val: 'pptx', icon: '📊', label: 'PowerPoint', sub: 'تحميل .pptx مباشرة', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+              ].map(({ val, icon, label, sub, color, bg, border }) => {
+                const sel = exportFormat === val;
+                return (
+                  <button key={val} onClick={() => setExportFormat(val)}
+                    style={{ padding: '12px 10px', borderRadius: 12, border: `2px solid ${sel ? border : '#e2e8f0'}`, background: sel ? bg : 'white', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, transition: 'all 0.15s', position: 'relative' }}>
+                    {sel && <div style={{ position: 'absolute', top: 5, left: 5, width: 16, height: 16, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiCheck size={9} color="white" strokeWidth={3}/></div>}
+                    <span style={{ fontSize: 26 }}>{icon}</span>
+                    <span style={{ fontWeight: 800, fontSize: 13, color: sel ? color : '#475569' }}>{label}</span>
+                    <span style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>{sub}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Destination — PDF only */}
+          {exportFormat === 'pdf' && <div style={{ marginBottom: 18 }}>
             <SectionHeader label="وجهة التصدير" />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
               {[
@@ -296,7 +339,18 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
                 </button>
               ))}
             </div>
-          </div>
+          </div>}
+
+          {/* PPTX note */}
+          {exportFormat === 'pptx' && (
+            <div style={{ background: '#fffbeb', border: '1.5px solid #fcd34d', borderRadius: 10, padding: '10px 14px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 18 }}>📊</span>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 12, color: '#92400e' }}>تصدير PowerPoint</div>
+                <div style={{ fontSize: 11, color: '#a16207', marginTop: 2 }}>سيتم تحميل ملف .pptx مباشرةً على جهازك</div>
+              </div>
+            </div>
+          )}
 
           {/* Phone */}
           {dest.whatsapp && (
