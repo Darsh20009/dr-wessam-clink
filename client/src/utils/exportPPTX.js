@@ -317,6 +317,10 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
     includeClinicHeader: true,
     includePatientCard: true,
     includeDiagnosis: true,
+    includeTTT: true,
+    includeTTTObjectives: true,
+    includeTTTBolton: true,
+    includeTTTSpace: true,
     includePhotos: true,
     includeFacePhotos: true,
     includeIntraOralPhotos: true,
@@ -471,6 +475,170 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
         });
         y += valH + 0.1;
       });
+    }
+  }
+
+  /* ══════════════════════════════════════
+     TTT FILE SLIDES
+  ══════════════════════════════════════ */
+  if (o.includeTTT && ttt && Object.keys(ttt).length > 0) {
+    const v  = (k) => ttt[k] ? String(ttt[k]) : '';
+    const chk = (k) => (ttt[k] ? '✓' : '☐');
+
+    /* Helper: add a 2-column table row on a slide */
+    const addRow = (slide, label, value, y, shade) => {
+      if (!value) return;
+      slide.addShape('rect', { x: 0.3, y, w: 4.5, h: 0.34, fill: { color: shade ? C.lgray : C.offwhite }, line: { color: C.silver, width: 0.3 } });
+      slide.addShape('rect', { x: 4.8, y, w: 8.1, h: 0.34, fill: { color: shade ? 'f0f9ff' : C.white   }, line: { color: C.silver, width: 0.3 } });
+      slide.addText(label, { x: 0.35, y: y + 0.06, w: 4.4,  h: 0.24, fontSize: 9,  bold: true, color: C.navy, fontFace: 'Calibri', wrap: true });
+      slide.addText(value, { x: 4.85, y: y + 0.06, w: 7.95, h: 0.24, fontSize: 9,  color: C.dark, fontFace: 'Calibri', wrap: true, shrinkText: true });
+    };
+
+    const addSectionHead = (slide, title, y) => {
+      slide.addShape('rect', { x: 0.3, y, w: 12.6, h: 0.3, fill: { color: C.navy } });
+      slide.addText(title, { x: 0.4, y: y + 0.04, w: 12.4, h: 0.22, fontSize: 10, bold: true, color: C.white, fontFace: 'Calibri' });
+    };
+
+    /* ── Slide A: Problem List ── */
+    {
+      const s = pptx.addSlide();
+      s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+      addHeaderBar(s, clinicName, clinicSub, isRtl);
+      addSectionTitle(s, '📋  TTT FILE — Problem List', isRtl);
+
+      let y = 1.32;
+      addSectionHead(s, 'Problem List', y); y += 0.34;
+      [
+        ['1. OH',                    v('oh')],
+        ['2. Skeletal — AP',         v('skeletalAP')],
+        ['Skeletal — V (Vertical)',  v('skeletalV')],
+        ['Skeletal — T (Transverse)',v('skeletalT')],
+        ['3. Dental — AP',           v('dentalAP')],
+        ['Dental — V',               v('dentalV')],
+        ['Dental — T',               v('dentalT')],
+        ['4. S.T',                   v('st')],
+        ['5. Habit',                 v('habit')],
+      ].forEach(([lbl, val], i) => { addRow(s, lbl, val || '—', y, i % 2 === 0); y += 0.36; });
+    }
+
+    /* ── Slide B: TTT Objectives ── */
+    if (o.includeTTTObjectives) {
+      const s = pptx.addSlide();
+      s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+      addHeaderBar(s, clinicName, clinicSub, isRtl);
+      addSectionTitle(s, '🎯  TTT Objectives', isRtl);
+
+      let y = 1.32;
+      addSectionHead(s, 'TTT Objectives', y); y += 0.34;
+      [
+        ['1. OH',                    v('obj1') || '—'],
+        ['2. Skeletal',              v('obj2') || '—'],
+        ['3. Align & Level',         v('obj3') || 'Align and level both arches.'],
+        ['4. OJ',                    v('obj4') || 'Maintain/ Correct OJ.'],
+        ['5. OB',                    v('obj5') || 'Maintain/ Correct OB.'],
+        ['6. Midline',               v('obj6') || 'Maintain/ Correct Midline'],
+        ['7. Canine / Incisors',     v('obj7') || 'Achieve Class I Canine and Incisors.'],
+        ['8. Molar Relationship',    v('obj8') || 'Achieve Class I Molar Relationship'],
+        ['9. Buccal Interdigitation',v('obj9') || 'Coordinate both arches with good Buccal Interdigitation.'],
+        ['10. Retention',            v('obj10') || 'Retention.'],
+      ].forEach(([lbl, val], i) => { addRow(s, lbl, val, y, i % 2 === 0); y += 0.36; });
+    }
+
+    /* ── Slide C: Bolton + Space Analysis ── */
+    if (o.includeTTTBolton || o.includeTTTSpace) {
+      const s = pptx.addSlide();
+      s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+      addHeaderBar(s, clinicName, clinicSub, isRtl);
+      addSectionTitle(s, '📐  Bolton Analysis & Space Requirements', isRtl);
+      let y = 1.32;
+
+      if (o.includeTTTBolton) {
+        addSectionHead(s, 'Bolton Analysis', y); y += 0.34;
+        addRow(s, 'Anterior Ratio (%)', v('boltonAnterior') || '—', y, true);  y += 0.36;
+        addRow(s, 'Overall Ratio (%)',  v('boltonOverall')  || '—', y, false); y += 0.36;
+        y += 0.1;
+      }
+
+      if (o.includeTTTSpace) {
+        addSectionHead(s, 'Tooth Size & Arch Length Analysis', y); y += 0.34;
+
+        // 4-col header
+        ['', 'Arch Length', 'Tooth Size', 'Discrepancy'].forEach((h, i) => {
+          const xs = [0.3, 3.6, 6.8, 10.0];
+          const ws = [3.2, 3.1, 3.1, 2.8];
+          s.addShape('rect', { x: xs[i], y, w: ws[i], h: 0.28, fill: { color: C.lblue } });
+          s.addText(h, { x: xs[i] + 0.05, y: y + 0.04, w: ws[i] - 0.1, h: 0.2, fontSize: 8.5, bold: true, color: C.white, fontFace: 'Calibri', align: 'center' });
+        });
+        y += 0.3;
+
+        [['Upper', 'upperArchLength', 'upperToothSize', 'upperDiscrepancy'],
+         ['Lower', 'lowerArchLength', 'lowerToothSize', 'lowerDiscrepancy']].forEach(([row, k1, k2, k3], ri) => {
+          const bg = ri % 2 === 0 ? C.lgray : C.white;
+          [0.3, 3.6, 6.8, 10.0].forEach((x, ci) => {
+            const ws = [3.2, 3.1, 3.1, 2.8];
+            const vals = [row, v(k1) || '—', v(k2) || '—', v(k3) || '—'];
+            s.addShape('rect', { x, y, w: ws[ci], h: 0.3, fill: { color: bg }, line: { color: C.silver, width: 0.3 } });
+            s.addText(vals[ci], { x: x + 0.05, y: y + 0.05, w: ws[ci] - 0.1, h: 0.22, fontSize: 9, bold: ci === 0, color: C.dark, fontFace: 'Calibri', align: 'center' });
+          });
+          y += 0.32;
+        });
+        y += 0.1;
+
+        addSectionHead(s, 'Summary of Space Requirements', y); y += 0.34;
+        [
+          ['Crowding & Spacing',            v('srCrowding')           || '—'],
+          ['Levelling Occlusal Curve',       v('srLevelling')          || '—'],
+          ['Arch Width Change',              v('srArchWidth')          || '—'],
+          ['Incisor Sagittal Position',      v('srIncisorSagittal')    || '—'],
+          ['Incisor Inclination',            v('srIncisorInclination') || '—'],
+        ].forEach(([lbl, val], i) => { addRow(s, lbl, val, y, i % 2 === 0); y += 0.36; });
+      }
+    }
+
+    /* ── Slide D: Space Gaining ── */
+    if (o.includeTTTSpace) {
+      const s = pptx.addSlide();
+      s.addShape('rect', { x: 0, y: 0, w: '100%', h: '100%', fill: { color: C.white } });
+      addHeaderBar(s, clinicName, clinicSub, isRtl);
+      addSectionTitle(s, '🦷  Space Gaining Methods', isRtl);
+
+      const addHalfTable = (xOff, wCol, archLabel, checks, fields) => {
+        let y = 1.32;
+        s.addShape('rect', { x: xOff, y, w: wCol, h: 0.3, fill: { color: C.navy } });
+        s.addText(`Space Gaining — ${archLabel}`, { x: xOff + 0.05, y: y + 0.04, w: wCol - 0.1, h: 0.22, fontSize: 10, bold: true, color: C.white, fontFace: 'Calibri' });
+        y += 0.32;
+
+        checks.forEach(([key, label], i) => {
+          s.addShape('rect', { x: xOff, y, w: wCol, h: 0.3, fill: { color: i % 2 === 0 ? C.lgray : C.offwhite }, line: { color: C.silver, width: 0.3 } });
+          s.addText(`${chk(key)}  ${label}`, { x: xOff + 0.08, y: y + 0.05, w: wCol - 0.16, h: 0.22, fontSize: 9, color: C.dark, fontFace: 'Calibri' });
+          y += 0.32;
+        });
+        y += 0.08;
+        fields.forEach(([lbl, val], i) => {
+          if (!val) return;
+          s.addShape('rect', { x: xOff,       y, w: wCol * 0.52, h: 0.3, fill: { color: i % 2 === 0 ? C.lgray : C.offwhite }, line: { color: C.silver, width: 0.3 } });
+          s.addShape('rect', { x: xOff + wCol * 0.52, y, w: wCol * 0.48, h: 0.3, fill: { color: i % 2 === 0 ? 'f0f9ff' : C.white }, line: { color: C.silver, width: 0.3 } });
+          s.addText(lbl, { x: xOff + 0.05, y: y + 0.05, w: wCol * 0.5, h: 0.22, fontSize: 8.5, bold: true, color: C.navy, fontFace: 'Calibri' });
+          s.addText(val, { x: xOff + wCol * 0.54, y: y + 0.05, w: wCol * 0.44, h: 0.22, fontSize: 8.5, color: C.dark, fontFace: 'Calibri', shrinkText: true });
+          y += 0.32;
+        });
+      };
+
+      addHalfTable(0.2, 6.3, 'Upper',
+        [['upperArchLengthening', 'Arch lengthening'], ['upperTransverse', 'Transverse arch expansion'],
+         ['upperIER', 'Interdental enamel reduction'], ['upperExtractions', 'Dental extractions']],
+        [['Timing of Extractions', v('upperTimingExtr')], ['Teeth of Extractions', v('upperTeethExtr')],
+         ['Timing of Bonding',    v('upperTimingBond')], ['BOND',               v('upperTeethBond')],
+         ['SKIP',                 v('upperTeethSkip')]],
+      );
+
+      addHalfTable(6.7, 6.3, 'Lower',
+        [['lowerArchLengthening', 'Arch lengthening'], ['lowerTransverse', 'Transverse arch expansion'],
+         ['lowerIER', 'Interdental enamel reduction'], ['lowerExtractions', 'Dental extractions']],
+        [['Timing of Extractions', v('lowerTimingExtr')], ['Teeth of Extractions', v('lowerTeethExtr')],
+         ['Timing of Bonding',    v('lowerTimingBond')], ['BOND',               v('lowerTeethBond')],
+         ['SKIP',                 v('lowerTeethSkip')]],
+      );
     }
   }
 
