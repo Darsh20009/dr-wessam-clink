@@ -166,6 +166,114 @@ function stripHtml(html) {
   return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * Convert HTML rich text → PptxGenJS text-run array.
+ * Preserves: bold, italic, underline, text colour, highlight, font size, bullet points (• chars).
+ * Returns null when html is empty so callers can fall back to plain text.
+ */
+function htmlToRuns(html, baseOpts = {}) {
+  if (!html || !html.trim()) return null;
+
+  /* ── hex helper: handles #rrggbb and rgb(r,g,b) ── */
+  function toHex(s) {
+    if (!s) return null;
+    s = s.trim();
+    if (s === 'transparent' || s === 'inherit') return null;
+    if (/^#[0-9a-f]{3,8}$/i.test(s)) {
+      const h = s.slice(1);
+      return (h.length === 3
+        ? h.split('').map(c => c + c).join('')
+        : h.slice(0, 6)
+      ).toUpperCase();
+    }
+    const m = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    if (m) return [m[1], m[2], m[3]]
+      .map(n => parseInt(n).toString(16).padStart(2, '0')).join('').toUpperCase();
+    return null;
+  }
+
+  /* ── map editor highlight hex colours → pptxgenjs named highlight ── */
+  const HL_MAP = {
+    'FEF9C3': 'yellow', 'FDE047': 'yellow', 'FEF08A': 'yellow',
+    'DCFCE7': 'green',  'BBF7D0': 'green',  '86EFAC': 'green',
+    'DBEAFE': 'cyan',   'BFDBFE': 'cyan',   'A5F3FC': 'cyan',
+    'FCE7F3': 'magenta','FBCFE8': 'magenta',
+    'FEE2E2': 'red',    'FECACA': 'red',
+  };
+
+  const FONT_SIZE_MAP = { '1': 8, '2': 9, '3': 11, '4': 13, '5': 16, '6': 20, '7': 28 };
+
+  const div = document.createElement('div');
+  div.innerHTML = html;
+
+  const runs = [];
+
+  function walk(node, style) {
+    /* ── text node ── */
+    if (node.nodeType === 3) {
+      const txt = node.textContent;
+      if (txt) runs.push({ text: txt, options: { ...style } });
+      return;
+    }
+    if (node.nodeType !== 1) return;
+
+    const tag = node.tagName.toLowerCase();
+    const s   = { ...style };
+
+    /* ── inline formatting tags ── */
+    if (tag === 'b' || tag === 'strong') s.bold = true;
+    if (tag === 'i' || tag === 'em')     s.italic = true;
+    if (tag === 'u')                      s.underline = { type: 'sng' };
+    if (tag === 's' || tag === 'strike') s.strike = true;
+
+    if (tag === 'font') {
+      const clr = node.getAttribute('color');
+      if (clr) { const h = toHex(clr); if (h) s.color = h; }
+      const sz  = node.getAttribute('size');
+      if (sz && FONT_SIZE_MAP[sz]) s.fontSize = FONT_SIZE_MAP[sz];
+      const ist = node.getAttribute('style') || '';
+      const bgm = ist.match(/background-color\s*:\s*([^;]+)/i);
+      if (bgm) { const h = toHex(bgm[1]); if (h && HL_MAP[h]) s.highlight = HL_MAP[h]; }
+      const clrm = ist.match(/(?:^|;)\s*color\s*:\s*([^;]+)/i);
+      if (clrm) { const h = toHex(clrm[1]); if (h) s.color = h; }
+    }
+
+    if (tag === 'span') {
+      const ist = node.getAttribute('style') || '';
+      const clrm = ist.match(/(?:^|;)?\s*color\s*:\s*([^;]+)/i);
+      if (clrm) { const h = toHex(clrm[1]); if (h) s.color = h; }
+      const bgm = ist.match(/background-color\s*:\s*([^;]+)/i);
+      if (bgm) { const h = toHex(bgm[1]); if (h && HL_MAP[h]) s.highlight = HL_MAP[h]; }
+    }
+
+    /* ── line break ── */
+    if (tag === 'br') {
+      runs.push({ text: '\n', options: {} });
+      return;
+    }
+
+    /* ── list item: prepend bullet ── */
+    if (tag === 'li') runs.push({ text: '• ', options: { ...s, bold: true } });
+
+    /* ── recurse ── */
+    for (const child of node.childNodes) walk(child, s);
+
+    /* ── newline after block elements ── */
+    if (['p', 'div', 'li'].includes(tag)) {
+      if (runs.length > 0 && runs[runs.length - 1].text !== '\n')
+        runs.push({ text: '\n', options: {} });
+    }
+  }
+
+  for (const child of div.childNodes) walk(child, baseOpts);
+
+  /* remove trailing blank/newline runs */
+  while (runs.length > 0 && !runs[runs.length - 1].text?.trim())
+    runs.pop();
+
+  return runs.length > 0 ? runs : null;
+}
+
 async function toBase64(url, quality = 0.96) {
   if (!url) return null;
   return new Promise((resolve) => {
@@ -658,8 +766,9 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
 
       let y = 1.35;
       fields.forEach(([lbl, val]) => {
-        const text = stripHtml(val);
-        if (!text || y > 7.0) return;
+        const plainText = stripHtml(val);
+        if (!plainText || y > 7.0) return;
+        const runs = htmlToRuns(val, { fontSize: 10, color: C.dark, fontFace: 'Calibri' });
         s.addShape('rect', { x: 0.3, y, w: 12.6, h: 0.26, fill: { color: C.navy } });
         s.addText(rtlStr(lbl), {
           x: 0.4, y: y + 0.03, w: 12.4, h: 0.2,
@@ -667,9 +776,9 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
           align, rtlMode: true,
         });
         y += 0.28;
-        const valH = Math.min(2.5, Math.max(0.4, Math.ceil(text.length / 80) * 0.3 + 0.1));
+        const valH = Math.min(2.5, Math.max(0.4, Math.ceil(plainText.length / 80) * 0.3 + 0.1));
         s.addShape('rect', { x: 0.3, y, w: 12.6, h: valH, fill: { color: C.offwhite }, line: { color: C.silver, width: 0.3 } });
-        s.addText(rtlStr(text), {
+        s.addText(runs || rtlStr(plainText), {
           x: 0.45, y: y + 0.03, w: 12.3, h: valH - 0.05,
           fontSize: 10, color: C.dark, fontFace: 'Calibri',
           align, rtlMode: true, wrap: true, valign: 'top',
@@ -704,8 +813,9 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
       ].filter(([, v]) => v);
 
       sFields.forEach(([lbl, val]) => {
-        const text = stripHtml(String(val));
-        if (!text || y > 6.8) return;
+        const plainText = stripHtml(String(val));
+        if (!plainText || y > 6.8) return;
+        const runs = htmlToRuns(String(val), { fontSize: 10, color: C.dark, fontFace: 'Calibri' });
         s.addShape('rect', { x: 0.3, y, w: 12.6, h: 0.24, fill: { color: C.lblue } });
         s.addText(lbl, {
           x: 0.4, y: y + 0.03, w: 12.4, h: 0.18,
@@ -713,9 +823,9 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
           align, rtlMode: rtl,
         });
         y += 0.26;
-        const valH = Math.min(2.5, Math.max(0.4, Math.ceil(text.length / 80) * 0.3 + 0.1));
+        const valH = Math.min(2.5, Math.max(0.4, Math.ceil(plainText.length / 80) * 0.3 + 0.1));
         s.addShape('rect', { x: 0.3, y, w: 12.6, h: valH, fill: { color: C.offwhite }, line: { color: C.silver, width: 0.3 } });
-        s.addText(text, {
+        s.addText(runs || plainText, {
           x: 0.45, y: y + 0.03, w: 12.3, h: valH - 0.05,
           fontSize: 10, color: C.dark, fontFace: 'Calibri',
           align, rtlMode: rtl, wrap: true, valign: 'top',
