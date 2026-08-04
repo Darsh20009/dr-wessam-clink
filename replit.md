@@ -17,6 +17,13 @@ A full-stack dental clinic management system for Dr. Wessam Youssef's orthodonti
 - Frontend workflow: `cd client && npm run dev` (port 5000)
 - Backend workflow: `cd server && node index.js` (port 3001)
 
+## Required Secrets
+Set these in Replit Secrets before starting the server:
+- `MONGODB_URI` — MongoDB Atlas connection string
+- `JWT_SECRET` — secret string for signing auth tokens
+- `SESSION_SECRET` — secret string for session signing
+- `VAPID_PRIVATE_KEY` — (optional) for web push notifications
+
 ## Doctor Login
 - Phone: `01156798324`
 - Password: `doctor123`
