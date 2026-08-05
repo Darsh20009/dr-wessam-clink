@@ -8,7 +8,7 @@ import {
   FiArrowRight, FiSave, FiPlus, FiTrash2, FiUpload,
   FiDollarSign, FiCalendar, FiImage, FiFileText, FiActivity, FiEdit2, FiEdit3,
   FiEye, FiChevronDown, FiChevronUp, FiX, FiMaximize2,
-  FiPrinter, FiMessageSquare, FiSend, FiUser, FiShare2,
+  FiPrinter, FiMessageSquare, FiSend, FiUser, FiShare2, FiRefreshCw,
 } from 'react-icons/fi';
 import { printInvoice } from '../utils/printInvoice';
 import ExportModal from '../components/ExportModal';
@@ -428,7 +428,7 @@ function ImageLightbox({ item, onClose }) {
   );
 }
 
-function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, deleteImg, patchImage, openLightbox, onPenClick }) {
+function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, deleteImg, patchImage, openLightbox, onPenClick, flipImg }) {
   const slotImages = (images || []).filter(img => img.type === slotType);
   return (
     <div style={{ border: '1.5px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', background: 'white' }}>
@@ -465,7 +465,10 @@ function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, deleteImg,
                 <button onClick={() => onPenClick && onPenClick(cat, img._id, img.url, img.penNote)} style={{ background: img.penNote ? '#dbeafe' : 'none', border: img.penNote ? '1px solid #bfdbfe' : 'none', borderRadius: 4, cursor: 'pointer', padding: '2px 5px', color: img.penNote ? '#2563eb' : '#94a3b8', display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, fontFamily: 'Cairo,sans-serif' }} title={img.penNote ? 'تعديل النوت' : 'رسم على الصورة'}>
                   <FiEdit3 size={10}/>{img.penNote ? 'نوت' : ''}
                 </button>
-                <button onClick={() => deleteImg(cat, img._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#ef4444' }}><FiTrash2 size={12}/></button>
+                <div style={{ display: 'flex', gap: 2 }}>
+                  <button onClick={() => flipImg && flipImg(img.url)} title="تصحيح انعكاس الصورة" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#f59e0b' }}><FiRefreshCw size={11}/></button>
+                  <button onClick={() => deleteImg(cat, img._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#ef4444' }}><FiTrash2 size={12}/></button>
+                </div>
               </div>
             </div>
           ))}
@@ -480,7 +483,7 @@ function ImageSlot({ cat, slotType, slotLabel, images, triggerUpload, deleteImg,
   );
 }
 
-function XraySlot({ xrayType, xrayLabel, xrays, triggerUpload, deleteImg, patchImage, openLightbox, onPenClick }) {
+function XraySlot({ xrayType, xrayLabel, xrays, triggerUpload, deleteImg, patchImage, openLightbox, onPenClick, flipImg }) {
   const slotItems = (xrays || []).filter(x => x.type === xrayType);
   return (
     <div style={{ border: '1.5px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', background: 'white' }}>
@@ -518,7 +521,10 @@ function XraySlot({ xrayType, xrayLabel, xrays, triggerUpload, deleteImg, patchI
                     <FiEdit3 size={10}/>
                   </button>
                 </div>
-                <button onClick={() => deleteImg('xray', x._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><FiTrash2 size={12}/></button>
+                <div style={{ display: 'flex', gap: 2 }}>
+                  <button onClick={() => flipImg && flipImg(x.url)} title="تصحيح انعكاس الأشعة" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#f59e0b' }}><FiRefreshCw size={11}/></button>
+                  <button onClick={() => deleteImg('xray', x._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><FiTrash2 size={12}/></button>
+                </div>
               </div>
             </div>
           ))}
@@ -771,6 +777,18 @@ export default function PatientFile() {
       const { data: p } = await axios.patch(`/patients/${id}/images/${category}/${imageId}`, updates);
       applyPatient(p);
     } catch { toast.error('خطأ في الحفظ'); }
+  };
+
+  const flipPatientImage = async (imageId) => {
+    try {
+      // Extract the MongoDB image ID from the URL path /api/images/<id>
+      const imgId = imageId.split('/').pop();
+      await axios.post(`/api/uploads/${imgId}/flip`);
+      // Force browser to reload the image by re-fetching patient
+      const { data: p } = await axios.get(`/patients/${id}`);
+      applyPatient(p);
+      toast.success('تم تصحيح الصورة ✓');
+    } catch { toast.error('خطأ في تقليب الصورة'); }
   };
 
   const getAllPenNotes = () => {
@@ -1224,7 +1242,7 @@ export default function PatientFile() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
               {FACE_SLOTS.map(slot => (
-                <ImageSlot key={slot.type} cat="face" slotType={slot.type} slotLabel={slot.label} images={patient.faceImages} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} />
+                <ImageSlot key={slot.type} cat="face" slotType={slot.type} slotLabel={slot.label} images={patient.faceImages} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} flipImg={flipPatientImage} />
               ))}
             </div>
           </div>
@@ -1234,7 +1252,7 @@ export default function PatientFile() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
               {INTRAORAL_SLOTS.map(slot => (
-                <ImageSlot key={slot.type} cat="intraoral" slotType={slot.type} slotLabel={slot.label} images={patient.intraOralImages} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} />
+                <ImageSlot key={slot.type} cat="intraoral" slotType={slot.type} slotLabel={slot.label} images={patient.intraOralImages} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} flipImg={flipPatientImage} />
               ))}
             </div>
           </div>
@@ -1288,7 +1306,7 @@ export default function PatientFile() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
             {XRAY_TYPES.map(x => (
-              <XraySlot key={x.type} xrayType={x.type} xrayLabel={x.label} xrays={patient.xrays} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} />
+              <XraySlot key={x.type} xrayType={x.type} xrayLabel={x.label} xrays={patient.xrays} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} flipImg={flipPatientImage} />
             ))}
           </div>
         </div>

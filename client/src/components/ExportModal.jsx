@@ -149,7 +149,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
       if (dest.whatsapp || dest.email) {
         setLoadingStep('جاري إنشاء رابط المشاركة...');
         try {
-          const { data } = await axios.post('/shared-reports', {
+          const { data } = await axios.post('/api/shared-reports', {
             htmlContent: html,
             patientName: patient.fullName,
           });

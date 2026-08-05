@@ -22,6 +22,7 @@ async function compressImage(buffer, mimetype) {
   if (mimetype === 'application/pdf') return buffer;
   try {
     return await sharp(buffer)
+      .rotate()                          // auto-correct EXIF orientation
       .resize({ width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true })
       .jpeg({ quality: 82, progressive: true })
       .toBuffer();
@@ -74,6 +75,25 @@ router.get('/:id', async (req, res) => {
     res.send(img.data);
   } catch {
     res.status(404).send('الصورة غير موجودة');
+  }
+});
+
+// Flip an existing stored image horizontally (fix already-mirrored images)
+router.post('/:id/flip', auth, doctorOnly, async (req, res) => {
+  try {
+    const img = await Image.findById(req.params.id);
+    if (!img) return res.status(404).json({ message: 'الصورة غير موجودة' });
+    const flipped = await sharp(img.data)
+      .flop()   // horizontal flip
+      .jpeg({ quality: 90, progressive: true })
+      .toBuffer();
+    img.data = flipped;
+    img.mimetype = 'image/jpeg';
+    img.size = flipped.length;
+    await img.save();
+    res.json({ message: 'تم تعديل الصورة' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
