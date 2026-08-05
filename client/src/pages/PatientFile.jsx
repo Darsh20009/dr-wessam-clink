@@ -62,6 +62,7 @@ const tabs = [
   { id: 'info', label: 'البيانات', icon: <FiFileText size={13}/> },
   { id: 'diagnosis', label: 'التشخيص', icon: <FiActivity size={13}/> },
   { id: 'images', label: 'الصور', icon: <FiImage size={13}/> },
+  { id: 'stl', label: 'STL', icon: <span style={{fontSize:12}}>🦷</span> },
   { id: 'xrays', label: 'الأشعة', icon: <FiImage size={13}/> },
   { id: 'sessions', label: 'الجلسات', icon: <FiCalendar size={13}/> },
   { id: 'ttt', label: 'TTT File', icon: <span style={{fontSize:12}}>📋</span> },
@@ -1265,18 +1266,6 @@ export default function PatientFile() {
             </div>
           </div>
 
-          <div className="card">
-            <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#0f172a,#1e3a8a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>🦷</div>
-              <h3 className="section-title" style={{ margin: 0 }}>STL</h3>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
-              {STL_SLOTS.map(slot => (
-                <ImageSlot key={slot.type} cat="stl" slotType={slot.type} slotLabel={slot.label} images={patient.stlImages} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} flipImg={flipPatientImage} />
-              ))}
-            </div>
-          </div>
-
           {sessions.some(s => s.images && s.images.length > 0) && (
             <div className="card">
               <h3 className="section-title" style={{ margin: '0 0 16px' }}>🗂️ صور الجلسات</h3>
@@ -1327,6 +1316,24 @@ export default function PatientFile() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
             {XRAY_TYPES.map(x => (
               <XraySlot key={x.type} xrayType={x.type} xrayLabel={x.label} xrays={patient.xrays} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} flipImg={flipPatientImage} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── STL Tab ── */}
+      {activeTab === 'stl' && (
+        <div className="card">
+          <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#0f172a,#1e3a8a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🦷</div>
+            <div>
+              <h3 className="section-title" style={{ margin: 0 }}>STL Models</h3>
+              <p style={{ margin: 0, fontSize: 12, color: '#94a3b8', fontFamily: 'Cairo, sans-serif' }}>نماذج الطباعة ثلاثية الأبعاد</p>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
+            {STL_SLOTS.map(slot => (
+              <ImageSlot key={slot.type} cat="stl" slotType={slot.type} slotLabel={slot.label} images={patient.stlImages} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} flipImg={flipPatientImage} />
             ))}
           </div>
         </div>
