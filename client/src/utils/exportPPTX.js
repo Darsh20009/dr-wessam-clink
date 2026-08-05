@@ -53,6 +53,13 @@ const SLOTS = {
       { type: 'lateral',  label: 'Lateral Ceph' },
       { type: 'cbct',     label: 'CBCT' },
     ],
+    stl: [
+      { type: 'stl_upper',   label: 'Upper Arch' },
+      { type: 'stl_lower',   label: 'Lower Arch' },
+      { type: 'stl_right',   label: 'Right Lateral' },
+      { type: 'stl_left',    label: 'Left Lateral' },
+      { type: 'stl_frontal', label: 'Frontal' },
+    ],
   },
   ar: {
     session:   [
@@ -79,6 +86,13 @@ const SLOTS = {
       { type: 'lateral',  label: 'أشعة جانبية' },
       { type: 'cbct',     label: 'CBCT' },
     ],
+    stl: [
+      { type: 'stl_upper',   label: 'الفك العلوي' },
+      { type: 'stl_lower',   label: 'الفك السفلي' },
+      { type: 'stl_right',   label: 'جانبي أيمن' },
+      { type: 'stl_left',    label: 'جانبي أيسر' },
+      { type: 'stl_frontal', label: 'أمامي' },
+    ],
   },
 };
 
@@ -103,6 +117,7 @@ const L = {
     treatmentNotes: 'Treatment Notes',
     extraoral:      'Extra-Oral Photographs',
     intraoral:      'Intra-Oral Photographs',
+    stl:            'STL',
     radiographs:    'Radiographs',
     sessionTitle:   (n, d) => `Session #${n}  —  ${d}`,
     sessionPhotosTitle: (n, d) => `Session #${n} Photos`,
@@ -138,6 +153,7 @@ const L = {
     treatmentNotes: 'ملاحظات العلاج',
     extraoral:      'صور خارج الفم — Extraoral',
     intraoral:      'صور داخل الفم — Intraoral',
+    stl:            'STL',
     radiographs:    'الأشعة التشخيصية',
     sessionTitle:   (n, d) => `جلسة #${n}  —  ${d}`,
     sessionPhotosTitle: (n) => `صور الجلسة #${n}`,
@@ -437,6 +453,7 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
     includePhotos: true,
     includeFacePhotos: true,
     includeIntraOralPhotos: true,
+    includeSTLPhotos: true,
     includeXrays: true,
     includeSessions: true,
     includeSessionImages: true,
@@ -578,6 +595,8 @@ export async function exportPatientPPTX({ patient, sessions = [], ttt = {}, site
       await photoSlide(patient.faceImages, t.extraoral, 'face');
     if (o.includeIntraOralPhotos && (patient.intraOralImages || []).length)
       await photoSlide(patient.intraOralImages, t.intraoral, 'intraoral');
+    if (o.includeSTLPhotos && (patient.stlImages || []).length)
+      await photoSlide(patient.stlImages, t.stl, 'stl');
     if (o.includeXrays && (patient.xrays || []).length)
       await photoSlide(patient.xrays, t.radiographs, 'xray');
   }

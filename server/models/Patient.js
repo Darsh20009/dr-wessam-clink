@@ -39,6 +39,7 @@ const patientSchema = new mongoose.Schema({
   treatmentNotes: String,
   faceImages: [medicalImageSchema],
   intraOralImages: [medicalImageSchema],
+  stlImages: [medicalImageSchema],
   xrays: [xraySchema],
   financials: {
     totalCost: { type: Number, default: 0 },

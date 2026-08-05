@@ -96,6 +96,7 @@ router.post('/:id/images', auth, doctorOnly, async (req, res) => {
     if (!patient) return res.status(404).json({ message: 'المريض غير موجود' });
     if (category === 'face') patient.faceImages.push(imageData);
     else if (category === 'intraoral') patient.intraOralImages.push(imageData);
+    else if (category === 'stl') patient.stlImages.push(imageData);
     else if (category === 'xray') patient.xrays.push(imageData);
     await patient.save();
     res.json(patient);
@@ -112,6 +113,7 @@ router.patch('/:id/images/:category/:imageId', auth, doctorOnly, async (req, res
     let arr;
     if (category === 'face') arr = patient.faceImages;
     else if (category === 'intraoral') arr = patient.intraOralImages;
+    else if (category === 'stl') arr = patient.stlImages;
     else if (category === 'xray') arr = patient.xrays;
     else return res.status(400).json({ message: 'فئة غير صحيحة' });
     const img = arr.id(imageId);
@@ -131,6 +133,7 @@ router.delete('/:id/images/:category/:imageId', auth, doctorOnly, async (req, re
     if (!patient) return res.status(404).json({ message: 'المريض غير موجود' });
     if (category === 'face') patient.faceImages = patient.faceImages.filter(img => img._id.toString() !== imageId);
     else if (category === 'intraoral') patient.intraOralImages = patient.intraOralImages.filter(img => img._id.toString() !== imageId);
+    else if (category === 'stl') patient.stlImages = patient.stlImages.filter(img => img._id.toString() !== imageId);
     else if (category === 'xray') patient.xrays = patient.xrays.filter(img => img._id.toString() !== imageId);
     await patient.save();
     res.json(patient);

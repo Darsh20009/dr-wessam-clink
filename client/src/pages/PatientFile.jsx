@@ -26,6 +26,13 @@ const INTRAORAL_SLOTS = [
   { type: 'right_lateral', label: 'Right Lateral' },
   { type: 'left_lateral', label: 'Left Lateral' },
 ];
+const STL_SLOTS = [
+  { type: 'stl_upper', label: 'Upper Arch' },
+  { type: 'stl_lower', label: 'Lower Arch' },
+  { type: 'stl_right', label: 'Right Lateral' },
+  { type: 'stl_left', label: 'Left Lateral' },
+  { type: 'stl_frontal', label: 'Frontal' },
+];
 const SESSION_SLOTS = [
   { type: 'frontal_occlusion', label: 'Frontal Occlusion' },
   { type: 'right_lateral', label: 'Right Lateral' },
@@ -45,6 +52,7 @@ const VIS_LABELS = {
   instructions: 'التعليمات والملاحظات',
   faceImages: 'صور الوجه',
   intraOralImages: 'Intraoral Examination',
+  stlImages: 'STL',
   xrays: 'الأشعة',
   sessions: 'الجلسات',
   financials: 'البيانات المالية',
@@ -736,7 +744,7 @@ export default function PatientFile() {
 
   const uploadingRef = React.useRef(false);
 
-  const applyPatient = (p) => { setPatient(p); setForm(f => ({ ...f, faceImages: p.faceImages, intraOralImages: p.intraOralImages, xrays: p.xrays })); };
+  const applyPatient = (p) => { setPatient(p); setForm(f => ({ ...f, faceImages: p.faceImages, intraOralImages: p.intraOralImages, stlImages: p.stlImages, xrays: p.xrays })); };
   const applySession = (s) => setSessions(prev => prev.map(x => x._id === s._id ? s : x));
 
   const handleSessionFileUpload = async (e) => {
@@ -1253,6 +1261,18 @@ export default function PatientFile() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
               {INTRAORAL_SLOTS.map(slot => (
                 <ImageSlot key={slot.type} cat="intraoral" slotType={slot.type} slotLabel={slot.label} images={patient.intraOralImages} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} flipImg={flipPatientImage} />
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#0f172a,#1e3a8a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>🦷</div>
+              <h3 className="section-title" style={{ margin: 0 }}>STL</h3>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
+              {STL_SLOTS.map(slot => (
+                <ImageSlot key={slot.type} cat="stl" slotType={slot.type} slotLabel={slot.label} images={patient.stlImages} triggerUpload={triggerUpload} deleteImg={deletePatientImage} patchImage={patchPatientImage} openLightbox={setLightbox} onPenClick={openDrawingModal} flipImg={flipPatientImage} />
               ))}
             </div>
           </div>

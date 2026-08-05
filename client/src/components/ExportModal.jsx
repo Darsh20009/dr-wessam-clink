@@ -76,6 +76,7 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
     includePhotos: true,
     includeFacePhotos: true,
     includeIntraOralPhotos: true,
+    includeSTLPhotos: true,
     includeXrays: true,
     includeSessions: true,
     includeSessionImages: true,
@@ -480,6 +481,8 @@ export default function ExportModal({ patient, sessions = [], ttt = {}, siteInfo
                         icon={<FiImage size={14}/>} label="Extraoral Examination" sublabel="Frontal Rest, Smile, Lateral"/>
                       <ContentRow checked={opts.includeIntraOralPhotos} onChange={() => toggleOpt('includeIntraOralPhotos')} indent
                         icon={<FiImage size={14}/>} label="Intraoral Examination" sublabel="Frontal, Upper/Lower Jaw, Laterals"/>
+                      <ContentRow checked={opts.includeSTLPhotos} onChange={() => toggleOpt('includeSTLPhotos')} indent
+                        icon={<span style={{ fontSize: 12 }}>🦷</span>} label="STL" sublabel="Upper/Lower Arch, Laterals, Frontal"/>
                       <ContentRow checked={opts.includeXrays} onChange={() => toggleOpt('includeXrays')} indent
                         icon={<span style={{ fontSize: 12 }}>🩻</span>} label="الأشعة" sublabel="Panoramic, Lateral Ceph, CBCT"/>
                     </div>

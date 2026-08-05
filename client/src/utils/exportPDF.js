@@ -46,6 +46,13 @@ const SLOTS = {
       { type: 'lateral',  label: 'Lateral Ceph' },
       { type: 'cbct',     label: 'CBCT' },
     ],
+    stl: [
+      { type: 'stl_upper',   label: 'Upper Arch' },
+      { type: 'stl_lower',   label: 'Lower Arch' },
+      { type: 'stl_right',   label: 'Right Lateral' },
+      { type: 'stl_left',    label: 'Left Lateral' },
+      { type: 'stl_frontal', label: 'Frontal' },
+    ],
   },
   ar: {
     session: [
@@ -72,6 +79,13 @@ const SLOTS = {
       { type: 'lateral',  label: 'أشعة جانبية' },
       { type: 'cbct',     label: 'CBCT' },
     ],
+    stl: [
+      { type: 'stl_upper',   label: 'الفك العلوي' },
+      { type: 'stl_lower',   label: 'الفك السفلي' },
+      { type: 'stl_right',   label: 'جانبي أيمن' },
+      { type: 'stl_left',    label: 'جانبي أيسر' },
+      { type: 'stl_frontal', label: 'أمامي' },
+    ],
   },
 };
 
@@ -95,6 +109,7 @@ const L = {
     photosSection:     '📸 Patient Photographs',
     extraoral:         'Extra-Oral Photos',
     intraoral:         'Intra-Oral Photos',
+    stl:               'STL',
     radiographs:       'Radiographs',
     sessionTitle:      (n, d) => `📋 Session #${n} — ${d}`,
     sessionNotes:      'Session Notes',
@@ -130,6 +145,7 @@ const L = {
     photosSection:     '📸 صور المريض',
     extraoral:         'صور خارج الفم',
     intraoral:         'صور داخل الفم',
+    stl:               'STL',
     radiographs:       'الأشعة',
     sessionTitle:      (n, d) => `📋 جلسة #${n} — ${d}`,
     sessionNotes:      'ملاحظات الجلسة',
@@ -164,6 +180,7 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     includePhotos: true,
     includeFacePhotos: true,
     includeIntraOralPhotos: true,
+    includeSTLPhotos: true,
     includeXrays: true,
     includeSessions: true,
     includeSessionImages: true,
@@ -348,12 +365,14 @@ function buildHTML({ patient, sessions, ttt, siteInfo, opts, imgMap }) {
     if (!o.includePhotos) return '';
     const faceImgs  = o.includeFacePhotos      ? (patient.faceImages || [])     : [];
     const intraImgs = o.includeIntraOralPhotos ? (patient.intraOralImages || []) : [];
+    const stlImgs   = o.includeSTLPhotos       ? (patient.stlImages || [])      : [];
     const xrayImgs  = o.includeXrays           ? (patient.xrays || [])          : [];
-    if (!faceImgs.length && !intraImgs.length && !xrayImgs.length) return '';
+    if (!faceImgs.length && !intraImgs.length && !stlImgs.length && !xrayImgs.length) return '';
 
     const parts = [];
     if (faceImgs.length)  parts.push(photoGroup(t.extraoral,  'img-grid-3', renderImgSlots(slots.face,     faceImgs)));
     if (intraImgs.length) parts.push(photoGroup(t.intraoral,  'img-grid-3', renderImgSlots(slots.intraoral, intraImgs)));
+    if (stlImgs.length)   parts.push(photoGroup(t.stl,        'img-grid-3', renderImgSlots(slots.stl,      stlImgs)));
     if (xrayImgs.length)  parts.push(photoGroup(t.radiographs,'img-grid-2', renderImgSlots(slots.xray,      xrayImgs)));
     return parts.join('');
   };
@@ -515,6 +534,7 @@ export async function exportPatientPDF({ patient, sessions = [], ttt = {}, siteI
   const allImages = [
     ...(patient.faceImages || []),
     ...(patient.intraOralImages || []),
+    ...(patient.stlImages || []),
     ...(patient.xrays || []),
     ...(sessions.flatMap(s => s.images || [])),
   ];
